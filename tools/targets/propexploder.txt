@@ -1,0 +1,5 @@
+gamemodes\terrortown\entities\entities\propexploder_autorun.lua 
+gamemodes\terrortown\entities\weapons\weapon_ttt_propexploder\shared.lua 
+materials\vgui\ttt\icon_propexploder.vmt 
+materials\vgui\ttt\icon_propexploder.vtf 
+sound\weapons\gamefreak\wtf.mp3 

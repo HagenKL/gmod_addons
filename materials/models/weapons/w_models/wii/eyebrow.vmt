@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\wii/eyebrow"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[0.3 0.3 0.3]" 
+}

@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\weapons\v_models\wii\wii"
+	"$bumpmap" "models\weapons\v_models\wii\wii1_normal"
+}
+
+

@@ -1,0 +1,13 @@
+VertexLitGeneric
+{
+	"$translucent" 1	
+	"$baseTexture" "models\weapons\v_models\avenger_xr2\clearmag"
+	"$nocull" 1
+	"$bumpmap" "models\weapons\v_models\avenger_xr2\clearmag_normal"
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" 1
+	"$envmapcontrast" 0.3
+	"$envmapsaturation" 0.7
+	"$envmaptint" "[ 0.36 0.36 0.36 ]"
+}
+

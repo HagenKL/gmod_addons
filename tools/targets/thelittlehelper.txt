@@ -1,0 +1,6 @@
+gamemodes\terrortown\entities\entities\ttt_thelittlehelper.lua 
+materials\vgui\ttt\icon_tlh.vmt 
+materials\vgui\ttt\icon_tlh.vtf 
+materials\vgui\ttt\perks\hud_tlh.png 
+sound\gamefreak\recharged.wav 
+sound\gamefreak\reload.wav 

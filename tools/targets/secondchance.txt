@@ -1,0 +1,4 @@
+gamemodes\terrortown\entities\entities\ttt_a_second_chance.lua 
+materials\vgui\ttt\icon_asc.vmt 
+materials\vgui\ttt\icon_asc.vtf 
+materials\vgui\ttt\perks\hud_asc.png 

@@ -1,0 +1,6 @@
+gamemodes\terrortown\entities\entities\ttt_pigeon\cl_init.lua 
+gamemodes\terrortown\entities\entities\ttt_pigeon\init.lua 
+gamemodes\terrortown\entities\entities\ttt_pigeon\shared.lua 
+gamemodes\terrortown\entities\weapons\weapon_ttt_homingpigeon\shared.lua 
+lua\autorun\HomingPigeon.lua 
+materials\vgui\ttt\icon_homingpigeon.png 

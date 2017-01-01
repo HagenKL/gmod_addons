@@ -1,0 +1,4 @@
+gamemodes\terrortown\entities\weapons\weapon_ttt_adv_disguiser\shared.lua 
+lua\autorun\.lua 
+materials\VGUI\ttt\icon_adv_disguiser.vmt 
+materials\VGUI\ttt\icon_adv_disguiser.vtf 

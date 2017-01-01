@@ -1,0 +1,8 @@
+lua\autorun\sh_slowmotion.lua 
+lua\autorun\Slowmo.lua 
+lua\autorun\client\cl_slowmotion.lua 
+lua\autorun\server\sv_slowmotion.lua 
+materials\vgui\ttt\slowmotion_icon.vmt 
+materials\vgui\ttt\slowmotion_icon.vtf 
+sound\sm_enter.wav 
+sound\sm_exit.wav 

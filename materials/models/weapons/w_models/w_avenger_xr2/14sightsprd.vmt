@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\weapons\v_models\avenger_xr2\spr"
+	"$envmap" 			"env_cubemap"
+	"$bumpmap" "models\weapons\v_models\avenger_xr2\spr_normal"
+	"$normalmapalphaenvmapmask" 1
+}

@@ -1,0 +1,17 @@
+gamemodes\terrortown\entities\weapons\weapon_ttt_satm\shared.lua 
+materials\models\weapons\v_buddyfinder.vmt 
+materials\models\weapons\v_buddyfinder.vtf 
+materials\vgui\ttt\icon_satm.vmt 
+materials\vgui\ttt\icon_satm.vtf 
+models\weapons\gamefreak\c_buddyfinder.dx80.vtx 
+models\weapons\gamefreak\c_buddyfinder.dx90.vtx 
+models\weapons\gamefreak\c_buddyfinder.mdl 
+models\weapons\gamefreak\c_buddyfinder.sw.vtx 
+models\weapons\gamefreak\c_buddyfinder.vvd 
+models\weapons\gamefreak\v_buddyfinder.dx80.vtx 
+models\weapons\gamefreak\v_buddyfinder.dx90.vtx 
+models\weapons\gamefreak\v_buddyfinder.mdl 
+models\weapons\gamefreak\v_buddyfinder.sw.vtx 
+models\weapons\gamefreak\v_buddyfinder.vvd 
+sound\weapons\satm\sm_enter.wav 
+sound\weapons\satm\sm_exit.wav 

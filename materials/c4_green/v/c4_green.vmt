@@ -1,0 +1,7 @@
+//Author: Dario
+"VertexLitGeneric"
+{
+	"$basetexture"	"c4_green\v\c4_green"
+	"$envmap" "env_cubemap"
+	"$envmapmask" "models\weapons\v_models\c4\c4_ref"
+}

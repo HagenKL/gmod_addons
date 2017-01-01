@@ -1,0 +1,4 @@
+gamemodes\terrortown\entities\entities\ttt_blue_bull.lua 
+materials\vgui\ttt\icon_bluebull.vmt 
+materials\vgui\ttt\icon_bluebull.vtf 
+materials\vgui\ttt\perks\hud_blue_bull.png 

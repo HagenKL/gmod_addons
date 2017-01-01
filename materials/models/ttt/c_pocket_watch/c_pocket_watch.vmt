@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$baseTexture" "models\ttt\c_pocket_watch/c_pocket_watch"
+	"$translucent" 1
+	"$vertexcolor" 1
+}

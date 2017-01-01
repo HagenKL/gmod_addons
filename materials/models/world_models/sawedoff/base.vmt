@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+
+	"$baseTexture" "models/world_models/sawedoff/base"
+	"$envmap" "env_cubemap"
+	"$envmapcontrast" 1
+	"$basealphaenvmapmask" 1
+	"$bumpmap" "models/world_models/sawedoff\base_n"
+	"$normalmapalphaenvmapmask" 1
+	"$envmaptint" "[ 0.65 0.65 0.65 ]"
+
+}

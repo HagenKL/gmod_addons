@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\weapons\v_models\anic_tub_skif\parts"
+	"$envmap" "env_cubemap"
+	"$envmapmask" "models\weapons\v_models\anic_tub_skif\parts_ref"
+}
