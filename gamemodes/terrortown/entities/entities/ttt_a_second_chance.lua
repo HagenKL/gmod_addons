@@ -102,14 +102,15 @@ if SERVER then
       victim.NOWINASC = true
       victim:SetNWInt("ASCthetimeleft", 10)
       timer.Create("TTTASC" .. victim:EntIndex() , 1 ,10, function()
-          if !IsValid(victim) then return end
-          victim:SetNWInt("ASCthetimeleft", victim:GetNWInt("ASCthetimeleft") - 1)
-          if ( victim:GetNWInt("ASCthetimeleft") <= 0 ) then
-            victim:SetNWBool("ASCCanRespawn", false)
-            victim:HandleRespawn1()
-          end
-          if ( victim:GetNWInt("ASCthetimeleft") <= 9 ) then
-            victim:SetNWBool("ASCCanRespawn", true)
+          if IsValid(victim) then
+            victim:SetNWInt("ASCthetimeleft", victim:GetNWInt("ASCthetimeleft") - 1)
+            if ( victim:GetNWInt("ASCthetimeleft") <= 0 ) then
+              victim:SetNWBool("ASCCanRespawn", false)
+              victim:HandleRespawn1()
+            end
+            if ( victim:GetNWInt("ASCthetimeleft") <= 9 ) then
+              victim:SetNWBool("ASCCanRespawn", true)
+            end
           end
         end )
       net.Start("ASCRespawn")
