@@ -36,16 +36,16 @@ if CLIENT then
 
    SWEP.PrintName    = "Prop Exploder"
    SWEP.Slot         = 7
-   
+
    SWEP.ViewModelFOV  = 70
    SWEP.ViewModelFlip = false
-   
+
       SWEP.Icon = "VGUI/ttt/icon_propexploder"
       SWEP.EquipMenuData = {
       type = "weapon",
       desc = "The PE will explode every Prop that you want! \nIt looks like an Magnet-O-Stick! \nJust left click a prop and then click rightclick."
    };
-   	net.Receive("ColoredMessage",function(len) 
+   	net.Receive("ColoredMessage",function(len)
 		local msg = net.ReadTable()
 		chat.AddText(unpack(msg))
 		chat.PlaySound()
@@ -72,7 +72,7 @@ SWEP.AllowDrop = true
 SWEP.IsSilent = false
 SWEP.NoSights = true
 SWEP.UseHands = true
-SWEP.HeadshotMultiplier = 0 
+SWEP.HeadshotMultiplier = 0
 SWEP.CanBuy = { ROLE_TRAITOR }
 SWEP.LimitedStock = false
 
@@ -93,10 +93,10 @@ function SWEP:Reload() end
 end
 if SERVER then
 local PropExploderUsed = false
-ExplodeProps = {}
+local ExplodeProps = {}
 function SWEP:PrimaryAttack()
 	if not PropExploderUsed then
-	self:SetNextPrimaryFire(2)
+	self:SetNextPrimaryFire( CurTime() + 1)
 	self:PropExplodeHandler()
 	end
 end
@@ -113,10 +113,7 @@ function SWEP:PropExplodeHandler()
 	local ply = self.Owner
 	local tr = ply:GetEyeTrace()
 	local ent = tr.Entity
-	
-	if seen then return end -- To prevent chat spamming of messages
-			seen = true
-			timer.Simple(0.5, function() seen = false end)
+
 		if ent:IsPlayer() or ent:IsNPC() or ent:GetClass() == "prop_ragdoll" or tr.HitWorld or ent:IsWeapon() then -- A bit of Code from Exho
 			ply:PlayerMsg("Prop Exploder: ", Color(255,255,255), "This is not a valid Prop!")
 			return
@@ -168,11 +165,11 @@ function PropExploder(ply)
 							util.BlastDamage( v, v, v:GetPos(), 400, 200 )
 							expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
 						end
-						timer.Create("PropRemove" .. v:EntIndex() , 0, 1, function() 
+						timer.Create("PropRemove" .. v:EntIndex() , 0, 1, function()
 							if IsValid(v) then
 								v:Remove()
 							end
-					end)	
+					end)
 				end )
 			end
 		end

@@ -440,7 +440,9 @@ function RandomatBurn()
     elseif ply:GetRole() == ROLE_TRAITOR then
       ply:Ignite( math.random(2,6) )
     elseif ply:GetRole() == ROLE_DETECTIVE then
-      ply:SetHealth( ply:Health() + math.random(20,100))
+      local randomhealth = ply:Health() + math.random(20,50)
+      ply:SetHealth( randomhealth)
+      ply:SetMaxHealth(randomhealth)
     end
   end
 end
@@ -473,6 +475,7 @@ function RandomatTitans()
   RandomatBroadcast("Randomat: ", Color(255,255,255), "The fight of the Titans!")
   for key,ply in pairs(player.GetAll()) do
     ply:SetHealth(300)
+    ply:SetMaxHealth(300)
   end
 end
 
@@ -510,7 +513,9 @@ function RandomatTime()
   RandomatBroadcast("Randomat: ", Color(255,255,255), "Healing for u!")
   timer.Create("RandomatLive",1,0, function()
     for k,v in pairs(player.GetAll()) do
-      v:SetHealth(v:Health() + 1)
+      local nexthealth = v:Health() + 1
+      v:SetHealth(nexthealth)
+      v:SetMaxHealth(nexthealth)
     end
   end )
   hook.Add("TTTEndRound", "RandomatHookLive", function() timer.Remove("RandomatLive") end)
@@ -581,7 +586,9 @@ end
 function RandomatRandomHealth()
     RandomatBroadcast("Randomat: ", Color(255,255,255),"Random Health for everyone!")
     for k,v in pairs(player.GetAll()) do
-      v:SetHealth( v:Health() + math.random(1,100) )
+      local randomhealth = v:Health() + math.random(1,100)
+      v:SetHealth( randomhealth )
+      v:SetMaxHealth( randomhealth )
     end
 end
 

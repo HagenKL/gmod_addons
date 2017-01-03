@@ -28,6 +28,7 @@ if SERVER then
   AddCSLuaFile("shared.lua")
   AddCSLuaFile("gamemodes/terrortown/entities/effects/druncloak.lua")
   util.AddNetworkString("TTT_DeadRingerSound")
+  util.AddNetworkString("DRChangeMaterial")
 end
 
 --------------------------------------------------------------------------
@@ -147,12 +148,6 @@ function DRThink()
         end
       end
     end
-  elseif CLIENT and LocalPlayer():Alive() then
-    if LocalPlayer():GetNWBool("DRDead") then
-      LocalPlayer():GetViewModel():SetMaterial( "models/props_c17/fisheyelens")
-    else
-      LocalPlayer():GetViewModel():SetMaterial("models/weapons/v_crowbar.mdl")
-    end
   end
 end
 hook.Add("Think", "DRThink", DRThink)
@@ -177,6 +172,9 @@ if SERVER then
     end
     ply:SetNWInt("DRStatus",0)
     ply:SetNWInt("DRCharge", 8 )
+    net.Start("DRChangeMaterial")
+    net.WriteBool(false)
+    net.Send(ply)
   end
 
   function DRRoundreset()
@@ -188,6 +186,9 @@ if SERVER then
       v:SetNWBool("DRDead",false)
       v:SetNWInt("DRCharge", 8 )
     end
+    net.Start("DRChangeMaterial")
+    net.WriteBool(false)
+    net.Broadcast()
   end
 
   function DRSpawnReset( ply )
@@ -288,7 +289,9 @@ local plymeta = FindMetaTable( "Player" );
 -- Mostly code from TTT itself, to keep the bodys similar.
 if SERVER then
   function plymeta:DRfakedeath(dmginfo)
-
+    net.Start("DRChangeMaterial")
+    net.WriteBool(true)
+    net.Send(self)
     self:SetNWBool("DRDead", true)
     self:SetNWInt("DRStatus", 3)
     self:SetColor(Color(255,255,255,0))
@@ -296,152 +299,152 @@ if SERVER then
     self:SetRenderMode( RENDERMODE_TRANSALPHA )
     self:DrawShadow( false )
     self:Flashlight( false )
+    self:AllowFlashlight(false)
     self:SetFOV(0, 0.2)
     local ownerwep = self:GetActiveWeapon()
     if ownerwep.Base == "weapon_tttbase" then
       ownerwep:SetIronsights(false)
     end
 
-    /*if !self:HasEquipmentItem(EQUIP_DISGUISE) then
-      self:SetNWBool("Disguised", true)
-      end*/
-      DamageLog("DeadRinger: " .. self:Nick() .. " has faked his death.")
+    DamageLog("DeadRinger: " .. self:Nick() .. " has faked his death.")
 
-      ---------------------------
-      --------"corpse"-------
-      ---------------------------
-      -- this is time to make our corpse
+    ---------------------------
+    --------"corpse"-------
+    ---------------------------
+    -- this is time to make our corpse
 
-      -- create the ragdoll
-      local rag = ents.Create("prop_ragdoll")
+    -- create the ragdoll
+    local rag = ents.Create("prop_ragdoll")
 
-      rag:SetPos(self:GetPos())
-      rag:SetModel(self:GetModel())
-      rag:SetAngles(self:GetAngles())
-      rag:SetColor(self:GetColor())
-      rag:SetOwner(self)
+    rag:SetPos(self:GetPos())
+    rag:SetModel(self:GetModel())
+    rag:SetAngles(self:GetAngles())
+    rag:SetColor(self:GetColor())
+    rag:SetOwner(self)
 
-      rag:Spawn(self)
-      rag:Activate(self)
+    rag:Spawn(self)
+    rag:Activate(self)
 
-      -- nonsolid to players, but can be picked up and shot
-      rag:SetCollisionGroup(GetConVar("ttt_ragdoll_collide"):GetBool() and COLLISION_GROUP_WEAPON or COLLISION_GROUP_DEBRIS_TRIGGER)
-      timer.Simple( 1, function() if IsValid( rag ) then rag:CollisionRulesChanged() end end )
+    -- nonsolid to players, but can be picked up and shot
+    rag:SetCollisionGroup(GetConVar("ttt_ragdoll_collide"):GetBool() and COLLISION_GROUP_WEAPON or COLLISION_GROUP_DEBRIS_TRIGGER)
+    timer.Simple( 1, function() if IsValid( rag ) then rag:CollisionRulesChanged() end end )
 
-      -- flag this ragdoll as being a player's
-      rag.player_ragdoll = true
-      rag.sid = self:SteamID()
+    -- flag this ragdoll as being a player's
+    rag.player_ragdoll = true
+    rag.sid = self:SteamID()
 
-      rag.uqid = self:UniqueID()
+    rag.uqid = self:UniqueID()
 
-      -- network data
-      CORPSE.SetPlayerNick(rag, self)
-      CORPSE.SetFound(rag, false)
+    -- network data
+    CORPSE.SetPlayerNick(rag, self)
+    CORPSE.SetFound(rag, false)
 
-      -- if someone searches this body they can find info on the victim and the
-      -- death circumstances
-      rag.equipment = self:GetEquipmentItems()
-      rag.was_role = ROLE_INNOCENT
-      rag.bomb_wire = false
-      rag.dmgtype = dmginfo:GetDamageType()
+    -- if someone searches this body they can find info on the victim and the
+    -- death circumstances
+    rag.equipment = self:GetEquipmentItems()
+    rag.was_role = ROLE_INNOCENT
+    rag.bomb_wire = false
+    rag.dmgtype = dmginfo:GetDamageType()
 
-      local wep = util.WeaponFromDamage(dmginfo)
-      rag.dmgwep = IsValid(wep) and wep:GetClass() or ""
+    local wep = util.WeaponFromDamage(dmginfo)
+    rag.dmgwep = IsValid(wep) and wep:GetClass() or ""
 
-      rag.was_headshot = self.was_headshot and dmginfo:IsBulletDamage()
-      if !self.was_headshot then
-        sound.Play(table.Random(deathsounds), self:GetPos(), 90, 100)
-      end
-      rag.time = CurTime()
-      rag.kills = table.Copy(self.kills)
+    rag.was_headshot = self.was_headshot and dmginfo:IsBulletDamage()
+    if !self.was_headshot then
+      sound.Play(table.Random(deathsounds), self:GetPos(), 90, 100)
+    end
+    rag.time = CurTime()
+    rag.kills = table.Copy(self.kills)
 
-      rag.killer_sample = nil
+    rag.killer_sample = nil
 
-      -- position the bones
-      local num = rag:GetPhysicsObjectCount() - 1
-      local v = self:GetVelocity()
+    -- position the bones
+    local num = rag:GetPhysicsObjectCount() - 1
+    local v = self:GetVelocity()
 
-      -- bullets have a lot of force, which feels better when shooting props,
-      -- but makes bodies fly, so dampen that here
-      if dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_SLASH) then
-        v = v / 5
-      end
+    -- bullets have a lot of force, which feels better when shooting props,
+    -- but makes bodies fly, so dampen that here
+    if dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_SLASH) then
+      v = v / 5
+    end
 
-      for i = 0, num do
-        local bone = rag:GetPhysicsObjectNum(i)
+    for i = 0, num do
+      local bone = rag:GetPhysicsObjectNum(i)
 
-        if IsValid(bone) then
-          local bp, ba = self:GetBonePosition(rag:TranslatePhysBoneToBone(i))
-          if bp and ba then
-            bone:SetPos(bp)
-            bone:SetAngles(ba)
-          end
-          bone:SetVelocity(v)
+      if IsValid(bone) then
+        local bp, ba = self:GetBonePosition(rag:TranslatePhysBoneToBone(i))
+        if bp and ba then
+          bone:SetPos(bp)
+          bone:SetAngles(ba)
         end
+        bone:SetVelocity(v)
+      end
+    end
+  end
+
+  -- here goes the uncloak function
+  function plymeta:DRuncloak()
+    net.Start("DRChangeMaterial")
+    net.WriteBool(false)
+    net.Send(self)
+    self:SetNWBool("body_found", false)
+    self:SetNWBool("DRDead",false)
+    self:SetNWInt("DRStatus",4)
+    self:GetViewModel():SetMaterial("")
+    self:DrawShadow( true )
+    self:SetMaterial( "" )
+    self:SetRenderMode( RENDERMODE_NORMAL )
+    self:Fire( "alpha", 255, 0 )
+    self:SetColor(Color(255,255,255,255))
+    self:SetNoDraw(false)
+    self:SetNWInt("DRCharge", 0)
+    self:AllowFlashlight(true)
+
+    self:DrawWorldModel(true)
+
+    self:SetMaterial("")
+
+    self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
+    DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")
+
+    local effectdata = EffectData()
+    effectdata:SetOrigin( self:GetPos() )
+    util.Effect( "druncloak", effectdata, true ,true )
+
+    for _, rag in pairs(ents.GetAll()) do
+      if rag:GetClass() == "prop_ragdoll" and rag:GetOwner() == self or rag.sid == self:SteamID() or rag.uqid == self:UniqueID() then
+        rag:Remove()
       end
     end
 
-    -- here goes the uncloak function
-    function plymeta:DRuncloak()
-
-      self:SetNWBool("body_found", false)
-      self:SetNWBool("DRDead",false)
-      self:SetNWInt("DRStatus",4)
-      self:GetViewModel():SetMaterial("")
-      self:DrawShadow( true )
-      self:SetMaterial( "" )
-      self:SetRenderMode( RENDERMODE_NORMAL )
-      self:Fire( "alpha", 255, 0 )
-      self:SetColor(Color(255,255,255,255))
-      self:SetNoDraw(false)
-      self:SetNWInt("DRCharge", 0)
-
-      self:DrawWorldModel(true)
-
-      self:SetMaterial("")
-
-      self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
-      DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")
-
-      /*if !self:HasEquipmentItem(EQUIP_DISGUISE) then
-        self:SetNWBool("Disguised", false)
-        end*/
-        local effectdata = EffectData()
-        effectdata:SetOrigin( self:GetPos() )
-        util.Effect( "druncloak", effectdata, true ,true )
-
-        for _, rag in pairs(ents.GetAll()) do
-          if rag:GetClass() == "prop_ragdoll" and rag:GetOwner() == self or rag.sid == self:SteamID() or rag.uqid == self:UniqueID() then
-            rag:Remove()
-          end
-        end
-
-      end
-    end
-    if (CLIENT) then
-      function DRHidePlayer(ply)
-        if ply:GetNWInt("DRStatus") == 3 then
-          if ply:GetNWBool("body_found", false) then
-            return GROUP_FOUND
-          else
-            local client = LocalPlayer()
-            if client:IsSpec() or client:IsActiveTraitor() or ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
-              return GROUP_NOTFOUND
-            else
-              return GROUP_TERROR
-            end
-          end
+  end
+end
+if (CLIENT) then
+  function DRHidePlayer(ply)
+    if ply:GetNWInt("DRStatus") == 3 then
+      if ply:GetNWBool("body_found", false) then
+        return GROUP_FOUND
+      else
+        local client = LocalPlayer()
+        if client:IsSpec() or client:IsActiveTraitor() or ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
+          return GROUP_NOTFOUND
+        else
+          return GROUP_TERROR
         end
       end
-      hook.Add("TTTScoreGroup", "DRScoreBoard", DRHidePlayer)
-
-      net.Receive("TTT_DeadRingerSound" , function()
-          surface.PlaySound("ttt/recharged.wav")
-        end )
     end
+  end
+  hook.Add("TTTScoreGroup", "DRScoreBoard", DRHidePlayer)
 
-    /*hook.Add("TTTPlayerSpeed", "DRSpeed", function(self, slowed)
-        if self:GetNWBool("DRDead") == true or self:GetNWInt("DRStatus") == 3 and !self:GetActiveWeapon() == "weapon_ttt_homebat" and !self:GetNWBool("ItsHighNoon") and !self:GetNWBool("ItsHighNoonshooting") and !self.RandomatSuperSpeed then
-          return 1.5
-        end
-        end )*/
+  net.Receive("TTT_DeadRingerSound" , function()
+      surface.PlaySound("ttt/recharged.wav")
+    end )
+  net.Receive("DRChangeMaterial",function()
+      local enabled = net.ReadBool()
+      if enabled then
+        LocalPlayer():GetViewModel():SetMaterial( "models/props_c17/fisheyelens")
+      else
+        LocalPlayer():GetViewModel():SetMaterial("models/weapons/v_crowbar.mdl")
+      end
+    end)
+end

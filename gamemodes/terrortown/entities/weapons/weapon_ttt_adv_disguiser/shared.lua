@@ -78,7 +78,7 @@ if CLIENT then
             scrpos = nil
           end
         else
-          local _, healthcolor = util.HealthToString(ply:Health())
+          local _, healthcolor = util.HealthToString(ply:Health(), ply:GetMaxHealth())
           surface.SetTextColor(clr(healthcolor))
 
           scrpos = ply:EyePos()
@@ -108,6 +108,15 @@ if CLIENT then
     function GAMEMODE:HUDDrawTargetID()
       local client = LocalPlayer()
       local L = GetLang()
+
+      if file.Exists("sh_spectator_deathmatch.lua", "LUA") then -- prevents SpecDM fix when SpecDM is not installed
+        if IsValid(ent) and ent:IsPlayer() then
+          local showalive = GetConVar("ttt_specdm_showaliveplayers")
+          if (ent:IsGhost() and not LocalPlayer():IsGhost()) or (not ent:IsGhost() and LocalPlayer():IsGhost() and not showalive:GetBool()) then
+            return -- when one player is a ghost, quit
+          end
+        end
+      end
 
       DrawPropSpecLabels(client)
 
@@ -167,14 +176,14 @@ if CLIENT then
 
         -- in minimalist targetID, colour nick with health level
         if minimal then
-          _, color = util.HealthToString(ent:Health())
+          _, color = util.HealthToString(ent:Health(), ent:GetMaxHealth())
         end
 
-        if client:IsTraitor() and GAMEMODE.round_state == ROUND_ACTIVE then
+        if client:IsTraitor() and GetRoundState() == ROUND_ACTIVE then
           target_traitor = ent:IsTraitor()
         end
 
-        target_detective = ent:GetNWBool("AdvDisguiseInDisguise") and ent:GetNWBool("AdvDisguiseIsDetective") or ent:IsDetective()
+        target_detective = ent:GetNWBool("AdvDisguiseInDisguise") and ent:GetNWBool("AdvDisguiseIsDetective") or GetRoundState() > ROUND_PREP and ent:IsDetective() or false
 
       elseif cls == "prop_ragdoll" then
         -- only show this if the ragdoll has a nick, else it could be a mattress
@@ -242,7 +251,7 @@ if CLIENT then
       -- Draw subtitle: health or type
       local clr = rag_color
       if ent:IsPlayer() then
-        text, clr = util.HealthToString(ent:Health())
+        text, clr = util.HealthToString(ent:Health(), ent:GetMaxHealth())
 
         -- HealthToString returns a string id, need to look it up
         text = L[text]
