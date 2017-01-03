@@ -172,9 +172,6 @@ if SERVER then
     end
     ply:SetNWInt("DRStatus",0)
     ply:SetNWInt("DRCharge", 8 )
-    net.Start("DRChangeMaterial")
-    net.WriteBool(false)
-    net.Send(ply)
   end
 
   function DRRoundreset()
