@@ -1,6 +1,8 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
   resource.AddWorkshop("606792331")
+  util.AddNetworkString("TTTAdvDisguiseSuccess")
+  util.AddNetworkString("TTTAdvDisguiseIdentity")
 end
 SWEP.HoldType = "knife"
 
@@ -45,7 +47,7 @@ SWEP.LimitedStock = true -- only buyable once
 
 SWEP.IsSilent = true
 
--- Pull out faster than standard guns
+SWEP.DeploySpeed = 4-- Pull out faster than standard guns
 
 if CLIENT then
   local function AdvDisguiserInit()
@@ -60,6 +62,7 @@ if CLIENT then
     };
     local function DrawPropSpecLabels(client)
       if (not client:IsSpec()) and (GetRoundState() != ROUND_POST) then return end
+      if file.Exists("sh_spectator_deathmatch.lua", "LUA") and client:IsGhost() and !GetConVar("ttt_specdm_showaliveplayers"):GetBool() then return end
       surface.SetFont("TabLarge")
       local tgt = nil
       local scrpos = nil
@@ -109,6 +112,12 @@ if CLIENT then
       local client = LocalPlayer()
       local L = GetLang()
 
+      DrawPropSpecLabels(client)
+
+      local trace = client:GetEyeTrace(MASK_SHOT)
+      local ent = trace.Entity
+      if (not IsValid(ent)) or ent.NoTarget then return end
+
       if file.Exists("sh_spectator_deathmatch.lua", "LUA") then -- prevents SpecDM fix when SpecDM is not installed
         if IsValid(ent) and ent:IsPlayer() then
           local showalive = GetConVar("ttt_specdm_showaliveplayers")
@@ -117,12 +126,6 @@ if CLIENT then
           end
         end
       end
-
-      DrawPropSpecLabels(client)
-
-      local trace = client:GetEyeTrace(MASK_SHOT)
-      local ent = trace.Entity
-      if (not IsValid(ent)) or ent.NoTarget then return end
 
       -- some bools for caching what kind of ent we are looking at
       local target_traitor = false
@@ -379,9 +382,7 @@ if CLIENT then
       end
     end )
 elseif SERVER then
-  AddCSLuaFile("autorun/advdisguiser.lua")
 
-  resource.AddFile("materials/VGUI/ttt/icon_adv_disguiser.vmt")
   local function AdvDisguiseReset()
     for _,ply in pairs (player.GetAll()) do
       ply:SetNWString( "AdvDisguiseName", "" )
@@ -398,14 +399,16 @@ end
 function SWEP:PrimaryAttack()
 
   if not IsValid(self.Owner) then return end
+  self:SetNextPrimaryFire(CurTime() + 0.5)
   if CurTime() - self:LastShootTime( ) < self.Primary.Delay then return end
-  self.Owner:LagCompensation(true)
 
   local spos = self.Owner:GetShootPos()
   local sdest = spos + (self.Owner:GetAimVector() * 70)
 
   local kmins = Vector(1,1,1) * -10
   local kmaxs = Vector(1,1,1) * 10
+
+  self.Owner:LagCompensation(true)
 
   local tr = util.TraceHull({start=spos, endpos=sdest, filter=self.Owner, mask=MASK_SHOT_HULL, mins=kmins, maxs=kmaxs})
 
@@ -416,11 +419,7 @@ function SWEP:PrimaryAttack()
 
   local hitEnt = tr.Entity
 
-  if file.Exists("sh_spectator_deathmatch.lua", "LUA") then -- prevents SpecDM fix when SpecDM is not installed
-    if IsValid(hitEnt) and hitEnt:IsPlayer() and hitEnt:IsGhost() then
-      return -- when one player is a ghost, quit
-    end
-  end
+  self.Owner:LagCompensation(false)
 
   -- effects
   if IsValid(hitEnt) then
@@ -433,23 +432,30 @@ function SWEP:PrimaryAttack()
 
   if SERVER then
     self.Owner:SetAnimation( PLAYER_ATTACK1 )
+    if file.Exists("sh_spectator_deathmatch.lua", "LUA") then -- prevents SpecDM fix when SpecDM is not installed
+      if IsValid(hitEnt) and hitEnt:IsPlayer() and hitEnt:IsGhost() then
+        return -- when one player is a ghost, quit
+      end
+    end
   end
 
   if SERVER and IsValid(self.Owner) and tr.Hit and tr.HitNonWorld and IsValid(hitEnt) then
-    if hitEnt:IsPlayer() then
+    if hitEnt:IsPlayer() and not hitEnt:IsSpec() then
       self.Owner:SetNWString( "AdvDisguiseName", hitEnt:Nick() )
       self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt:IsDetective() )
       self.Owner:SetNWInt( "AdvDisguiseKarma", hitEnt:GetBaseKarma() )
       self.Owner:SetNWEntity( "AdvDisguiseEnt", hitEnt )
-      DamageLog("ADVANCED DISGUISER:\t " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "]" .. " stole " .. hitEnt:Nick() .. " [" .. hitEnt:GetRoleString() .. "]" .. "'s identity.")
-
       self.Owner:SetModel(hitEnt:GetModel())
-      self.Owner:ChatPrint( "Retrieved "..hitEnt:Nick().."'s identity successfully.")
+
+      DamageLog("ADVANCED DISGUISER:\t " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "]" .. " stole " .. hitEnt:Nick() .. " [" .. hitEnt:GetRoleString() .. "]" .. "'s identity.")
+      net.Start("TTTAdvDisguiseSuccess")
+      net.WriteString(hitEnt:Nick())
+      net.Send(self.Owner)
     elseif hitEnt:GetClass() == "prop_ragdoll" and hitEnt.player_ragdoll then
 
       local name = CORPSE.GetPlayerNick(hitEnt, "")
 
-      if name!="" then
+      if name != "" then
         self.Owner:SetNWString( "AdvDisguiseName", name )
         self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt.was_role == ROLE_DETECTIVE )
         if IsValid(player.GetByUniqueID( hitEnt.uqid )) then
@@ -461,7 +467,9 @@ function SWEP:PrimaryAttack()
           self.Owner:SetNWEntity( "AdvDisguiseEnt" , nil)
           self.Owner:SetModel(hitEnt:GetModel())
         end
-        self.Owner:ChatPrint( "Retrieved "..name.."'s identity successfully!")
+        net.Start("TTTAdvDisguiseSuccess")
+        net.WriteString(name)
+        net.Send(self.Owner)
 
         DamageLog("ADVANCED DISGUISER:\t " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "]" .. " stole " .. name .." [dead]" .. "'s identity.")
       end
@@ -469,12 +477,12 @@ function SWEP:PrimaryAttack()
     end
   end
 
-  self.Owner:LagCompensation(false)
 end
 
 function SWEP:SecondaryAttack()
 
   if not IsValid(self.Owner) then return end
+  self:SetNextSecondaryFire(CurTime() + 0.2)
   if not SERVER then return end
 
   if self.Owner:GetNWBool("AdvDisguiseInDisguise") then
@@ -483,7 +491,8 @@ function SWEP:SecondaryAttack()
     if self.Owner:GetNWBool("AdvDisguiseName","") != "" then
       self.Owner:SetNWBool("AdvDisguiseInDisguise",true)
     else
-      self.Owner:ChatPrint( "You need to retrieve an identity first!")
+      net.Start("TTTAdvDisguiseIdentity")
+      net.Send(self.Owner)
     end
   end
 
@@ -501,6 +510,15 @@ if CLIENT then
       self:DrawModel()
     end
   end
+  net.Receive("TTTAdvDisguiseSuccess",function()
+    local printname = net.ReadString()
+    chat.AddText("Advanced Disguiser: ", COLOR_WHITE, "Retrieved " .. printname .. "'s identity successfully!")
+    chat.PlaySound()
+  end)
+  net.Receive("TTTAdvDisguiseIdentity",function()
+    chat.AddText("Advanced Disguiser: ", COLOR_WHITE, "You need to retrieve an identity first!")
+    chat.PlaySound()
+  end)
 end
 
 function SWEP:Reload()
