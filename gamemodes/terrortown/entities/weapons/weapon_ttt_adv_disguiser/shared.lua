@@ -416,12 +416,16 @@ function SWEP:PrimaryAttack()
 
   local hitEnt = tr.Entity
 
+  if file.Exists("sh_spectator_deathmatch.lua", "LUA") then -- prevents SpecDM fix when SpecDM is not installed
+    if IsValid(hitEnt) and hitEnt:IsPlayer() and hitEnt:IsGhost() then
+      return -- when one player is a ghost, quit
+    end
+  end
+
   -- effects
   if IsValid(hitEnt) then
     self.Weapon:SendWeaponAnim( ACT_VM_HITCENTER )
 
-    if hitEnt:IsPlayer() or hitEnt:GetClass() == "prop_ragdoll" then
-    end
     self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
   else
     self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
