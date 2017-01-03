@@ -1,7 +1,7 @@
 "VertexLitGeneric"
 {
-	"$baseTexture" "models/weapons/v_models/Vashts Deagle/Grip"
-	"$bumpmap" "models/weapons/v_models/Vashts Deagle/Grip_norm"	
+	"$baseTexture" "models/weapons/v_models/Vashts_Deagle/Grip"
+	"$bumpmap" "models/weapons/v_models/Vashts_Deagle/Grip_norm"	
 }     	
       
 	

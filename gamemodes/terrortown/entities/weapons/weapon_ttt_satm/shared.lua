@@ -107,6 +107,7 @@ function SWEP:PrimaryAttack()
 	self.Weapon:SetNextSecondaryFire(CurTime()+(satmduration:GetInt()*1.5))
 	self.Weapon:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	timer.Remove("SatmActive")
+	timer.Remove("ResetSATMSlow")
 	timer.Create("SatmActive", 3, 1, function()
 		self.satmactive = true
 	end)
@@ -115,7 +116,7 @@ function SWEP:PrimaryAttack()
 		game.SetTimeScale(1.5)
 		net.Start("SATMStartSound")
 		net.Broadcast()
-		timer.Create("ResetFast", satmduration:GetInt()*1.5, 1, function() game.SetTimeScale(1) self.satmactive = false net.Start("SATMEndSound") net.Broadcast() end )
+		timer.Create("ResetSATMFast", satmduration:GetInt()*1.5, 1, function() game.SetTimeScale(1) self.satmactive = false net.Start("SATMEndSound") net.Broadcast() end )
 	end
 	self.Weapon:TakePrimaryAmmo(1)
 end
@@ -126,6 +127,7 @@ function SWEP:SecondaryAttack()
 	self.Weapon:SetNextSecondaryFire(CurTime()+(satmduration:GetInt()*0.5))
 	self.Weapon:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	timer.Remove("SatmActive")
+	timer.Remove("ResetSATMFast")
 	timer.Create("SatmActive", 1, 1, function()
 		self.satmactive = true
 	end)
@@ -134,7 +136,7 @@ function SWEP:SecondaryAttack()
 		game.SetTimeScale(0.5)
 		net.Start("SATMStartSound")
 		net.Broadcast()
-		timer.Create("ResetSlow", satmduration:GetInt()*0.5 , 1, function() game.SetTimeScale(1) self.satmactive = false net.Start("SATMEndSound") net.Broadcast() end )
+		timer.Create("ResetSATMSlow", satmduration:GetInt()*0.5 , 1, function() game.SetTimeScale(1) self.satmactive = false net.Start("SATMEndSound") net.Broadcast() end )
 	end
 	self.Weapon:TakePrimaryAmmo(1)
 end
@@ -151,24 +153,27 @@ function SWEP:Reload()
 			game.SetTimeScale(1)
 			net.Start("SATMEndSound") net.Broadcast()
 			timer.Remove("SatmActive")
-			timer.Remove("ResetSlow")
-			timer.Remove("ResetFast")
+			timer.Remove("ResetSATMSlow")
+			timer.Remove("ResetSATMFast")
 		end
 	end
 end
-
 
 
 function SWEP:OnDrop()
 	BroadcastMsg("SATM: ", Color(255,255,255),"The Space and Time-Manipulator was destroyed and the time is back to normal again!")
 	if SERVER then
 		game.SetTimeScale(1)
+		net.Start("SATMEndSound") net.Broadcast()
+		timer.Remove("SatmActive")
+		timer.Remove("ResetSATMSlow")
+		timer.Remove("ResetSATMFast")
 		self:Remove()
 	end
 end
 
 if SERVER then
-hook.Add("TTTPrepareRound", "ResetFast", function() game.SetTimeScale(1) timer.Remove("ResetFast") timer.Remove("ResetSlow")  timer.Remove("SatmActive") end )
+hook.Add("TTTPrepareRound", "ResetSATM", function() game.SetTimeScale(1) timer.Remove("ResetSATMFast") timer.Remove("ResetSATMSlow")  timer.Remove("SatmActive") end )
 else
 	net.Receive("SATMStartSound", function()
 		surface.PlaySound("weapons/satm/sm_enter.wav")
