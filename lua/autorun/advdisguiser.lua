@@ -8,15 +8,6 @@ hook.Add("PostGamemodeLoaded", "TTTInitAdvDisguise", function()
       if CLIENT then
         local function AdvDisguiserInit()
 
-          if file.Exists("sh_spectator_deathmatch.lua", "LUA") then -- prevents SpecDM fix when SpecDM is not installed
-            if IsValid(ent) and ent:IsPlayer() then
-              local showalive = GetConVar("ttt_specdm_showaliveplayers")
-              if (ent:IsGhost() and not LocalPlayer():IsGhost()) or (not ent:IsGhost() and LocalPlayer():IsGhost() and not showalive:GetBool()) then
-                return -- when one player is a ghost, quit
-              end
-            end
-          end
-
           local GM = gmod.GetGamemode()
           local Player = debug.getregistry().Player
 
@@ -62,7 +53,7 @@ hook.Add("PostGamemodeLoaded", "TTTInitAdvDisguise", function()
                 end
               end
             end
-            
+
             Player.Nick = tmpNick
             Player.Name = tmpNick
             Player.GetName = tmpNick
