@@ -1,151 +1,5 @@
-if CLIENT then
-  surface.CreateFont("TTTPercentfont", {
-      font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-      extended = false,
-      size = 40,
-      outline = true,
-      antialias = false
-    })
-  net.Receive("TTTPercentMenu",function()
-      local leftpercent = LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage")
-      local frame = vgui.Create("DFrame")
-      frame:SetSize( 500,360 )
-      frame:Center()
-      frame:SetSizable(false)
-      frame:SetTitle( "" )
-      frame:SetVisible(true)
-      frame:SetDraggable( true )
-      frame:MakePopup()
-      frame:SetScreenLock(true)
-      frame:SetDeleteOnClose(true)
-      frame:ShowCloseButton(false)
-      frame.Paint = function(s,w,h)
-        draw.RoundedBox(5,0,0,w,h,Color(0,0,0))
-        draw.RoundedBox(5,4,4,w-8,h-8,Color(70,70,70))
-      end
-
-      local DLabel = vgui.Create("DLabel",frame)
-      DLabel:SetPos(frame:GetWide() / 2 - 25, frame:GetTall() / 1.5 - 50)
-      DLabel:SetText( leftpercent .. "% Übrig." )
-      DLabel:SetSize(100,100)
-      DLabel:SetTextColor(COLOR_BLACK)
-
-      local DLabel2 = vgui.Create("DLabel",frame)
-      DLabel2:SetPos(frame:GetWide() / 2 - 100, frame:GetTall() / 2 - 225)
-      DLabel2:SetText( "TTT Prozent" )
-      DLabel2:SetSize(200,300)
-      DLabel2:SetTextColor(Color(255,50,50))
-      DLabel2:SetFont("TTTPercentfont")
-
-      local DComboBox = vgui.Create( "DComboBox", frame )
-      DComboBox:SetSize( 100, 20 )
-      DComboBox:SetPos(100, frame:GetTall() / 2 - 10)
-      DComboBox:SetValue( "Spieler" )
-      for k,v in pairs(player.GetAll()) do
-        if !v:IsBot()
-        --and v != LocalPlayer()
-        then
-          DComboBox:AddChoice(v:Nick(), v:SteamID())
-        end
-      end
-      DComboBox.OnSelect = function( panel, index, value, data )
-      end
-
-      local Slider = vgui.Create("DNumSlider",frame)
-      Slider:SetSize( 200, 100 )
-      Slider:SetPos(frame:GetWide() - 250, frame:GetTall() / 2-50)
-      Slider:SetText( "Prozent" )
-      Slider:SetMin( 1 )
-      Slider:SetMax( 100 )
-      Slider:SetDecimals( 0 )
-      Slider:SetValue(25)
-      local DButton2 = vgui.Create("DButton",frame)
-      DButton2:SetText( "Schließen" )
-      DButton2:SetSize( 125, 30 )
-      DButton2:SetPos(frame:GetWide() / 2 - 150, frame:GetTall() - 50)
-      DButton2.DoClick = function()
-        frame:Close()
-      end
-
-      local DButton = vgui.Create("DButton",frame)
-      DButton:SetText( "Setzen" )
-      DButton:SetSize( 125, 30 )
-      DButton:SetPos(frame:GetWide() / 2 + 25, frame:GetTall() - 50)
-
-      DButton.DoClick = function()
-
-        local nick,steamid = DComboBox:GetSelected()
-        local percent = math.Round(Slider:GetValue())
-
-        if isstring(steamid) and steamid != "NULL" then
-          local ply = player.GetBySteamID(steamid)
-          if ply:GetNWInt("PercentCounter") < 100 then
-            if percent <= leftpercent then
-              net.Start("TTTPlacedPercent")
-              net.WriteInt(percent,12)
-              net.WriteEntity(ply)
-              net.SendToServer()
-            else
-              net.Start("TTTPlacedPercent")
-              net.WriteInt(leftpercent,12)
-              net.WriteEntity(ply)
-              net.SendToServer()
-            end
-          else
-            chat.AddText("TTT Prozent: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
-            chat.PlaySound()
-          end
-        elseif !IsValid(nick) then
-          chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keinen Spieler ausgewählt.")
-          chat.PlaySound()
-        end
-        frame:Close()
-      end
-
-    end )
-
-  net.Receive("TTTPercentMessage",function()
-      local percent = net.ReadInt(8)
-      local sender = net.ReadEntity()
-      local target = net.ReadEntity()
-      local totalpercent = target:GetNWInt("PercentCounter") + percent
-      if totalpercent < 100 then
-        chat.AddText("TTT Prozent: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " hat " .. percent .. "% auf ", COLOR_RED, target:Nick(), COLOR_WHITE, " gesetzt. (" ,COLOR_BLUE, 100 - totalpercent .. "%", COLOR_WHITE, " bis zum freien Abschuss.)")
-      else
-        chat.AddText("TTT Prozent: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " die letzten Prozente gesetzt hat!")
-        PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
-      end
-      chat.PlaySound()
-    end)
-
-  function PrintCenteredKOSText(txt,delay,color)
-    if hook.GetTable()["TTTPercentKOS"] then
-      hook.Remove("HUDPaint", "TTTPercentKOS")
-      hook.Add("HUDPaint", "TTTPercentKOS", function() draw.SimpleText(txt,"TTTPercentfont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
-      timer.Adjust("RemoveTTTPercentKOS",delay , 1, function() hook.Remove("HUDPaint", "TTTPercentKOS") hook.Remove("TTTPrepareRound", "TTTRemovePercent") hook.Remove("TTTEndRound", "TTTRemovePercent") end)
-    else
-      hook.Add("HUDPaint", "TTTPercentKOS", function() draw.SimpleText(txt,"TTTPercentfont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
-      hook.Add("TTTPrepareRound", "TTTRemovePercent", function() hook.Remove("HUDPaint", "TTTPercentKOS") end)
-      hook.Add("TTTEndRound", "TTTRemovePercent", function() hook.Remove("HUDPaint", "TTTPercentKOS") end)
-      timer.Create("RemoveTTTPercentKOS",delay , 1, function() hook.Remove("HUDPaint", "TTTPercentKOS") hook.Remove("TTTPrepareRound", "TTTRemovePercent") hook.Remove("TTTEndRound", "TTTRemovePercent") end)
-    end
-  end
-
-  net.Receive("TTTPercentFailed",function()
-      chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keine Prozente zum setzen!")
-      chat.PlaySound()
-    end)
-  net.Receive("TTTResetPercent",function()
-      local all = net.ReadBool()
-      if all then
-        chat.AddText("TTT Prozent: ", COLOR_WHITE, "Alle Prozente wurden zurückgesetzt!")
-      else
-        chat.AddText("TTT Prozent: ", COLOR_WHITE, "Alle deine Prozente wurden von einem Admin zurückgesetzt!")
-      end
-      chat.PlaySound()
-    end)
-
-elseif SERVER then
+if SERVER then
+  CreateConVar("ttt_startpercent"," 150",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Prozentzahl mit der jeder startet.")
   TTTPercent = {}
   TTTPercent.percentbetters = {}
   AddCSLuaFile()
@@ -209,14 +63,14 @@ elseif SERVER then
     end
   end
 
-  function TTTPercent.SetPercent(ply,percent, steamid)
+  function TTTPercent.SetPercent(ply,percent)
     ply:SetNWInt("PlayerPercentage",percent)
     util.SetPData(ply:SteamID(),"percent_stored",percent)
   end
 
   function TTTPercent.ResetPercent(ply)
     ply:SetNWInt("PercentCounter",0)
-    TTTPercent.SetPercent(ply,150)
+    TTTPercent.SetPercent(ply, GetConVar("ttt_startpercent"):GetInt())
     ply:SetNWInt("UsedPercentage", 0)
     for key,v in pairs(player.GetAll()) do
       ply:SetNWInt("UsedPercentageontarget" .. v:SteamID(), 0)
@@ -225,8 +79,26 @@ elseif SERVER then
 
   function TTTPercent.InitPercent(ply)
     if IsValid(ply) then
-      TTTPercent.SetPercent(ply,ply:GetPData("percent_stored",150))
+      if ply:GetPData("percent_stored_date") == nil then
+        TTTPercent.SetDate(ply)
+        TTTPercent.SetPercent(ply, GetConVar("ttt_startpercent"):GetInt())
+      end
+      TTTPercent.InitPercentviaDate(ply, ply:GetPData("percent_stored_date"))
     end
+  end
+
+  function TTTPercent.InitPercentviaDate(ply, date)
+    local currentdate = os.date("%d/%m/%Y",os.time())
+    if date != currentdate then
+      TTTPercent.SetPercent(ply, GetConVar("ttt_startpercent"):GetInt())
+      TTTPercent.SetDate(ply , currentdate)
+    else
+      TTTPercent.SetPercent(ply,ply:GetPData("percent_stored"))
+    end
+  end
+
+  function TTTPercent.SetDate(ply , date)
+    ply:SetPData("percent_stored_date", date)
   end
 
   function TTTPercent.ResetPercentforEveryOne( ply, cmd, args )
@@ -241,7 +113,7 @@ elseif SERVER then
   end
 
   function TTTPercent.ResetPercentforOnePlayer(ply, cmd, args)
-    if (!IsValid(ply)) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0) then
+    if (!IsValid(ply) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0)) and args[1] != nil then
       local _match = NULL;
       for k, v in pairs( player.GetAll( ) ) do
         local _find = string.find( string.lower( v:Nick( ) ), string.lower( args[ 1 ] ) ); -- Returns nil if pattern not found, otherwise it returns index or so: [url]http://maurits.tv/data/garrysmod/wiki/wiki.garrysmod.com/index15fa.html[/url]
@@ -253,10 +125,12 @@ elseif SERVER then
         end
       end
       local pl = _match
-      TTTPercent.ResetPercent(pl)
-      net.Start("TTTResetPercent")
-      net.WriteBool(false)
-      net.Send(pl)
+      if IsValid(pl) then
+        TTTPercent.ResetPercent(pl)
+        net.Start("TTTResetPercent")
+        net.WriteBool(false)
+        net.Send(pl)
+      end
     end
   end
 
@@ -313,6 +187,151 @@ elseif SERVER then
   net.Receive("TTTPlacedPercent", TTTPercent.CalculatePercent)
   hook.Add("PlayerDisconnected","TTTSavePercentage", TTTPercent.SavePercent)
   hook.Add("TTTPrepareRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
+  hook.Add("TTTPrepareRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
   hook.Add("TTTEndRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
   hook.Add("ShutDown", "TTTSavePercentage", TTTPercent.SavePercentAll)
+elseif CLIENT then
+    surface.CreateFont("TTTPercentfont", {
+        font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+        extended = false,
+        size = 40,
+        outline = true,
+        antialias = false
+      })
+    net.Receive("TTTPercentMenu",function()
+        local leftpercent = LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage")
+        local frame = vgui.Create("DFrame")
+        frame:SetSize( 500,360 )
+        frame:Center()
+        frame:SetSizable(false)
+        frame:SetTitle( "" )
+        frame:SetVisible(true)
+        frame:SetDraggable( true )
+        frame:MakePopup()
+        frame:SetScreenLock(true)
+        frame:SetDeleteOnClose(true)
+        frame:ShowCloseButton(false)
+        frame.Paint = function(s,w,h)
+          draw.RoundedBox(5,0,0,w,h,Color(0,0,0))
+          draw.RoundedBox(5,4,4,w-8,h-8,Color(70,70,70))
+        end
+
+        local DLabel = vgui.Create("DLabel",frame)
+        DLabel:SetPos(frame:GetWide() / 2 - 25, frame:GetTall() / 1.5 - 50)
+        DLabel:SetText( leftpercent .. "% Übrig." )
+        DLabel:SetSize(100,100)
+        DLabel:SetTextColor(COLOR_BLACK)
+
+        local DLabel2 = vgui.Create("DLabel",frame)
+        DLabel2:SetPos(frame:GetWide() / 2 - 100, frame:GetTall() / 2 - 225)
+        DLabel2:SetText( "TTT Prozent" )
+        DLabel2:SetSize(200,300)
+        DLabel2:SetTextColor(Color(255,50,50))
+        DLabel2:SetFont("TTTPercentfont")
+
+        local DComboBox = vgui.Create( "DComboBox", frame )
+        DComboBox:SetSize( 100, 20 )
+        DComboBox:SetPos(100, frame:GetTall() / 2 - 10)
+        DComboBox:SetValue( "Spieler" )
+        for k,v in pairs(player.GetAll()) do
+          if !v:IsBot() and v != LocalPlayer() then
+            DComboBox:AddChoice(v:Nick(), v:SteamID())
+          end
+        end
+        DComboBox.OnSelect = function( panel, index, value, data )
+        end
+
+        local Slider = vgui.Create("DNumSlider",frame)
+        Slider:SetSize( 200, 100 )
+        Slider:SetPos(frame:GetWide() - 250, frame:GetTall() / 2-50)
+        Slider:SetText( "Prozent" )
+        Slider:SetMin( 1 )
+        Slider:SetMax( 100 )
+        Slider:SetDecimals( 0 )
+        Slider:SetValue(25)
+        local DButton2 = vgui.Create("DButton",frame)
+        DButton2:SetText( "Schließen" )
+        DButton2:SetSize( 125, 30 )
+        DButton2:SetPos(frame:GetWide() / 2 - 150, frame:GetTall() - 50)
+        DButton2.DoClick = function()
+          frame:Close()
+        end
+
+        local DButton = vgui.Create("DButton",frame)
+        DButton:SetText( "Setzen" )
+        DButton:SetSize( 125, 30 )
+        DButton:SetPos(frame:GetWide() / 2 + 25, frame:GetTall() - 50)
+
+        DButton.DoClick = function()
+
+          local nick,steamid = DComboBox:GetSelected()
+          local percent = math.Round(Slider:GetValue())
+
+          if isstring(steamid) and steamid != "NULL" then
+            local ply = player.GetBySteamID(steamid)
+            if ply:GetNWInt("PercentCounter") < 100 then
+              if percent <= leftpercent then
+                net.Start("TTTPlacedPercent")
+                net.WriteInt(percent,12)
+                net.WriteEntity(ply)
+                net.SendToServer()
+              else
+                net.Start("TTTPlacedPercent")
+                net.WriteInt(leftpercent,12)
+                net.WriteEntity(ply)
+                net.SendToServer()
+              end
+            else
+              chat.AddText("TTT Prozent: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+              chat.PlaySound()
+            end
+          elseif !IsValid(nick) then
+            chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keinen Spieler ausgewählt.")
+            chat.PlaySound()
+          end
+          frame:Close()
+        end
+
+      end )
+
+    net.Receive("TTTPercentMessage",function()
+        local percent = net.ReadInt(8)
+        local sender = net.ReadEntity()
+        local target = net.ReadEntity()
+        local totalpercent = target:GetNWInt("PercentCounter") + percent
+        if totalpercent < 100 then
+          chat.AddText("TTT Prozent: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " hat " .. percent .. "% auf ", COLOR_RED, target:Nick(), COLOR_WHITE, " gesetzt. (" ,COLOR_BLUE, 100 - totalpercent .. "%", COLOR_WHITE, " bis zum freien Abschuss.)")
+        else
+          chat.AddText("TTT Prozent: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " die letzten Prozente gesetzt hat!")
+          PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
+        end
+        chat.PlaySound()
+      end)
+
+    function PrintCenteredKOSText(txt,delay,color)
+      if hook.GetTable()["TTTPercentKOS"] then
+        hook.Remove("HUDPaint", "TTTPercentKOS")
+        hook.Add("HUDPaint", "TTTPercentKOS", function() draw.SimpleText(txt,"TTTPercentfont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
+        timer.Adjust("RemoveTTTPercentKOS",delay , 1, function() hook.Remove("HUDPaint", "TTTPercentKOS") hook.Remove("TTTPrepareRound", "TTTRemovePercent") hook.Remove("TTTEndRound", "TTTRemovePercent") end)
+      else
+        hook.Add("HUDPaint", "TTTPercentKOS", function() draw.SimpleText(txt,"TTTPercentfont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
+        hook.Add("TTTPrepareRound", "TTTRemovePercent", function() hook.Remove("HUDPaint", "TTTPercentKOS") end)
+        hook.Add("TTTEndRound", "TTTRemovePercent", function() hook.Remove("HUDPaint", "TTTPercentKOS") end)
+        timer.Create("RemoveTTTPercentKOS",delay , 1, function() hook.Remove("HUDPaint", "TTTPercentKOS") hook.Remove("TTTPrepareRound", "TTTRemovePercent") hook.Remove("TTTEndRound", "TTTRemovePercent") end)
+      end
+    end
+
+    net.Receive("TTTPercentFailed",function()
+        chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keine Prozente zum setzen!")
+        chat.PlaySound()
+      end)
+    net.Receive("TTTResetPercent",function()
+        local all = net.ReadBool()
+        if all then
+          chat.AddText("TTT Prozent: ", COLOR_WHITE, "Alle Prozente wurden zurückgesetzt!")
+        else
+          chat.AddText("TTT Prozent: ", COLOR_WHITE, "Alle deine Prozente wurden von einem Admin zurückgesetzt!")
+        end
+        chat.PlaySound()
+      end)
 end
