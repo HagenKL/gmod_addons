@@ -45,16 +45,16 @@ if CLIENT then
 
    SWEP.PrintName    = "SATM"
    SWEP.Slot         = 7
-   
+
    SWEP.ViewModelFOV  = 70
    SWEP.ViewModelFlip = false
-   
+
       SWEP.Icon = "VGUI/ttt/icon_satm"
       SWEP.EquipMenuData = {
       type = "weapon",
       desc = "The Space and Time-Manipulator! Short SATM!\nWith Leftclick you make everything faster. \nWith Rightclick you make everything slower. \nWith Reload you set everything back how it was."
    };
-   net.Receive("ColoredMessage",function(len) 
+   net.Receive("ColoredMessage",function(len)
 	local msg = net.ReadTable()
 	chat.AddText(unpack(msg))
 	chat.PlaySound()
@@ -110,12 +110,12 @@ function SWEP:PrimaryAttack()
 	timer.Create("SatmActive", 3, 1, function()
 		self.satmactive = true
 	end)
-	timer.Simple(0.5,function() self.Weapon:SendWeaponAnim(ACT_VM_IDLE) end)
+	timer.Simple(0.5,function() if IsValid(self) then self.Weapon:SendWeaponAnim(ACT_VM_IDLE) end end)
 	if SERVER then
 		game.SetTimeScale(1.5)
 		net.Start("SATMStartSound")
 		net.Broadcast()
-		timer.Create("ResetFast", satmduration:GetInt()*1.5, 1, function() game.SetTimeScale(1) net.Start("SATMEndSound") net.Broadcast() end )
+		timer.Create("ResetFast", satmduration:GetInt()*1.5, 1, function() game.SetTimeScale(1) self.satmactive = false net.Start("SATMEndSound") net.Broadcast() end )
 	end
 	self.Weapon:TakePrimaryAmmo(1)
 end
@@ -129,12 +129,12 @@ function SWEP:SecondaryAttack()
 	timer.Create("SatmActive", 1, 1, function()
 		self.satmactive = true
 	end)
-	timer.Simple(0.5,function() self.Weapon:SendWeaponAnim(ACT_VM_IDLE) end)
+	timer.Simple(0.5,function() if IsValid(self) then self.Weapon:SendWeaponAnim(ACT_VM_IDLE) end end)
 	if SERVER then
 		game.SetTimeScale(0.5)
 		net.Start("SATMStartSound")
 		net.Broadcast()
-		timer.Create("ResetSlow", satmduration:GetInt()*0.5 , 1, function() game.SetTimeScale(1) net.Start("SATMEndSound") net.Broadcast() end )
+		timer.Create("ResetSlow", satmduration:GetInt()*0.5 , 1, function() game.SetTimeScale(1) self.satmactive = false net.Start("SATMEndSound") net.Broadcast() end )
 	end
 	self.Weapon:TakePrimaryAmmo(1)
 end
