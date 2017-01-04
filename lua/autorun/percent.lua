@@ -267,7 +267,7 @@ elseif CLIENT then
           local nick,steamid = DComboBox:GetSelected()
           local percent = math.Round(Slider:GetValue())
 
-          if isstring(steamid) and steamid != "NULL" then
+          if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
             local ply = player.GetBySteamID(steamid)
             if ply:GetNWInt("PercentCounter") < 100 then
               if percent <= leftpercent then
