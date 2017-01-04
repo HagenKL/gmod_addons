@@ -204,7 +204,6 @@ if SERVER then
       ply:DRuncloak()
     end
   end
-
   hook.Add("KeyPress", "DRUncloaking", UncloakKey)
   hook.Add("PlayerSpawn", "DRSpawnReset", DRSpawnReset )
   hook.Add("TTTPrepareRound", "DRRoundreset", DRRoundreset)
@@ -291,8 +290,8 @@ if SERVER then
     net.Send(self)
     self:SetNWBool("DRDead", true)
     self:SetNWInt("DRStatus", 3)
-    self:SetColor(Color(255,255,255,0))
-    self:SetMaterial( "models/effects/vol_light001" )
+    self:SetColor(Color(0,0,0,0))
+    --self:SetMaterial( "models/effects/vol_light001" )
     self:SetRenderMode( RENDERMODE_TRANSALPHA )
     self:DrawShadow( false )
     self:Flashlight( false )
@@ -391,7 +390,7 @@ if SERVER then
     self:DrawShadow( true )
     self:SetMaterial( "" )
     self:SetRenderMode( RENDERMODE_NORMAL )
-    self:Fire( "alpha", 255, 0 )
+    --self:Fire( "alpha", 255, 0 )
     self:SetColor(Color(255,255,255,255))
     self:SetNoDraw(false)
     self:SetNWInt("DRCharge", 0)
@@ -418,7 +417,7 @@ if SERVER then
 end
 if (CLIENT) then
   function DRHidePlayer(ply)
-    if ply:GetNWInt("DRStatus") == 3 then
+    if ply:GetNWInt("DRDead") then
       if ply:GetNWBool("body_found", false) then
         return GROUP_FOUND
       else
@@ -444,4 +443,15 @@ if (CLIENT) then
         LocalPlayer():GetViewModel():SetMaterial("models/weapons/v_crowbar.mdl")
       end
     end)
+
+
+    -- making the targetid invisible.
+  /*function DROverrideTargetID()
+
+    local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
+    local ent = trace.Entity
+    if IsValid(ent) and IsPlayer(ent) and ent:GetNWInt("DRDead") then return false end
+
+  end
+  hook.Add("HUDDrawTargetID", "DRoverride", DROverrideTargetID)*/
 end

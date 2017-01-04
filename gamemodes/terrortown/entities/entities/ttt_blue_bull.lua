@@ -1,30 +1,8 @@
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("653258161")
-	local PLAYER = FindMetaTable("Player")
-	util.AddNetworkString( "ColoredMessage" )
-		function BroadcastMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Broadcast()
-	end
-
-	function PLAYER:PlayerMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Send(self)
-	end
 end
 
-if CLIENT then
-	net.Receive("ColoredMessage",function(len) 
-		local msg = net.ReadTable()
-		chat.AddText(unpack(msg))
-		chat.PlaySound()
-	end)
-end
 local function getNextFreeID()
 	local freeID, i = 1, 1
 	while (freeID == 1) do
@@ -91,9 +69,9 @@ hook.Add("SetupMove", "Multi Jump", function(ply, mv)
 		-- Let the engine handle movement from the ground
 		if ply:OnGround() then
 			ply:SetNWInt("JumpLevel", 0)
-			
+
 			return
-		end	
+		end
 
 		-- Don't do anything if not jumping
 		if not mv:KeyPressed(IN_JUMP) then
@@ -124,7 +102,7 @@ if SERVER then
 			ply:SetNWInt("MaxJumpLevel", 2)
 			ply:SetNWInt("JumpLevel", 0)
 			ply.BoughtBlueBull = true
-		end  
+		end
 	end )
 	hook.Add("TTTPlayerSpeed", "BlueBullSpeed" , function(ply)
 			if ply:HasEquipmentItem(EQUIP_BLUE_BULL) and !ply:GetNWBool("DRDead") and !ply:GetActiveWeapon() == "weapon_ttt_homebat" and !ply:GetNWBool("ItsHighNoon") and !ply:GetNWBool("ItsHighNoonshooting") and !ply.RandomatSuperSpeed and !ply.RandomatSpeed then
@@ -136,7 +114,7 @@ if SERVER then
 			dmg:ScaleDamage(0.75)  -- reduce the fall damage a bit
 		end
 	end)
-	hook.Add( "TTTPrepareRound", "TTTBlueBull", function() 
+	hook.Add( "TTTPrepareRound", "TTTBlueBull", function()
 		for k, v in pairs(player.GetAll()) do
 			v:SetJumpPower(160)
 			v:SetNWInt("JumpLevel", 0)
@@ -144,7 +122,13 @@ if SERVER then
 			v.BoughtBlueBull = false
 		end
 	end)
-	hook.Add("PlayerDeath", "TTTBlueBull2", function(ply) 
+	hook.Add("PlayerDeath", "TTTBlueBull2", function(ply)
+		if ply.BoughtBlueBull then
+			ply.BoughtBlueBull = false
+			ply:SetJumpPower(160)
+		end
+	end)
+	hook.Add("PlayerSpawn", "TTTBlueBull2", function(ply)
 		if ply.BoughtBlueBull then
 			ply.BoughtBlueBull = false
 			ply:SetJumpPower(160)
@@ -183,6 +167,4 @@ if SERVER then
 				surface.DrawTexturedRect(20, yCoordinate, 64, 64)
 			end
 		end)
-end  
-
-
+end
