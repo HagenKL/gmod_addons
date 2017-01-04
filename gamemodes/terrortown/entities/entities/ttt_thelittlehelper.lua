@@ -154,7 +154,7 @@ if SERVER then
 			end)
 	end
 	function plymeta:ReloadTLH()
-		timer.Create("TLHReload" .. self:EntIndex(), 15 ,1, function()
+		timer.Create("TLHReload" .. self:EntIndex(), 30 ,1, function()
 				if self:IsValid() and self:IsTerror() then
 					self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is ready again!")
 					net.Start("TLHReloaded")
@@ -163,7 +163,7 @@ if SERVER then
 				end
 			end)
 	end
-	function TLHOwnerGetsDamage(ent,dmginfo)
+	/*function TLHOwnerGetsDamage(ent,dmginfo)
 		if ent:IsValid() and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_TLH) and ent.TLHInvincible == true then
 			return true
 		elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
@@ -172,7 +172,7 @@ if SERVER then
 			return true
 		end
 	end
-	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)
+	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)*/
 end
 hook.Add( "Think", "TTTTLH", tlhthink)
 
