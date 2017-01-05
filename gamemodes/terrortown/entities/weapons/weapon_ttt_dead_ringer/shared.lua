@@ -119,7 +119,7 @@ end
 function DRThink()
   if SERVER then
     for _, ply in pairs(player.GetAll()) do
-      if ply:IsValid() and !ply:GetNWBool("DRDead") and ply:GetNWInt("DRStatus") == 4 then
+      if ply:IsValid() and !ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 4 then
         if ply:GetNWInt("DRCharge") < 8 then
           ply.drtimer = ply.drtimer or CurTime() + 0.1
           if CurTime() > ply.drtimer then
@@ -131,7 +131,7 @@ function DRThink()
           net.Start("TTT_DeadRingerSound")
           net.Send(ply)
         end
-      elseif ply:IsValid() and ply:GetNWBool("DRDead") and ply:GetNWInt("DRStatus") == 3 then
+      elseif ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
         for _, v in pairs(ply:GetWeapons()) do
           v:SetNextPrimaryFire(CurTime() + 0.2)
           v:SetNextSecondaryFire(CurTime() + 0.2)
@@ -156,7 +156,7 @@ if SERVER then
   function DROwnerGetsDamage(ent,dmginfo)
     if ent:IsPlayer() then
       local ply = ent
-      if ply:GetNWBool("DRDead") == false and ply:GetNWInt("DRStatus") == 1 then
+      if !ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 1 then
         if dmginfo:GetDamage() >= 2 and dmginfo:GetDamage() < ent:Health() then
           ply:DRfakedeath(dmginfo)
         elseif ply:IsOnFire() then
@@ -167,7 +167,7 @@ if SERVER then
   end
 
   function ResetDR(ply, attacker)
-    if ply:IsValid() and ply:GetNWBool("DRDead") and ply:GetNWInt("DRStatus") == 3 then
+    if ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
       ply:DRuncloak()
     end
     ply:SetNWInt("DRStatus",0)
@@ -189,7 +189,7 @@ if SERVER then
   end
 
   function DRSpawnReset( ply )
-    if ply:GetNWBool("DRDead") then
+    if ply:IsFakeDead() then
       ply:GetViewModel():SetMaterial("")
       ply:SetMaterial("")
       ply:SetColor(255,255,255,255)
@@ -199,12 +199,13 @@ if SERVER then
     ply:SetNWInt("DRCharge", 8 )
   end
 
-  function UncloakKey( ply, key )
-    if ply:IsValid() and ply:GetNWBool("DRDead") and ply:GetNWInt("DRStatus") == 3 and key == IN_ATTACK2 then
+  function DRUncloakKey( ply, key )
+    if ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 and key == IN_ATTACK2 then
       ply:DRuncloak()
     end
   end
-  hook.Add("KeyPress", "DRUncloaking", UncloakKey)
+
+  hook.Add("KeyPress", "DRUncloaking", DRUncloakKey)
   hook.Add("PlayerSpawn", "DRSpawnReset", DRSpawnReset )
   hook.Add("TTTPrepareRound", "DRRoundreset", DRRoundreset)
   hook.Add("EntityTakeDamage", "DROwnergetsdamage", DROwnerGetsDamage)
@@ -212,16 +213,25 @@ if SERVER then
 end
 
 function DRFootstepsDisable( ply )
-  if ply:Alive() and ply:IsValid() and ply:GetNWBool("DRDead") == true and ply:GetNWInt("DRStatus") == 3 then
+  if ply:Alive() and ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
     return true
   end
 end
 
 hook.Add("PlayerFootstep","DeadRingerFootsteps",DRFootstepsDisable)
+
+-------------------------------------------------------------------------------
+
+-- function to test if the player is fakedead
+local plymeta = FindMetaTable( "Player" );
+function plymeta:IsFakeDead()
+  return self:GetNWInt("DRDead", false)
+end
+
 -------------------------------------------------------------------------------
 
 function SWEP:PrimaryAttack()
-  if self.Owner:GetNWBool("DRDead") == false and self.Owner:GetNWInt("DRStatus") != 1 and self.Owner:GetNWInt("DRStatus") != 4 then
+  if !self.Owner:IsFakeDead() and self.Owner:GetNWInt("DRStatus") != 1 and self.Owner:GetNWInt("DRStatus") != 4 then
     self.Owner:SetNWInt("DRStatus",1)
     self:EmitSound("buttons/blip1.wav", 100, 100, 1, CHAN_AUTO)
     if self.Owner:GetNWInt("DRCharge") < 8 then
@@ -233,7 +243,7 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-  if self.Owner:GetNWBool("DRDead") == false and self.Owner:GetNWInt("DRStatus") != 2 then
+  if !self.Owner:IsFakeDead() and self.Owner:GetNWInt("DRStatus") != 2 then
     self.Owner:SetNWInt("DRStatus",2)
     self:EmitSound("buttons/blip1.wav", 100, 73, 1, CHAN_AUTO)
   else
@@ -245,7 +255,7 @@ function SWEP:PreDrop()
   if SERVER then
     local ply = self.Owner
     if IsValid(ply) then
-      if ply:GetNWBool("DRDead") == true then
+      if ply:IsFakeDead() then
         self.Owner:DRuncloak()
       end
       ply:SetNWInt("DRStatus",0)
@@ -280,8 +290,6 @@ local deathsounds = {
   Sound("hostage/hpain/hpain6.wav")
 };
 
-local plymeta = FindMetaTable( "Player" );
-
 -- Mostly code from TTT itself, to keep the bodys similar.
 if SERVER then
   function plymeta:DRfakedeath(dmginfo)
@@ -290,13 +298,15 @@ if SERVER then
     net.Send(self)
     self:SetNWBool("DRDead", true)
     self:SetNWInt("DRStatus", 3)
-    self:SetColor(Color(0,0,0,0))
-    self:SetMaterial( "models/effects/vol_light001" )
-    self:SetRenderMode( RENDERMODE_TRANSALPHA )
+    self:SetBloodColor(DONT_BLEED)
+    --self:SetColor(Color(0,0,0,0))
+    --self:SetMaterial( "models/effects/vol_light001" )
+    --self:SetRenderMode( RENDERMODE_TRANSALPHA )
     self:DrawShadow( false )
     self:Flashlight( false )
     self:AllowFlashlight(false)
     self:SetFOV(0, 0.2)
+    self:SetNoDraw(true)
     local ownerwep = self:GetActiveWeapon()
     if ownerwep.Base == "weapon_tttbase" then
       ownerwep:SetIronsights(false)
@@ -388,13 +398,14 @@ if SERVER then
     self:SetNWInt("DRStatus",4)
     self:GetViewModel():SetMaterial("")
     self:DrawShadow( true )
-    self:SetMaterial( "" )
-    self:SetRenderMode( RENDERMODE_NORMAL )
-    self:Fire( "alpha", 255, 0 )
-    self:SetColor(Color(255,255,255,255))
-    self:SetNoDraw(false)
+    self:SetBloodColor(BLOOD_COLOR_RED)
+    --self:SetMaterial( "" )
+    --self:SetRenderMode( RENDERMODE_NORMAL )
+    --self:Fire( "alpha", 255, 0 )
+    --self:SetColor(Color(255,255,255,255))
     self:SetNWInt("DRCharge", 0)
     self:AllowFlashlight(true)
+    self:SetNoDraw(false)
 
     self:DrawWorldModel(true)
 
@@ -417,7 +428,7 @@ if SERVER then
 end
 if (CLIENT) then
   function DRHidePlayer(ply)
-    if ply:GetNWInt("DRDead") then
+    if ply:IsFakeDead() then
       if ply:GetNWBool("body_found", false) then
         return GROUP_FOUND
       else
@@ -444,13 +455,12 @@ if (CLIENT) then
       end
     end)
 
-
     -- making the targetid invisible.
   /*function DROverrideTargetID()
 
     local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
     local ent = trace.Entity
-    if IsValid(ent) and IsPlayer(ent) and ent:GetNWInt("DRDead") then return false end
+    if IsValid(ent) and IsPlayer(ent) and ent:IsFakeDead() then return false end
 
   end
   hook.Add("HUDDrawTargetID", "DRoverride", DROverrideTargetID)*/
