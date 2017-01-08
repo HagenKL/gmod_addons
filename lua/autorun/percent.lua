@@ -1,7 +1,7 @@
 if SERVER then
   CreateConVar("ttt_startpercent"," 150",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Prozentzahl mit der jeder startet.")
-  TTTPercent = {}
-  TTTPercent.percentbetters = {}
+  TTTPercent = TTTPercent or {}
+  TTTPercent.percentbetters = TTTPercent.percentbetters or {}
   AddCSLuaFile()
   util.AddNetworkString("TTTPercentMenu")
   util.AddNetworkString("TTTPercentFailed")
@@ -11,7 +11,7 @@ if SERVER then
   function TTTPercent.GetPercentMessage(sender, text, teamchat)
     local msg = string.lower(text)
     if string.sub(msg,1,8) == "!prozent" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
-      if sender:GetNWInt("UsedPercentage",0) > 0 then
+      if sender:GetNWInt("UsedPercentage",0) <= 0 then
         if sender:GetNWInt("PlayerPercentage") - sender:GetNWInt("UsedPercentage") >= 1 then
           net.Start("TTTPercentMenu")
           net.Send(sender)
@@ -64,9 +64,9 @@ if SERVER then
         ply:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") - (totalpercent - 100) )
         for k,v in pairs(TTTPercent.percentbetters[target:SteamID()]) do
           TTTPercent.SetPercent(ply,v:GetNWInt("PlayerPercentage") - v:GetNWInt("UsedPercentageontarget " .. target:SteamID()))
-          v:SetNWInt("UsedPercentage", v:GetNWInt("UsedPercentage") - v:GetNWInt("UsedPercentageontarget " .. target:SteamID()))
           v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
         end
+        table.Empty(TTTPercent.percentbetters[target:SteamID()])
       end
     end
   end
@@ -76,19 +76,23 @@ if SERVER then
     util.SetPData(ply:SteamID(),"percent_stored",percent)
   end
 
-  function TTTPercent.ResetPercent(ply)
-    ply:SetNWInt("PercentCounter",0)
+  function TTTPercent.ResetPercent(ply, reset)
     TTTPercent.SetPercent(ply, GetConVar("ttt_startpercent"):GetInt())
+    ply:SetNWInt("PercentCounter",0)
     ply:SetNWInt("UsedPercentage", 0)
     for key,v in pairs(player.GetAll()) do
       ply:SetNWInt("UsedPercentageontarget" .. v:SteamID(), 0)
+    end
+    if reset then
+      table.Empty(TTTPercent.percentbetters[ply:SteamID()])
     end
   end
 
   function TTTPercent.InitPercent(ply)
     if IsValid(ply) then
+      local currentdate = os.date("%d/%m/%Y",os.time())
       if ply:GetPData("percent_stored_date") == nil then
-        TTTPercent.SetDate(ply)
+        TTTPercent.SetDate(ply , currentdate)
         TTTPercent.SetPercent(ply, GetConVar("ttt_startpercent"):GetInt())
       end
       TTTPercent.InitPercentviaDate(ply, ply:GetPData("percent_stored_date"))
@@ -112,8 +116,9 @@ if SERVER then
   function TTTPercent.ResetPercentforEveryOne( ply, cmd, args )
     if (!IsValid(ply)) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0) then
       for k,v in pairs(player.GetAll()) do
-        TTTPercent.ResetPercent(v)
+        TTTPercent.ResetPercent(v, false)
       end
+      table.Empty(TTTPercent.percentbetters)
       net.Start("TTTResetPercent")
       net.WriteBool(true)
       net.Broadcast()
@@ -134,7 +139,7 @@ if SERVER then
       end
       local pl = _match
       if IsValid(pl) then
-        TTTPercent.ResetPercent(pl)
+        TTTPercent.ResetPercent(pl, true)
         net.Start("TTTResetPercent")
         net.WriteBool(false)
         net.Send(pl)
@@ -293,7 +298,7 @@ elseif CLIENT then
             chat.AddText("TTT Prozent: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
             chat.PlaySound()
           end
-        elseif !IsValid(nick) then
+        elseif nick == "" or !nick then
           chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keinen Spieler ausgewählt.")
           chat.PlaySound()
         end
