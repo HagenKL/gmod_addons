@@ -247,7 +247,7 @@ elseif CLIENT then
       DComboBox:SetPos(100, frame:GetTall() / 2 - 10)
       DComboBox:SetValue( "Spieler" )
       for k,v in pairs(player.GetAll()) do
-        if !v:IsBot() and v != LocalPlayer() then
+        if !v:IsBot() and v != LocalPlayer() and !v:GetDetective() then
           DComboBox:AddChoice(v:Nick(), v:SteamID())
         end
       end
