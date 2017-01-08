@@ -163,16 +163,16 @@ if SERVER then
 				end
 			end)
 	end
-	/*function TLHOwnerGetsDamage(ent,dmginfo)
+	function TLHOwnerGetsDamage(ent,dmginfo)
 		if ent:IsValid() and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_TLH) and ent.TLHInvincible == true then
 			return true
-		elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
+		/*elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
 			ent:TheLittleHelper()
 			ent:SetHealth(1)
-			return true
+			return true*/
 		end
 	end
-	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)*/
+	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)
 end
 hook.Add( "Think", "TTTTLH", tlhthink)
 
