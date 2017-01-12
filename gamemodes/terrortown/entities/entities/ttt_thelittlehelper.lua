@@ -123,7 +123,7 @@ if SERVER then
 			if ply.TLHInvincible then
 				for _, v in pairs(ply:GetWeapons()) do
 					v:SetNextPrimaryFire(CurTime() + 0.2)
-					v:SetNextSecondaryFire(CurTime() +0.2)
+					v:SetNextSecondaryFire(CurTime() + 0.2)
 				end
 			end
 		end
@@ -166,41 +166,57 @@ if SERVER then
 	function TLHOwnerGetsDamage(ent,dmginfo)
 		if ent:IsValid() and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_TLH) and ent.TLHInvincible == true then
 			return true
-		/*elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
-			ent:TheLittleHelper()
-			ent:SetHealth(1)
-			return true*/
+			/*elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
+				ent:TheLittleHelper()
+				ent:SetHealth(1)
+				return true*/
+			end
 		end
+		hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)
 	end
-	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)
-end
-hook.Add( "Think", "TTTTLH", tlhthink)
+	hook.Add( "Think", "TTTTLH", tlhthink)
 
-if CLIENT then
-	net.Receive("TLHStart", function()
-			surface.PlaySound("buttons/blip1.wav")
-		end)
-	net.Receive("TLHReload", function()
-			surface.PlaySound("gamefreak/reload.wav")
-		end)
-	net.Receive("TLHReloaded", function()
-			surface.PlaySound("gamefreak/recharged.wav")
-		end)
-end
+	if CLIENT then
+		net.Receive("TLHStart", function()
+				surface.PlaySound("buttons/blip1.wav")
+			end)
+		net.Receive("TLHReload", function()
+				surface.PlaySound("gamefreak/reload.wav")
+			end)
+		net.Receive("TLHReloaded", function()
+				surface.PlaySound("gamefreak/recharged.wav")
+			end)
 
-local function ResettinTlh()
-	for k,v in pairs(player.GetAll()) do
-		v.TLH = false
-		v.TLHInvincible = false
-		timer.Remove("TLHReset" .. v:EntIndex())
-		timer.Remove("TLHReload" .. v:EntIndex())
+		hook.Add("TTTBodySearchEquipment", "TLHCorpseIcon", function(search, eq)
+				search.eq_tlh = util.BitSet(eq, EQUIP_TLH)
+			end )
 
-	end
-end
+		hook.Add("TTTBodySearchPopulate", "TLHCorpseIcon", function(search, raw)
+				if (!raw.eq_tlh) then
+					return end
 
-hook.Add("PlayerDeath", "TLHDeath", function(ply)
-		ply.TLH = false
-		ply.TLHInvincible = false
-	end )
+					local highest = 0
+					for _, v in pairs(search) do
+						highest = math.max(highest, v.p)
+					end
 
-hook.Add( "TTTPrepareRound", "TLHRESET", ResettinTlh )
+					search.eq_tlh = {img = "vgui/ttt/icon_tlh", text = "They had a Little Helper watching over them.", p = highest + 1}
+			end )
+		end
+
+		local function ResettinTlh()
+			for k,v in pairs(player.GetAll()) do
+				v.TLH = false
+				v.TLHInvincible = false
+				timer.Remove("TLHReset" .. v:EntIndex())
+				timer.Remove("TLHReload" .. v:EntIndex())
+
+			end
+		end
+
+		hook.Add("PlayerDeath", "TLHDeath", function(ply)
+				ply.TLH = false
+				ply.TLHInvincible = false
+			end )
+
+		hook.Add( "TTTPrepareRound", "TLHRESET", ResettinTlh )

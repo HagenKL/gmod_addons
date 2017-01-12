@@ -326,4 +326,20 @@ if CLIENT then
       chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found! No respawn.")
       chat.PlaySound()
     end)
+
+    hook.Add("TTTBodySearchEquipment", "ASCCorpseIcon", function(search, eq)
+        search.eq_asc = util.BitSet(eq, EQUIP_ASC)
+      end )
+
+    hook.Add("TTTBodySearchPopulate", "ASCCorpseIcon", function(search, raw)
+        if (!raw.eq_asc) then
+          return end
+
+          local highest = 0
+          for _, v in pairs(search) do
+            highest = math.max(highest, v.p)
+          end
+
+          search.eq_asc = {img = "vgui/ttt/icon_asc", text = "They maybe will have a Second Chance...", p = highest + 1}
+      end )
 end
