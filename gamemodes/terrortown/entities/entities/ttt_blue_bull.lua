@@ -167,20 +167,4 @@ if SERVER then
 				surface.DrawTexturedRect(20, yCoordinate, 64, 64)
 			end
 		end)
-
-		hook.Add("TTTBodySearchEquipment", "BlueBullCorpseIcon", function(search, eq)
-				search.eq_bluebull = util.BitSet(eq, EQUIP_BLUE_BULL)
-			end )
-
-		hook.Add("TTTBodySearchPopulate", "BlueBullCorpseIcon", function(search, raw)
-				if (!raw.eq_bluebull) then
-					return end
-
-					local highest = 0
-					for _, v in pairs(search) do
-						highest = math.max(highest, v.p)
-					end
-
-					search.eq_bluebull = {img = "vgui/ttt/icon_bluebull", text = "They drunk a Blue Bull.", p = highest + 1}
-			end )
 end

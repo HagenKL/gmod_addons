@@ -212,6 +212,7 @@ elseif CLIENT then
       antialias = false
     })
   net.Receive("TTTPercentMenu",function()
+      local leftpercent = LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage")
       local frame = vgui.Create("DFrame")
       frame:SetSize( 500,360 )
       frame:Center()
@@ -230,7 +231,7 @@ elseif CLIENT then
 
       local DLabel = vgui.Create("DLabel",frame)
       DLabel:SetPos(frame:GetWide() / 2 - 25, frame:GetTall() / 1.5 - 50)
-      DLabel:SetText( LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage") .. "% Übrig." )
+      DLabel:SetText( leftpercent .. "% Übrig." )
       DLabel:SetSize(100,100)
       DLabel:SetTextColor(COLOR_BLACK)
 
@@ -246,7 +247,7 @@ elseif CLIENT then
       DComboBox:SetPos(100, frame:GetTall() / 2 - 10)
       DComboBox:SetValue( "Spieler" )
       for k,v in pairs(player.GetAll()) do
-        if !v:IsBot() and !v:GetDetective() then
+        if !v:IsBot() and v != LocalPlayer() and !v:GetDetective() then
           DComboBox:AddChoice(v:Nick(), v:SteamID())
         end
       end
@@ -258,7 +259,7 @@ elseif CLIENT then
       Slider:SetPos(frame:GetWide() - 250, frame:GetTall() / 2-50)
       Slider:SetText( "Prozent" )
       Slider:SetMin( 1 )
-      Slider:SetMax( 100 )
+      Slider:SetMax( 34 )
       Slider:SetDecimals( 0 )
       Slider:SetValue(25)
       local DButton2 = vgui.Create("DButton",frame)
@@ -281,8 +282,7 @@ elseif CLIENT then
 
         if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
           local ply = player.GetBySteamID(steamid)
-          if ply:GetNWInt("PercentCounter") <= 100 then
-            local leftpercent = LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage")
+          if ply:GetNWInt("PercentCounter") < 100 then
             if percent <= leftpercent then
               net.Start("TTTPlacedPercent")
               net.WriteInt(percent,12)
@@ -352,14 +352,4 @@ elseif CLIENT then
       end
       chat.PlaySound()
     end)
-    local function PercentMakeCounter(pnl)
-      pnl:AddColumn("Prozent", function(ply) return ply:GetNWInt("PercentCounter",0) end)
-    end
-    local function MakePercentScoreBoardColor(ply)
-      if ply:GetNWInt("PercentCounter",0) >= 100 then
-        return Color(0,120,0)
-      end
-    end
-    hook.Add("TTTScoreboardRowColorForPlayer", "TTTPercentColorScoreboard", MakePercentScoreBoardColor)
-    hook.Add("TTTScoreboardColumns", "TTTPercentCounteronScoreboard", PercentMakeCounter)
 end
