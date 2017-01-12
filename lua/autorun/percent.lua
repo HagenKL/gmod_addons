@@ -246,7 +246,7 @@ elseif CLIENT then
       DComboBox:SetPos(100, frame:GetTall() / 2 - 10)
       DComboBox:SetValue( "Spieler" )
       for k,v in pairs(player.GetAll()) do
-        if !v:IsBot() and !v:GetDetective() then
+        if !v:IsBot() and v != LocalPlayer() and !v:GetDetective() then
           DComboBox:AddChoice(v:Nick(), v:SteamID())
         end
       end
@@ -258,7 +258,7 @@ elseif CLIENT then
       Slider:SetPos(frame:GetWide() - 250, frame:GetTall() / 2-50)
       Slider:SetText( "Prozent" )
       Slider:SetMin( 1 )
-      Slider:SetMax( 100 )
+      Slider:SetMax( 34 )
       Slider:SetDecimals( 0 )
       Slider:SetValue(25)
       local DButton2 = vgui.Create("DButton",frame)
