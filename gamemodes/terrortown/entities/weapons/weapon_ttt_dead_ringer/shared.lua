@@ -176,8 +176,6 @@ if SERVER then
 
   function DRRoundreset()
     for k,v in pairs(player.GetAll()) do
-      v:GetViewModel():SetMaterial("")
-      v:SetMaterial("")
       v:SetColor(255,255,255,255)
       v:SetNWInt("DRStatus",0)
       v:SetNWBool("DRDead",false)
@@ -190,8 +188,6 @@ if SERVER then
 
   function DRSpawnReset( ply )
     if ply:IsFakeDead() then
-      ply:GetViewModel():SetMaterial("")
-      ply:SetMaterial("")
       ply:SetColor(255,255,255,255)
     end
     ply:SetNWInt("DRStatus",0)
@@ -396,7 +392,6 @@ if SERVER then
     self:SetNWBool("body_found", false)
     self:SetNWBool("DRDead",false)
     self:SetNWInt("DRStatus",4)
-    self:GetViewModel():SetMaterial("")
     self:DrawShadow( true )
     self:SetBloodColor(BLOOD_COLOR_RED)
     --self:SetMaterial( "" )
@@ -408,8 +403,6 @@ if SERVER then
     self:SetNoDraw(false)
 
     self:DrawWorldModel(true)
-
-    self:SetMaterial("")
 
     self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
     DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")
