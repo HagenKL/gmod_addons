@@ -79,7 +79,7 @@ end
 if SERVER then
   local function DoDrinkStaminup(ply)
     if IsValid(ply) and ply:IsTerror() then
-      if ply:GetActiveWeapon():GetClass() == "ttt_perk_juggernog" or ply:GetActiveWeapon():GetClass() == "ttt_perk_phd" then
+      if IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon():GetClass() == "ttt_perk_juggernog" or ply:GetActiveWeapon():GetClass() == "ttt_perk_phd" then
         timer.Simple(0.5, function() if IsValid(ply) then DoDrinkStaminup(ply) end end)
       else
         ply:Give("ttt_perk_staminup")
