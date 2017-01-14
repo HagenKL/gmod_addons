@@ -1,6 +1,5 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
-  resource.AddFile("sound/hoff/animations/perks/buy_phd.wav")
 end
 
 SWEP.Author = "Gamefreak"
