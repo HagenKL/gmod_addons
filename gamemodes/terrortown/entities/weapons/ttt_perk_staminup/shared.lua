@@ -44,18 +44,18 @@ function SWEP:DrinkTheBottle()
   net.Start("DrinkingtheStaminup")
   net.Send(self.Owner)
   timer.Simple(0.5,function()
-      if self.Owner:IsTerror() then
+      if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
         self:EmitSound("hoff/animations/perks/017f11fa.wav")
         self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
         timer.Simple(0.8,function()
-            if self.Owner:IsTerror() then
+            if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
               self:EmitSound("hoff/animations/perks/0180acfa.wav")
               self.Owner:ViewPunch( Angle( -2.5, 0, 0 ) )
               timer.Simple(1,function()
-                  if self.Owner:IsTerror() then
+                  if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
-                    timer.Simple(0.8,function()
-                        if self.Owner:IsTerror() then
+                    timer.Create("TTTStaminUp",0.8, 1,function()
+                        if IsValid(self) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
                           self.Owner:SetNWBool("StaminUpActive",true)
                           self:Remove()

@@ -3,21 +3,22 @@ AddCSLuaFile( "cl_init.lua" )
 include( "shared.lua" )
 function ENT:Explode()
 	local radius = 200
-	local pos = self.Entity:GetPos()
+	local damage = 300
+	local pos = self:GetPos()
 
 	local explosion = ents.Create("env_explosion")
 	if IsValid(explosion) then
 		explosion:SetPos( pos )
 		explosion:Spawn()
-		explosion:SetKeyValue( "iMagnitude", 600 )
-		explosion:SetKeyValue( "iRadiusOverride", 400 )
+		explosion:SetKeyValue( "iMagnitude", damage )
+		explosion:SetKeyValue( "iRadiusOverride", radius )
 		explosion:SetOwner( self.Owner )
 		explosion:Fire( "Explode", 0, 0 )
 	end
-	self.Entity:Remove()
+	self:Remove()
 end
 
 
 function ENT:PhysicsCollide( data, phys )
-	self.Entity:Explode()
+	self:Explode()
 end
