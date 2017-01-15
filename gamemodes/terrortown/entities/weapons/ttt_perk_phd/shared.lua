@@ -43,6 +43,8 @@ SWEP.Slot = 9
 SWEP.SlotPos = 1
 SWEP.DrawAmmo = false
 SWEP.DrawCrosshair = false
+SWEP.ViewModelFlip = false
+SWEP.DeploySpeed = 4
 
 function SWEP:DrinkTheBottle()
   net.Start("DrinkingthePHD")
