@@ -56,7 +56,7 @@ function SWEP:DrinkTheBottle()
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
-                    timer.Create("TTTJuggernog",0.8, 1,function()
+                    timer.Create("TTTJuggernog" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
                           self.Owner:SetHealth(self.Owner:GetMaxHealth())
@@ -70,6 +70,12 @@ function SWEP:DrinkTheBottle()
       end
     end)
 end
+
+hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
+  for k,v in pairs(player.GetAll()) do
+    timer.Remove("TTTJuggernog" .. v:EntIndex())
+  end
+end)
 
 function SWEP:OnRemove()
   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then

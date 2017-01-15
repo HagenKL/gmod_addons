@@ -56,7 +56,7 @@ function SWEP:DrinkTheBottle()
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
-                    timer.Create("TTTStaminUp",0.8, 1,function()
+                    timer.Create("TTTStaminUp" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
                           self.Owner:SetNWBool("StaminUpActive",true)
@@ -74,6 +74,7 @@ end
 hook.Add("TTTPrepareRound", "TTTStaminupReset", function()
     for k,v in pairs(player.GetAll()) do
       v:SetNWBool("StaminUpActive",false)
+      timer.Remove("TTTStaminup" .. v:EntIndex())
     end
   end)
 

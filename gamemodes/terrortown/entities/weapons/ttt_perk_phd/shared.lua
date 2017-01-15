@@ -60,7 +60,7 @@ function SWEP:DrinkTheBottle()
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
-                    timer.Create("TTTPHD",0.8, 1,function()
+                    timer.Create("TTTPHD" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
                           self.Owner:SetNWBool("PHDActive",true)
@@ -97,6 +97,7 @@ hook.Add("EntityTakeDamage", "TTTPHDRemoveFallDamage", PHDRemoveFallDamage)
 hook.Add("TTTPrepareRound", "TTTPHDReset", function()
     for k,v in pairs(player.GetAll()) do
       v:SetNWBool("PHDActive",false)
+      timer.Remove("TTTPHD" .. v:EntIndex())
     end
   end)
 
