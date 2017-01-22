@@ -63,8 +63,15 @@ if SERVER then
 				ply:SetNWInt("UsedPercentageontarget " .. target:SteamID(), ply:GetNWInt("UsedPercentageontarget " .. target:SteamID()) - (totalpercent - 100) )
 				ply:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") - (totalpercent - 100) )
 				for k,v in pairs(TTTPercent.percentbetters[target:SteamID()]) do
-					TTTPercent.SetPercent(ply,v:GetNWInt("PlayerPercentage") - v:GetNWInt("UsedPercentageontarget " .. target:SteamID()))
-					v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
+					if target:IsRole(ROLE_INNOCENT) then
+						TTTPercent.SetPercent(ply,v:GetNWInt("PlayerPercentage") - v:GetNWInt("UsedPercentageontarget " .. target:SteamID()))
+						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
+						if v:IsRole(ROLE_INNOCENT) or v:GetDetective() then
+							v:SetNWBool("TTTPercentPunishment", true)
+						end
+					elseif target:GetTraitor() then
+						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
+					end
 				end
 				table.Empty(TTTPercent.percentbetters[target:SteamID()])
 			end
@@ -80,8 +87,9 @@ if SERVER then
 		TTTPercent.SetPercent(ply, GetConVar("ttt_startpercent"):GetInt())
 		ply:SetNWInt("PercentCounter",0)
 		ply:SetNWInt("UsedPercentage", 0)
+		ply:SetNWBool("TTTPercentPunishment", false)
 		for key,v in pairs(player.GetAll()) do
-			ply:SetNWInt("UsedPercentageontarget" .. v:SteamID(), 0)
+			ply:SetNWInt("UsedPercentageontarget " .. v:SteamID(), 0)
 		end
 		if reset then
 			table.Empty(TTTPercent.percentbetters[ply:SteamID()])
@@ -152,6 +160,7 @@ if SERVER then
 			util.SetPData(ply:SteamID(),"percent_stored", ply:GetNWInt("PlayerPercentage") )
 			ply:SetNWInt("UsedPercentage", 0)
 			ply:SetNWInt("PercentCounter", 0)
+			ply:SetNWBool("TTTPercentPunishment", false)
 		end
 	end
 
@@ -160,6 +169,7 @@ if SERVER then
 			util.SetPData(ply:SteamID(),"percent_stored", ply:GetNWInt("PlayerPercentage") )
 			ply:SetNWInt("UsedPercentage", 0)
 			ply:SetNWInt("PercentCounter", 0)
+			ply:SetNWBool("TTTPercentPunishment", false)
 		end
 	end
 
@@ -168,7 +178,7 @@ if SERVER then
 			v:SetNWInt("PercentCounter", 0)
 			v:SetNWInt("UsedPercentage",0)
 			for key,ply in pairs(player.GetAll()) do
-				v:SetNWInt("UsedPercentageontarget" .. ply:SteamID(), 0)
+				v:SetNWInt("UsedPercentageontarget " .. ply:SteamID(), 0)
 			end
 		end
 	end
@@ -193,6 +203,15 @@ if SERVER then
 		return tbl
 	end
 
+	function TTTPercent.PunishtheInnocents()
+		for k,v in pairs(player.GetAll()) do
+			if v:IsTerror() and v:GetNWBool("TTTPercentPunishment",false) then
+				v:SetHealth(v:GetMaxHealth() - 10)
+				v:SetNWBool("TTTPercentPunishment",false)
+			end
+		end
+	end
+
 	concommand.Add("ttt_resetallpercentages", TTTPercent.ResetPercentforEveryOne)
 	concommand.Add("ttt_resetpercentage",TTTPercent.ResetPercentforOnePlayer, AutoCompletePercent)
 	hook.Add("PlayerSay","TTTPercent", TTTPercent.GetPercentMessage)
@@ -200,7 +219,7 @@ if SERVER then
 	net.Receive("TTTPlacedPercent", TTTPercent.CalculatePercent)
 	hook.Add("PlayerDisconnected","TTTSavePercentage", TTTPercent.SavePercent)
 	hook.Add("TTTPrepareRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
-	hook.Add("TTTPrepareRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
+	hook.Add("TTTBeginRound", "ResetPercentages", TTTPercent.PunishtheInnocents)
 	hook.Add("TTTEndRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
 	hook.Add("ShutDown", "TTTSavePercentage", TTTPercent.SavePercentAll)
 elseif CLIENT then
@@ -218,11 +237,13 @@ elseif CLIENT then
 			frame:SetSizable(false)
 			frame:SetTitle( "" )
 			frame:SetVisible(true)
-			frame:SetDraggable( true )
-			frame:MakePopup()
+			frame:SetDraggable( false )
+			frame:SetMouseInputEnabled(true)
 			frame:SetScreenLock(true)
 			frame:SetDeleteOnClose(true)
 			frame:ShowCloseButton(false)
+			frame:MakePopup()
+			frame:SetKeyboardInputEnabled(false)
 			frame.Paint = function(s,w,h)
 				draw.RoundedBox(5,0,0,w,h,Color(0,0,0))
 				draw.RoundedBox(5,4,4,w-8,h-8,Color(70,70,70))
