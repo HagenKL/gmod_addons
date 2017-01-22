@@ -282,6 +282,7 @@ if CLIENT then
       draw.RoundedBox( 20, ScrW() / 2-945, ScrH() / 2-440, 300 , 100 ,Color(255,80,80,255) )
       surface.SetDrawColor(255,255,255,255)
       local w = LocalPlayer():GetNWInt("ASCthetimeleft") * 20
+      draw.SimpleText("Time Left: " .. LocalPlayer():GetNWInt("ASCthetimeleft"), DermaDefault, ScrW() / 2-800, ScrH() / 2-390, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
       draw.SimpleText("Press R to Respawn on your Corpse,", DermaDefault, ScrW() / 2-800, ScrH() / 2-375, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
       draw.SimpleText("Press Space to Respawn on Spawn", DermaDefault, ScrW() / 2-800, ScrH() / 2-360, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
       surface.DrawRect(ScrW() / 2-900, ScrH() / 2-420, w, 20)
