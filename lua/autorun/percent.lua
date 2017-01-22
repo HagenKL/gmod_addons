@@ -8,7 +8,6 @@ if SERVER then
 	util.AddNetworkString("TTTPlacedPercent")
 	util.AddNetworkString("TTTPercentMessage")
 	util.AddNetworkString("TTTResetPercent")
-	util.AddNetworkString("PercentDrawHalos")
 	util.AddNetworkString("TTTPercentRemoveHalos")
 	util.AddNetworkString("TTTPercentAddHalos")
 	function TTTPercent.GetPercentMessage(sender, text, teamchat)
@@ -63,7 +62,7 @@ if SERVER then
 			ply:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") + percent )
 			if totalpercent >= 100 then
 				target:SetNWInt("PercentCounter", 100)
-				net.Start("PercentDrawHalos")
+				net.Start("TTTPercentAddHalos")
 				net.WriteEntity(target)
 				net.Broadcast()
 				ply:SetNWInt("UsedPercentageontarget " .. target:SteamID(), ply:GetNWInt("UsedPercentageontarget " .. target:SteamID()) - (totalpercent - 100) )
@@ -414,10 +413,6 @@ elseif CLIENT then
 				return Color(0,120,0)
 			end
 		end
-		function TTTPercent.AddPercentHalos()
-			local ply = net.ReadEntity()
-			table.insert(TTTPercent.halos, ply)
-		end
 		function TTTPercent.PrepareRoundPercent()
 				table.Empty(TTTPercent.halos)
 		end
@@ -435,7 +430,6 @@ elseif CLIENT then
 			table.insert(TTTPercent.halos,ply)
 		end
 
-		net.Receive("PercentDrawHalos", TTTPercent.AddPercentHalos)
 		net.Receive("TTTPercentRemoveHalos",TTTPercent.ClientRemoveHalos)
 		net.Receive("TTTPercentAddHalos",TTTPercent.ClientAddHalos)
 		hook.Add("TTTPrepareRound","TTTPercentReset", TTTPercent.PrepareRoundPercent)
