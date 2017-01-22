@@ -100,42 +100,39 @@ local NoexplosiondamageRandomat = false
 local NoBulletdamageRandomat = false
 
 if SERVER then
+  local RandomEvents = {
+    RandomatRoles,
+    RandomatFalldamage,
+    RandomatJump,
+    RandomatHuge,
+    RandomatSuddenDeath,
+    RandomatFreeforAll,
+    RandomatMoonGravity,
+    RandomatDeathmatch,
+    RandomatRandomHealth,
+    RandomatRotate,
+    RandomatSuperBlitz,
+    --RandomatBurn,
+    RandomatFlash,
+    RandomatModels,
+    RandomatTitans,
+    RandomatDisguise,
+    RandomatSpeedLiveJump,
+    RandomatExplode,
+    RandomatExplosion,
+    RandomatTime,
+    RandomatRandomWeapons,
+    RandomatBullet,
+    RandomatSideWays,
+    RandomatScreenFlip,
+    RandomatInvert
+  }
+
   function SWEP:PrimaryAttack()
-    RandomEvent()
+    RandomEvents[math.random(1,#RandomEvents)]()
     DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat" )
     self:SetNextPrimaryFire(CurTime() + 10)
     self:Remove()
-  end
-
-  function RandomEvent()
-    local RandomEvents = {
-      RandomatRoles,
-      RandomatFalldamage,
-      RandomatJump,
-      RandomatHuge,
-      RandomatSuddenDeath,
-      RandomatFreeforAll,
-      RandomatMoonGravity,
-      RandomatDeathmatch,
-      RandomatRandomHealth,
-      RandomatRotate,
-      RandomatSuperBlitz,
-      --RandomatBurn,
-      RandomatFlash,
-      RandomatModels,
-      RandomatTitans,
-      RandomatDisguise,
-      RandomatSpeedLiveJump,
-      RandomatExplode,
-      RandomatExplosion,
-      RandomatTime,
-      RandomatRandomWeapons,
-      RandomatBullet,
-      RandomatSideWays,
-      RandomatScreenFlip,
-      RandomatInvert
-    }
-    RandomEvents[math.random(1,#RandomEvents)]()
   end
 
   /*function RandomatJackpot()
@@ -330,6 +327,7 @@ if SERVER then
         table.insert(Players,v)
       end
     end
+    table.Random(Players)
     local PlayerNum = #Players
     local DetectiveNum = PlayerNum / 2
 
@@ -389,14 +387,16 @@ if SERVER then
   end
 
   function RandomatSuddenDeath()
-    RandomatBroadcast("Randomat: ", Color(255,255,255), "Sudden DEATH!! AND NOBODY CAN HEAL!")
+    RandomatBroadcast("Randomat: ", Color(255,255,255), "Sudden DEATH!! AND NOBODY CAN HEAL!(Except Detectives)")
     for key,ply in pairs(player.GetAll()) do
-      ply:SetHealth(1)
-      ply:SetMaxHealth(1)
+      if !ply:GetDetective() then
+        ply:SetHealth(1)
+        ply:SetMaxHealth(1)
+      end
     end
     timer.Create("SuddenDeathHealRandomat", 1, 0, function()
         for k,v in pairs(player.GetAll()) do
-          if v:Health() > 1 then
+          if v:Health() > 1 and !v:GetDetective() then
             v:SetHealth(1)
           end
         end
@@ -491,6 +491,7 @@ if SERVER then
             table.insert(Players,v)
           end
         end
+        table.Random(Players)
         local PlayerNum = #Players
         local ModelNum = PlayerNum / 3
 
@@ -527,8 +528,8 @@ if SERVER then
   function RandomatTitans()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "The fight of the Titans!")
     for key,ply in pairs(player.GetAll()) do
-      ply:SetHealth(300)
-      ply:SetMaxHealth(300)
+      ply:SetHealth(ply:Health() + 200)
+      ply:SetMaxHealth(ply:GetMaxHealth() + 200)
     end
   end
 

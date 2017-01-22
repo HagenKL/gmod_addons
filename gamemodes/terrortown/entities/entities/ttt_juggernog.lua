@@ -45,10 +45,10 @@ if SERVER then
   function plymeta:CanDrinkJugger()
     if IsValid(self) and self:IsTerror() then
       if IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() == "ttt_perk_staminup" or self:GetActiveWeapon():GetClass() == "ttt_perk_phd") then
-        timer.Create("MaketheJuggerDrink" .. self:EntIndex(),0.5,0, function()
+        timer.Create("MaketheJuggerDrink",0.5,0, function()
             if IsValid(self) and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon():GetClass() != "ttt_perk_staminup" and self:GetActiveWeapon():GetClass() != "ttt_perk_phd" then
               self:GivetheJugger()
-              timer.Remove("MaketheJuggerDrink" .. self:EntIndex())
+              timer.Remove("MaketheJuggerDrink")
             end
           end)
       else
@@ -73,8 +73,6 @@ if SERVER then
       end
     end)
     hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheJuggerDrink" .. v:EntIndex())
-      end
+      timer.Remove("MaketheJuggerDrink")
     end)
 end
