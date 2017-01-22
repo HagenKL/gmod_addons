@@ -95,7 +95,7 @@ function SWEP:PrimaryAttack()
   local kmaxs = Vector(1,1,1) * 10
 
   self.Owner:LagCompensation( true )
-	
+
   local tr = util.TraceHull({start=spos, endpos=epos, filter=ply, mask=MASK_SHOT_HULL, mins=kmins, maxs=kmaxs})
 
   -- Hull might hit environment stuff that line does not hit
@@ -132,6 +132,7 @@ function SWEP:PrimaryAttack()
 
     local boost=wep.VelocityBoostAmount
     ent:SetVelocity(ply:GetVelocity()+Vector(av.x,av.y,math.max(1,av.z+.35))*math.Rand(boost*.8,boost*1.2)*2)
+    ent.was_pushed = {att=self.Owner, t=CurTime(), wep=self:GetClass()}
   elseif ent:GetClass()=="prop_physics" then
     local phys=ent:GetPhysicsObject()
     if IsValid(phys) then
