@@ -82,10 +82,10 @@ if SERVER then
   function plymeta:CanDrinkPHD()
     if IsValid(self) and self:IsTerror() then
       if IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() == "ttt_perk_juggernog" or self:GetActiveWeapon():GetClass() == "ttt_perk_staminup") then
-        timer.Create("MakethePHDDrink",0.5,0, function()
+        timer.Create("MakethePHDDrink" .. self:EntIndex(),0.5,0, function()
             if IsValid(self) and IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() != "ttt_perk_juggernog" and self:GetActiveWeapon():GetClass() != "ttt_perk_staminup") then
               self:GivethePHD()
-              timer.Remove("MakethePHDDrink")
+              timer.Remove("MakethePHDDrink" .. self:EntIndex())
             end
           end)
       else
@@ -100,6 +100,7 @@ if SERVER then
     if self:HasWeapon("ttt_perk_phd") then
       self:GetWeapon("ttt_perk_phd"):DrinkTheBottle()
     elseif IsValid(self) and !self:HasWeapon("ttt_perk_phd") then
+      print("hi2")
       self:CanDrinkPHD()
     end
   end
@@ -110,7 +111,9 @@ if SERVER then
       end
     end)
     hook.Add("TTTPrepareRound", "TTTPHDResettin", function()
-      timer.Remove("MakethePHDDrink")
+      for k,v in pairs(player.GetAll()) do
+        timer.Remove("MakethePHDDrink" .. v:EntIndex())
+      end
     end)
 end
 

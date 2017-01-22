@@ -82,10 +82,10 @@ if SERVER then
   function plymeta:CanDrinkStaminup()
     if IsValid(self) and self:IsTerror() then
       if IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() == "ttt_perk_juggernog" or self:GetActiveWeapon():GetClass() == "ttt_perk_phd") then
-        timer.Create("MaketheStaminUpDrink",0.5,0, function()
+        timer.Create("MaketheStaminUpDrink" .. self:EntIndex(),0.5,0, function()
             if IsValid(self) and IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() != "ttt_perk_juggernog" and self:GetActiveWeapon():GetClass() != "ttt_perk_phd") then
               self:GivetheStaminup()
-              timer.Remove("MaketheStaminUpDrink")
+              timer.Remove("MaketheStaminUpDrink" .. self:EntIndex())
             end
           end)
       else
@@ -100,6 +100,7 @@ if SERVER then
     if self:HasWeapon("ttt_perk_staminup") then
       self:GetWeapon("ttt_perk_staminup"):DrinkTheBottle()
     elseif IsValid(self) and !self:HasWeapon("ttt_perk_staminup") then
+      print("hi3")
       self:CanDrinkStaminup()
     end
   end
@@ -110,7 +111,9 @@ if SERVER then
       end
     end)
     hook.Add("TTTPrepareRound", "TTTStaminupResettin", function()
-      timer.Remove("MaketheStaminUpDrink")
+      for k,v in pairs(player.GetAll()) do
+        timer.Remove("MaketheStaminUpDrink" .. v:EntIndex())
+      end
     end)
 end
 

@@ -1,7 +1,4 @@
-if SERVER then
-  AddCSLuaFile( "shared.lua" )
-  util.AddNetworkString("JuggerBlurHUD")
-end
+AddCSLuaFile( "shared.lua" )
 
 SWEP.Author = "Gamefreak"
 SWEP.Instructions = "Reach for Juggernog tonight!"
@@ -59,9 +56,7 @@ function SWEP:DrinkTheBottle()
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
-                    net.Start("JuggerBlurHUD")
-                    net.Send(self.Owner)
-                    timer.Create("TTTJuggernog",0.8, 1,function()
+                    timer.Create("TTTJuggernog" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
                           self.Owner:SetHealth(self.Owner:GetMaxHealth())
@@ -75,6 +70,12 @@ function SWEP:DrinkTheBottle()
       end
     end)
 end
+
+hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
+  for k,v in pairs(player.GetAll()) do
+    timer.Remove("TTTJuggernog" .. v:EntIndex())
+  end
+end)
 
 function SWEP:OnRemove()
   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
@@ -102,24 +103,5 @@ end
 if CLIENT then
   net.Receive("DrinkingtheJuggernog", function()
       surface.PlaySound("hoff/animations/perks/buy_jug.wav")
-    end)
-
-    net.Receive("JuggerBlurHUD", function()
-      local matBlurScreen = Material( "pp/blurscreen" )
-      hook.Add( "HUDPaint", "JuggerBlurHUD", function()
-        if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_juggernog" then
-          surface.SetMaterial( matBlurScreen )
-          surface.SetDrawColor( 255, 255, 255, 255 )
-
-          matBlurScreen:SetFloat( "$blur",6 )
-          render.UpdateScreenEffectTexture()
-
-          surface.DrawTexturedRect( 0,0, ScrW(), ScrH() )
-
-          surface.SetDrawColor( 205, 0, 0, 40 )
-          surface.DrawRect( 0,0, ScrW(), ScrH() )
-        end
-      end)
-      timer.Simple(0.7,function() hook.Remove( "HUDPaint", "JuggerBlurHUD" ) end)
     end)
 end
