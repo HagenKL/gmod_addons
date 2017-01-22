@@ -1,6 +1,6 @@
+	TTTPercent = TTTPercent or {}
 if SERVER then
 	CreateConVar("ttt_startpercent"," 150",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Prozentzahl mit der jeder startet.")
-	TTTPercent = TTTPercent or {}
 	TTTPercent.percentbetters = TTTPercent.percentbetters or {}
 	AddCSLuaFile()
 	util.AddNetworkString("TTTPercentMenu")
@@ -8,6 +8,9 @@ if SERVER then
 	util.AddNetworkString("TTTPlacedPercent")
 	util.AddNetworkString("TTTPercentMessage")
 	util.AddNetworkString("TTTResetPercent")
+	util.AddNetworkString("PercentDrawHalos")
+	util.AddNetworkString("TTTPercentRemoveHalos")
+	util.AddNetworkString("TTTPercentAddHalos")
 	function TTTPercent.GetPercentMessage(sender, text, teamchat)
 		local msg = string.lower(text)
 		if string.sub(msg,1,8) == "!prozent" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
@@ -60,6 +63,9 @@ if SERVER then
 			ply:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") + percent )
 			if totalpercent >= 100 then
 				target:SetNWInt("PercentCounter", 100)
+				net.Start("PercentDrawHalos")
+				net.WriteEntity(target)
+				net.Broadcast()
 				ply:SetNWInt("UsedPercentageontarget " .. target:SteamID(), ply:GetNWInt("UsedPercentageontarget " .. target:SteamID()) - (totalpercent - 100) )
 				ply:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") - (totalpercent - 100) )
 				for k,v in pairs(TTTPercent.percentbetters[target:SteamID()]) do
@@ -212,6 +218,22 @@ if SERVER then
 		end
 	end
 
+	function TTTPercent.RemoveHalos(ply)
+		if ply:GetNWInt("PercentCounter",0) >= 100 then
+			net.Start("TTTPercentRemoveHalos")
+			net.WriteEntity(ply)
+			net.Broadcast()
+		end
+	end
+
+	function TTTPercent.AddHalos(ply)
+		if ply:GetNWInt("PercentCounter",0) >= 100 then
+			net.Start("TTTPercentAddHalos")
+			net.WriteEntity(ply)
+			net.Broadcast()
+		end
+	end
+
 	concommand.Add("ttt_resetallpercentages", TTTPercent.ResetPercentforEveryOne)
 	concommand.Add("ttt_resetpercentage",TTTPercent.ResetPercentforOnePlayer, AutoCompletePercent)
 	hook.Add("PlayerSay","TTTPercent", TTTPercent.GetPercentMessage)
@@ -222,7 +244,10 @@ if SERVER then
 	hook.Add("TTTBeginRound", "ResetPercentages", TTTPercent.PunishtheInnocents)
 	hook.Add("TTTEndRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
 	hook.Add("ShutDown", "TTTSavePercentage", TTTPercent.SavePercentAll)
+	hook.Add("PlayerDeath", "TTTPercentRemoveHalos", TTTPercent.RemoveHalos )
+	hook.Add("PlayerSpawn", "TTTPercentAddHalos", TTTPercent.AddHalos)
 elseif CLIENT then
+	TTTPercent.halos = TTTPercent.halos or {}
 	surface.CreateFont("TTTPercentfont", {
 			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 			extended = false,
@@ -337,12 +362,12 @@ elseif CLIENT then
 				chat.AddText("TTT Prozent: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " hat " .. percent .. "% auf ", COLOR_RED, target:Nick(), COLOR_WHITE, " gesetzt. (" ,COLOR_BLUE, 100 - totalpercent .. "%", COLOR_WHITE, " bis zum freien Abschuss.)")
 			else
 				chat.AddText("TTT Prozent: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " die letzten Prozente gesetzt hat!")
-				PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
+				TTTPercent.PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
 			end
 			chat.PlaySound()
 		end)
 
-	function PrintCenteredKOSText(txt,delay,color)
+	function TTTPercent.PrintCenteredKOSText(txt,delay,color)
 		if hook.GetTable()["TTTPercentKOS"] then
 			hook.Remove("HUDPaint", "TTTPercentKOS")
 			hook.Add("HUDPaint", "TTTPercentKOS", function() draw.SimpleText(txt,"TTTPercentfont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
@@ -368,12 +393,13 @@ elseif CLIENT then
 			local all = net.ReadBool()
 			if all then
 				chat.AddText("TTT Prozent: ", COLOR_WHITE, "Alle Prozente wurden zurückgesetzt!")
+				table.Empty(TTTPercent.halos)
 			else
 				chat.AddText("TTT Prozent: ", COLOR_WHITE, "Alle deine Prozente wurden von einem Admin zurückgesetzt!")
 			end
 			chat.PlaySound()
 		end)
-		local function PercentMakeCounter(pnl)
+		function TTTPercent.PercentMakeCounter(pnl)
 			pnl:AddColumn("Prozent", function(ply)
 				if ply:GetNWInt("PercentCounter",0) < 100 then
 					return ply:GetNWInt("PercentCounter",0)
@@ -382,11 +408,37 @@ elseif CLIENT then
 				end
 			end)
 		end
-		local function MakePercentScoreBoardColor(ply)
+		function TTTPercent.MakePercentScoreBoardColor(ply)
 			if ply:GetNWInt("PercentCounter",0) >= 100 then
 				return Color(0,120,0)
 			end
 		end
-		hook.Add("TTTScoreboardRowColorForPlayer", "TTTPercentColorScoreboard", MakePercentScoreBoardColor)
-		hook.Add("TTTScoreboardColumns", "TTTPercentCounteronScoreboard", PercentMakeCounter)
+		function TTTPercent.AddPercentHalos()
+			local ply = net.ReadEntity()
+			table.insert(TTTPercent.halos, ply)
+		end
+		function TTTPercent.PrepareRoundPercent()
+				table.Empty(TTTPercent.halos)
+		end
+		function TTTPercent.DrawPercentHalos()
+			halo.Add(TTTPercent.halos,Color(0,255,0),1,1,2,true,true)
+		end
+
+		function TTTPercent.ClientRemoveHalos()
+			local ply = net.ReadEntity()
+			table.RemoveByValue(TTTPercent.halos,ply)
+		end
+
+		function TTTPercent.ClientAddHalos()
+			local ply = net.ReadEntity()
+			table.insert(TTTPercent.halos,ply)
+		end
+
+		net.Receive("PercentDrawHalos", TTTPercent.AddPercentHalos)
+		net.Receive("TTTPercentRemoveHalos",TTTPercent.ClientRemoveHalos)
+		net.Receive("TTTPercentAddHalos",TTTPercent.ClientAddHalos)
+		hook.Add("TTTPrepareRound","TTTPercentReset", TTTPercent.PrepareRoundPercent)
+		hook.Add("PreDrawHalos","TTTPercentHalos", TTTPercent.DrawPercentHalos)
+		hook.Add("TTTScoreboardRowColorForPlayer", "TTTPercentColorScoreboard", TTTPercent.MakePercentScoreBoardColor)
+		hook.Add("TTTScoreboardColumns", "TTTPercentCounteronScoreboard", TTTPercent.PercentMakeCounter)
 end
