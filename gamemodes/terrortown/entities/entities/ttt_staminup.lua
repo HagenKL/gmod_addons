@@ -100,7 +100,6 @@ if SERVER then
     if self:HasWeapon("ttt_perk_staminup") then
       self:GetWeapon("ttt_perk_staminup"):DrinkTheBottle()
     elseif IsValid(self) and !self:HasWeapon("ttt_perk_staminup") then
-      print("hi3")
       self:CanDrinkStaminup()
     end
   end

@@ -1,6 +1,7 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
   resource.AddFile("sound/hoff/animations/perks/buy_phd.wav")
+  util.AddNetworkString("PHDBlurHUD")
 end
 
 SWEP.Author = "Gamefreak"
@@ -60,6 +61,8 @@ function SWEP:DrinkTheBottle()
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
+                    net.Start("PHDBlurHUD")
+                    net.Send(self.Owner)
                     timer.Create("TTTPHD" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
@@ -127,5 +130,24 @@ end
 if CLIENT then
   net.Receive("DrinkingthePHD", function()
       surface.PlaySound("hoff/animations/perks/buy_phd.wav")
+    end)
+
+    net.Receive("PHDBlurHUD", function()
+      local matBlurScreen = Material( "pp/blurscreen" )
+      hook.Add( "HUDPaint", "PHDBlurPaint", function()
+        if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_phd" then
+          surface.SetMaterial( matBlurScreen )
+          surface.SetDrawColor( 255, 255, 255, 255 )
+
+          matBlurScreen:SetFloat( "$blur",6 )
+          render.UpdateScreenEffectTexture()
+
+          surface.DrawTexturedRect( 0,0, ScrW(), ScrH() )
+
+          surface.SetDrawColor( 132, 112, 255, 40 )
+          surface.DrawRect( 0,0, ScrW(), ScrH() )
+        end
+      end)
+      timer.Simple(0.7,function() hook.Remove( "HUDPaint", "PHDBlurPaint" ) end)
     end)
 end

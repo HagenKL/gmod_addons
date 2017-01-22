@@ -1,4 +1,7 @@
-AddCSLuaFile( "shared.lua" )
+if SERVER then
+  AddCSLuaFile( "shared.lua" )
+  util.AddNetworkString("StaminBlurHUD")
+end
 
 SWEP.Author = "Gamefreak"
 SWEP.Instructions = "Oh yeah, drink it baby."
@@ -56,6 +59,8 @@ function SWEP:DrinkTheBottle()
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                     self:EmitSound("hoff/animations/perks/017c99be.wav")
+                    net.Start("StaminBlurHUD")
+                    net.Send(self.Owner)
                     timer.Create("TTTStaminUp" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and self.Owner:IsTerror() then
                           self:EmitSound("hoff/animations/perks/017bf9c0.wav")
@@ -104,6 +109,24 @@ end
 if CLIENT then
   net.Receive("DrinkingtheStaminup", function()
       surface.PlaySound("hoff/animations/perks/buy_stam.wav")
+    end)
+    net.Receive("StaminBlurHUD", function()
+      local matBlurScreen = Material( "pp/blurscreen" )
+      hook.Add( "HUDPaint", "StaminBlurHUD", function()
+        if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_staminup" then
+          surface.SetMaterial( matBlurScreen )
+          surface.SetDrawColor( 255, 255, 255, 255 )
+
+          matBlurScreen:SetFloat( "$blur",6 )
+          render.UpdateScreenEffectTexture()
+
+          surface.DrawTexturedRect( 0,0, ScrW(), ScrH() )
+
+          surface.SetDrawColor( 238, 154, 0, 40 )
+          surface.DrawRect( 0,0, ScrW(), ScrH() )
+        end
+      end)
+      timer.Simple(0.7,function() hook.Remove( "HUDPaint", "StaminBlurHUD" ) end)
     end)
 end
 
