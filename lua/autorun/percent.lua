@@ -76,6 +76,7 @@ if SERVER then
 							v:SetNWBool("TTTPercentPunishment", true)
 						end
 					elseif target:GetTraitor() then
+						TTTPercent.SetPercent(ply,v:GetNWInt("PlayerPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2))
 						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
 					end
 				end
