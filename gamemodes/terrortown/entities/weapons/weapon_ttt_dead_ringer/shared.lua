@@ -169,30 +169,33 @@ if SERVER then
   function ResetDR(ply, attacker)
     if ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
       ply:DRuncloak()
+    elseif ply:IsValid() and ply:HasWeapon("weapon_ttt_dead_ringer") then
+      ply:SetNWInt("DRStatus",0)
+      ply:SetNWInt("DRCharge", 8 )
     end
-    ply:SetNWInt("DRStatus",0)
-    ply:SetNWInt("DRCharge", 8 )
   end
 
   function DRRoundreset()
     for k,v in pairs(player.GetAll()) do
-      v:SetColor(255,255,255,255)
-      v:SetNWInt("DRStatus",0)
-      v:SetNWBool("DRDead",false)
-      v:SetNWInt("DRCharge", 8 )
+      if v:IsTerror() and v:IsFakeDead() then
+        --v:SetColor(255,255,255,255)
+        v:SetNWInt("DRStatus",0)
+        v:SetNWBool("DRDead",false)
+        v:SetNWInt("DRCharge", 8 )
+        net.Start("DRChangeMaterial")
+        net.WriteBool(false)
+        net.Send(v)
+      end
     end
-    net.Start("DRChangeMaterial")
-    net.WriteBool(false)
-    net.Broadcast()
   end
 
   function DRSpawnReset( ply )
     if ply:IsFakeDead() then
-      ply:SetColor(255,255,255,255)
+      --ply:SetColor(255,255,255,255)
+      ply:SetNWInt("DRStatus",0)
+      ply:SetNWBool("DRDead",false)
+      ply:SetNWInt("DRCharge", 8 )
     end
-    ply:SetNWInt("DRStatus",0)
-    ply:SetNWBool("DRDead",false)
-    ply:SetNWInt("DRCharge", 8 )
   end
 
   function DRUncloakKey( ply, key )
@@ -218,7 +221,7 @@ hook.Add("PlayerFootstep","DeadRingerFootsteps",DRFootstepsDisable)
 
 -------------------------------------------------------------------------------
 
--- function to test if the player is fakedead
+-- utility function to test if the player is fakedead
 local plymeta = FindMetaTable( "Player" );
 function plymeta:IsFakeDead()
   return self:GetNWInt("DRDead", false)
@@ -255,7 +258,6 @@ function SWEP:PreDrop()
         self.Owner:DRuncloak()
       end
       ply:SetNWInt("DRStatus",0)
-      ply:SetNWBool("DRDead", false)
     end
   end
 end
@@ -394,7 +396,6 @@ if SERVER then
     self:SetNWInt("DRStatus",4)
     self:DrawShadow( true )
     self:SetBloodColor(BLOOD_COLOR_RED)
-    --self:SetMaterial( "" )
     --self:SetRenderMode( RENDERMODE_NORMAL )
     --self:Fire( "alpha", 255, 0 )
     --self:SetColor(Color(255,255,255,255))
@@ -403,6 +404,7 @@ if SERVER then
     self:SetNoDraw(false)
 
     self:DrawWorldModel(true)
+
 
     self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
     DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")
@@ -439,6 +441,7 @@ if (CLIENT) then
   net.Receive("TTT_DeadRingerSound" , function()
       surface.PlaySound("ttt/recharged.wav")
     end )
+
   net.Receive("DRChangeMaterial",function()
       local enabled = net.ReadBool()
       if enabled then
