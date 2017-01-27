@@ -56,7 +56,7 @@ if ( CLIENT ) then
 
   function DrawDRHUD()
     --here goes the new HUD
-    if LocalPlayer():GetNWInt("DRStatus") == 1 or LocalPlayer():GetNWInt("DRStatus") == 3 or LocalPlayer():GetNWInt("DRStatus") == 4 and LocalPlayer():Alive() and LocalPlayer():IsTerror() then
+    if LocalPlayer():GetNWInt("DRStatus") == 1 or LocalPlayer():GetNWInt("DRStatus") == 3 or LocalPlayer():GetNWInt("DRStatus") == 4 and LocalPlayer():Alive() and LocalPlayer():IsTerror() and LocalPlayer():HasWeapon("weapon_ttt_dead_ringer") then
       local background = surface.GetTextureID("vgui/ttt/misc_ammo_area_red")
       local w,h = surface.GetTextureSize(surface.GetTextureID("vgui/ttt/misc_ammo_area_red"))
       surface.SetTexture(background)
@@ -156,7 +156,7 @@ if SERVER then
   function DROwnerGetsDamage(ent,dmginfo)
     if ent:IsPlayer() then
       local ply = ent
-      if !ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 1 then
+      if !ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 1 and ply:HasWeapon("weapon_ttt_dead_ringer") then
         if dmginfo:GetDamage() >= 2 and dmginfo:GetDamage() < ent:Health() then
           ply:DRfakedeath(dmginfo)
         elseif ply:IsOnFire() then
@@ -179,23 +179,21 @@ if SERVER then
     for k,v in pairs(player.GetAll()) do
       if v:IsTerror() and v:IsFakeDead() then
         --v:SetColor(255,255,255,255)
-        v:SetNWInt("DRStatus",0)
-        v:SetNWBool("DRDead",false)
-        v:SetNWInt("DRCharge", 8 )
         net.Start("DRChangeMaterial")
         net.WriteBool(false)
         net.Send(v)
       end
+      v:SetNWInt("DRStatus",0)
+      v:SetNWBool("DRDead",false)
+      v:SetNWInt("DRCharge", 8 )
     end
   end
 
   function DRSpawnReset( ply )
-    if ply:IsFakeDead() then
       --ply:SetColor(255,255,255,255)
       ply:SetNWInt("DRStatus",0)
       ply:SetNWBool("DRDead",false)
       ply:SetNWInt("DRCharge", 8 )
-    end
   end
 
   function DRUncloakKey( ply, key )
