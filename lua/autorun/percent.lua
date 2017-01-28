@@ -74,7 +74,7 @@ if SERVER then
 						end
 					elseif target:GetTraitor() then
 						TTTPercent.SetPercent(v,v:GetNWInt("PlayerPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2))
-						v:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2) )
+						v:SetNWInt("UsedPercentage", v:GetNWInt("UsedPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2) )
 						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
 					end
 				end
