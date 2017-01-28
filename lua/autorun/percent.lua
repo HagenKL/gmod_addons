@@ -69,13 +69,13 @@ if SERVER then
 				ply:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") - (totalpercent - 100) )
 				for k,v in pairs(TTTPercent.percentbetters[target:SteamID()]) do
 					if target:IsRole(ROLE_INNOCENT) then
-						TTTPercent.SetPercent(ply,v:GetNWInt("PlayerPercentage") - v:GetNWInt("UsedPercentageontarget " .. target:SteamID()))
+						TTTPercent.SetPercent(v,v:GetNWInt("PlayerPercentage") - v:GetNWInt("UsedPercentageontarget " .. target:SteamID()))
 						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
 						if v:IsRole(ROLE_INNOCENT) or v:GetDetective() then
 							v:SetNWBool("TTTPercentPunishment", true)
 						end
 					elseif target:GetTraitor() then
-						TTTPercent.SetPercent(ply,v:GetNWInt("PlayerPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2))
+						TTTPercent.SetPercent(v,v:GetNWInt("PlayerPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2))
 						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
 					end
 				end
