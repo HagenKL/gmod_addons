@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddWorkshop("")
+  resource.AddWorkshop("842302491")
   resource.AddFile("materials/vgui/ttt/icon_juggernog.vmt")
   util.AddNetworkString("DrinkingtheJuggernog")
 end

@@ -1,6 +1,5 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddWorkshop("")
   resource.AddFile("materials/vgui/ttt/icon_phd.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_phd.png")
   util.AddNetworkString("DrinkingthePHD")

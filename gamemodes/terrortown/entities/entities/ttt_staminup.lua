@@ -1,6 +1,5 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddWorkshop("")
   resource.AddFile("materials/vgui/ttt/icon_staminup.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_staminup.png")
   util.AddNetworkString("DrinkingtheStaminup")
