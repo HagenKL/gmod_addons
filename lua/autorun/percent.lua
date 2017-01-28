@@ -53,9 +53,7 @@ if SERVER then
 		if selected then
 			ply:SetNWInt("PercentCounter", ply:GetNWInt("PercentCounter") + percent)
 		else
-			if TTTPercent.percentbetters[target:SteamID()] == nil then
-				TTTPercent.percentbetters[target:SteamID()] = {}
-			end
+			TTTPercent.percentbetters[target:SteamID()] = TTTPercent.percentbetters[target:SteamID()] or {}
 			table.insert(TTTPercent.percentbetters[target:SteamID()], ply)
 			local totalpercent = percent + target:GetNWInt("PercentCounter")
 			ply:SetNWInt("UsedPercentageontarget " .. target:SteamID(), ply:GetNWInt("UsedPercentageontarget " .. target:SteamID()) + percent )
@@ -76,6 +74,7 @@ if SERVER then
 						end
 					elseif target:GetTraitor() then
 						TTTPercent.SetPercent(v,v:GetNWInt("PlayerPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2))
+						v:SetNWInt("UsedPercentage", ply:GetNWInt("UsedPercentage") - math.Round(v:GetNWInt("UsedPercentageontarget " .. target:SteamID()) / 2) )
 						v:SetNWInt("UsedPercentageontarget " .. target:SteamID(), 0)
 					end
 				end
