@@ -131,7 +131,7 @@ if SERVER then
       RandomatExplosion,
       RandomatTime,
       RandomatRandomWeapons,
-      RandomatBullet,
+      --RandomatBullet,
       RandomatSideWays,
       RandomatScreenFlip,
       RandomatInvert
