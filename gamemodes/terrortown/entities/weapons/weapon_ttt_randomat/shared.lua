@@ -546,7 +546,7 @@ if SERVER then
     net.Broadcast()
   end
   function RandomatExplode()
-    RandomatBroadcast("Randomat: ", Color(255,255,255), "A Random Person will explode in 30 seconds! Watch out!")
+    RandomatBroadcast("Randomat: ", Color(255,255,255), "A Random Person will explode in 30 seconds! Watch out! (EXCEPT DETECTIVES)")
     local effectdata = EffectData()
     timer.Create("RandomatExplode", 30, 1, function()
         local aliveplayer = {}
@@ -554,13 +554,17 @@ if SERVER then
           if v:IsTerror() and !v:GetDetective() then table.insert(aliveplayer,v) end
         end
         local randomply = aliveplayer[math.random(#aliveplayer)]
-        RandomatBroadcast("Randomat: ", Color(255,255,255), randomply:Nick() .. " exploded!")
-        randomply:EmitSound( Sound ("ambient/explosions/explode_4.wav") )
-        util.BlastDamage( randomply, randomply, randomply:GetPos() , 300 , 10000 )
-        effectdata:SetStart( randomply:GetPos() + Vector(0,0,10) )
-        effectdata:SetOrigin( randomply:GetPos() + Vector(0,0,10) )
-        effectdata:SetScale( 1 )
-        util.Effect( "HelicopterMegaBomb", effectdata )
+        if IsValid(randomply) then
+          RandomatBroadcast("Randomat: ", Color(255,255,255), randomply:Nick() .. " exploded!")
+          randomply:EmitSound( Sound ("ambient/explosions/explode_4.wav") )
+          util.BlastDamage( randomply, randomply, randomply:GetPos() , 300 , 10000 )
+          effectdata:SetStart( randomply:GetPos() + Vector(0,0,10) )
+          effectdata:SetOrigin( randomply:GetPos() + Vector(0,0,10) )
+          effectdata:SetScale( 1 )
+          util.Effect( "HelicopterMegaBomb", effectdata )
+        else
+          RandomatBroadcast("Randomat: ", Color(255,255,255), "No one found to Explode!")
+        end
       end )
     hook.Add("TTTPrepareRound", "TTTRandomatExplode", function() timer.Remove("RandomatExplode") end)
     hook.Add("TTTEndRound", "TTTRandomatExplode", function() timer.Remove("RandomatExplode") end)
@@ -610,7 +614,7 @@ if SERVER then
   end
 
   function RandomatSuperBlitz()
-    RandomatBroadcast("Randomat: ", Color(255,255,255), "TTT-SuperBlitz, 400% More Speed!")
+    RandomatBroadcast("Randomat: ", Color(255,255,255), "TTT-SuperVote, 400% More Speed!")
     for k,v in pairs(player.GetAll()) do
       v.RandomatSuperSpeed = true
     end
@@ -661,12 +665,16 @@ if SERVER then
     RandomatBroadcast("Randomat: ", COLOR_WHITE, "Flipping your Screen UPSIDE DOWN!")
     for k,ply in pairs(player.GetAll()) do
       local Ang = ply:EyeAngles()
-      ply:SetEyeAngles( Angle( Ang.x, Ang.y, 180 ) )
+      if Ang.z != 180 then
+        ply:SetEyeAngles( Angle( Ang.x, Ang.y, 180 ) )
+      end
     end
     timer.Create("RandomatFlipScreen",1,0, function()
       for k,ply in pairs(player.GetAll()) do
         local Ang = ply:EyeAngles()
-        ply:SetEyeAngles( Angle( Ang.x, Ang.y, 180 ) )
+        if Ang.z != 180 then
+          ply:SetEyeAngles( Angle( Ang.x, Ang.y, 180 ) )
+        end
       end
     end)
     hook.Add("TTTEndRound", "UndoRandomatFlipScreen", function()
