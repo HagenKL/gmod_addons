@@ -551,7 +551,7 @@ if SERVER then
     timer.Create("RandomatExplode", 30, 1, function()
         local aliveplayer = {}
         for k,v in pairs(player.GetAll()) do
-          if v:IsTerror() then table.insert(aliveplayer,v) end
+          if v:IsTerror() and !v:GetDetective() then table.insert(aliveplayer,v) end
         end
         local randomply = aliveplayer[math.random(#aliveplayer)]
         RandomatBroadcast("Randomat: ", Color(255,255,255), randomply:Nick() .. " exploded!")
@@ -645,7 +645,7 @@ if SERVER then
   function RandomatRandomHealth()
     RandomatBroadcast("Randomat: ", Color(255,255,255),"Random Health for everyone!")
     for k,v in pairs(player.GetAll()) do
-      local randomhealth = v:Health() + math.random(1,100)
+      local randomhealth = math.random(1,200)
       v:SetHealth( randomhealth )
       v:SetMaxHealth( randomhealth )
     end
@@ -661,13 +661,20 @@ if SERVER then
     RandomatBroadcast("Randomat: ", COLOR_WHITE, "Flipping your Screen UPSIDE DOWN!")
     for k,ply in pairs(player.GetAll()) do
       local Ang = ply:EyeAngles()
-      ply:SetEyeAngles( Angle( Ang.x, Ang.y, Ang.z + 180 ) )
+      ply:SetEyeAngles( Angle( Ang.x, Ang.y, 180 ) )
     end
-    hook.Add("TTTEndRound", "UndoFlipScreen", function()
+    timer.Create("RandomatFlipScreen",1,0, function()
+      for k,ply in pairs(player.GetAll()) do
+        local Ang = ply:EyeAngles()
+        ply:SetEyeAngles( Angle( Ang.x, Ang.y, 180 ) )
+      end
+    end)
+    hook.Add("TTTEndRound", "UndoRandomatFlipScreen", function()
         for k,ply in pairs(player.GetAll()) do
           local Ang = ply:EyeAngles()
           ply:SetEyeAngles( Angle( Ang.x, Ang.y, 0 ) )
         end
+        timer.Remove("RandomatFlipScreen")
       end)
   end
 

@@ -124,8 +124,7 @@ if SERVER then
 
   function SecondChance( victim, inflictor, attacker)
     local SecondChanceRandom = math.random(1,100)
-    if victim.shouldasc == true and SecondChanceRandom < math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99)
-    then
+    if victim.shouldasc == true and SecondChanceRandom < math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99) then
       victim.NOWINASC = true
       victim:SetNWInt("ASCthetimeleft", 10)
       timer.Create("TTTASC" .. victim:EntIndex() , 1 ,10, function()
@@ -134,6 +133,7 @@ if SERVER then
             if ( victim:GetNWInt("ASCthetimeleft") <= 0 ) then
               victim:SetNWBool("ASCCanRespawn", false)
               victim:ASCHandleRespawn(true)
+              victim.NOWINASC = false
             end
             if ( victim:GetNWInt("ASCthetimeleft") <= 9 ) then
               victim:SetNWBool("ASCCanRespawn", true)
@@ -186,14 +186,20 @@ if SERVER then
 
   function plymeta:ASCHandleRespawn(corpse)
     if !IsValid(self) then return end
-    local body = FindCorpse( self )
-    local spawnPos = FindASCPosition(body)
-    if !spawnPos then return end
     self.shouldasc = false
     self.NOWINASC = false
     timer.Remove("TTTASC" .. self:EntIndex())
     self:SetNWBool("ASCCanRespawn", false)
+    local body = FindCorpse( self )
     if !IsValid(body) then
+      if SERVER then
+        net.Start("ASCError")
+        net.Send(self)
+      end
+      return
+    end
+    local spawnPos = FindASCPosition(body)
+    if !spawnPos then
       if SERVER then
         net.Start("ASCError")
         net.Send(self)

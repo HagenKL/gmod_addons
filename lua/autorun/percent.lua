@@ -320,36 +320,39 @@ elseif CLIENT then
 			DButton:SetPos(frame:GetWide() / 2 + 25, frame:GetTall() - 50)
 
 			DButton.DoClick = function()
+				if LocalPlayer():IsTerror() then
+					local nick,steamid = DComboBox:GetSelected()
+					local percent = math.Round(Slider:GetValue())
 
-				local nick,steamid = DComboBox:GetSelected()
-				local percent = math.Round(Slider:GetValue())
-
-				if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
-					local ply = player.GetBySteamID(steamid)
-					if ply:GetNWInt("PercentCounter") <= 100 then
-						local leftpercent = LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage")
-						if percent <= leftpercent then
-							net.Start("TTTPlacedPercent")
-							net.WriteInt(percent,12)
-							net.WriteEntity(ply)
-							net.SendToServer()
+					if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
+						local ply = player.GetBySteamID(steamid)
+						if ply:GetNWInt("PercentCounter") <= 100 then
+							local leftpercent = LocalPlayer():GetNWInt("PlayerPercentage") - LocalPlayer():GetNWInt("UsedPercentage")
+							if percent <= leftpercent then
+								net.Start("TTTPlacedPercent")
+								net.WriteInt(percent,12)
+								net.WriteEntity(ply)
+								net.SendToServer()
+							else
+								net.Start("TTTPlacedPercent")
+								net.WriteInt(leftpercent,12)
+								net.WriteEntity(ply)
+								net.SendToServer()
+							end
 						else
-							net.Start("TTTPlacedPercent")
-							net.WriteInt(leftpercent,12)
-							net.WriteEntity(ply)
-							net.SendToServer()
+							chat.AddText("TTT Prozent: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+							chat.PlaySound()
 						end
-					else
-						chat.AddText("TTT Prozent: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+					elseif nick == "" or !nick then
+						chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keinen Spieler ausgewählt.")
 						chat.PlaySound()
 					end
-				elseif nick == "" or !nick then
-					chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast keinen Spieler ausgewählt.")
-					chat.PlaySound()
+					frame:Close()
+				else
+					chat.AddText("TTT Prozent: ", COLOR_WHITE, "Tote können nicht voten!")
+					frame:Close()
 				end
-				frame:Close()
 			end
-
 		end )
 
 	net.Receive("TTTPercentMessage",function()
