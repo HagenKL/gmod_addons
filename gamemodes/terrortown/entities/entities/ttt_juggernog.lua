@@ -2,51 +2,53 @@ if SERVER then
   AddCSLuaFile()
   resource.AddWorkshop("842302491")
   resource.AddFile("materials/vgui/ttt/icon_juggernog.vmt")
+  resource.AddFile("materials/vgui/ttt/perks/hud_juggernog.png")
   util.AddNetworkString("DrinkingtheJuggernog")
 end
 
-function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
-      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
-      freeID = i
+if CLIENT then
+  -- feel for to use this function for your own perk, but please credit Zaratusa
+  -- your perk needs a "hud = true" in the table, to work properly
+  local defaultY = ScrH() / 2 + 20
+  local function getYCoordinate(currentPerkID)
+    local amount, i, perk = 0, 1
+    while (i < currentPerkID) do
+      perk = GetEquipmentItem(LocalPlayer():GetRole(), i)
+      if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
+        amount = amount + 1
+      end
+      i = i * 2
     end
-    i = i * 2
+
+    return defaultY - 80 * amount
   end
 
-  return freeID
-end
-
-EQUIP_JUGGERNOG = getNextFreeID()
-
-local Juggernog = {
-  id = EQUIP_JUGGERNOG,
-  loadout = false,
-  type = "item_passive",
-  material = "vgui/ttt/icon_juggernog",
-  name = "Juggernog",
-  desc = "Get the maximum health avaible with this drink!",
-  hud = false
-}
-
-local detectiveCanUse = CreateConVar("ttt_juggernog_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the Juggernog.")
-local traitorCanUse = CreateConVar("ttt_juggernog_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the Juggernog.")
-
-if (detectiveCanUse:GetBool()) then
-  table.insert(EquipmentItems[ROLE_DETECTIVE], Juggernog)
-end
-if (traitorCanUse:GetBool()) then
-  table.insert(EquipmentItems[ROLE_TRAITOR], Juggernog)
+  local yCoordinate = defaultY
+  -- best performance, but the has about 0.5 seconds delay to the HasEquipmentItem() function
+  hook.Add("TTTBoughtItem", "TTTJuggernog", function()
+      if (LocalPlayer():HasEquipmentItem(EQUIP_JUGGERNOG)) then
+        yCoordinate = getYCoordinate(EQUIP_JUGGERNOG)
+      end
+    end)
+  local material = Material("vgui/ttt/perks/hud_juggernog.png")
+  hook.Add("HUDPaint", "TTTJuggernog", function()
+      if LocalPlayer():GetNWBool("JuggernogActive", false) and LocalPlayer():HasEquipmentItem(EQUIP_JUGGERNOG) then
+        surface.SetMaterial(material)
+        surface.SetDrawColor(255, 255, 255, 255)
+        surface.DrawTexturedRect(20, yCoordinate, 64, 64)
+      end
+    end)
+    LANG.AddToLanguage("english", "item_juggernog_name", "Juggernog")
+    LANG.AddToLanguage("english", "item_juggernog_desc", "Juggernog Perk.\nAutomatically drinks perk to get \nthe maximum health avaible!")
 end
 
 if SERVER then
   local plymeta = FindMetaTable("Player")
   function plymeta:CanDrinkJugger()
     if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() == "ttt_perk_staminup" or self:GetActiveWeapon():GetClass() == "ttt_perk_phd") then
+      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_juggernog") then
         timer.Create("MaketheJuggerDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon():GetClass() != "ttt_perk_staminup" and self:GetActiveWeapon():GetClass() != "ttt_perk_phd" then
+            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_juggernog") then
               self:GivetheJugger()
               timer.Remove("MaketheJuggerDrink" .. self:EntIndex())
             end
@@ -62,8 +64,6 @@ if SERVER then
     self:SelectWeapon("ttt_perk_juggernog")
     if self:HasWeapon("ttt_perk_juggernog") then
       self:GetWeapon("ttt_perk_juggernog"):DrinkTheBottle()
-    elseif IsValid(self) and !self:HasWeapon("ttt_perk_juggernog") then
-      self:CanDrinkJugger()
     end
   end
 

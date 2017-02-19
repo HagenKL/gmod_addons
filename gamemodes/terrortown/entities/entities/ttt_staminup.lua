@@ -37,42 +37,8 @@ if CLIENT then
         surface.DrawTexturedRect(20, yCoordinate, 64, 64)
       end
     end)
-
-end
-
-function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
-      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
-end
-
-EQUIP_STAMINUP = getNextFreeID()
-
-local STAMINUP = {
-  id = EQUIP_STAMINUP,
-  loadout = false,
-  type = "item_passive",
-  material = "vgui/ttt/icon_staminup",
-  name = "Stamin-Up Perk",
-  desc = "Stamin-Up Perk.\nAutomatically drink perk to greatly increase\nwalk speed.",
-  hud = true
-}
-
-local detectiveCanUse = CreateConVar("ttt_staminup_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the Stamin-Up.")
-local traitorCanUse = CreateConVar("ttt_staminup_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the Stamin-Up.")
-
-if (detectiveCanUse:GetBool()) then
-  table.insert(EquipmentItems[ROLE_DETECTIVE], STAMINUP)
-end
-if (traitorCanUse:GetBool()) then
-  table.insert(EquipmentItems[ROLE_TRAITOR], STAMINUP)
+    LANG.AddToLanguage("english", "item_staminup_name", "Stamin-Up")
+    LANG.AddToLanguage("english", "item_staminup_desc", "Stamin-Up Perk.\nAutomatically drinks perk to greatly increase\nwalk speed!")
 end
 
 if SERVER then
@@ -80,9 +46,9 @@ if SERVER then
   local plymeta = FindMetaTable("Player")
   function plymeta:CanDrinkStaminup()
     if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() == "ttt_perk_juggernog" or self:GetActiveWeapon():GetClass() == "ttt_perk_phd") then
+      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_staminup") then
         timer.Create("MaketheStaminUpDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() != "ttt_perk_juggernog" and self:GetActiveWeapon():GetClass() != "ttt_perk_phd") then
+            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_staminup") then
               self:GivetheStaminup()
               timer.Remove("MaketheStaminUpDrink" .. self:EntIndex())
             end
@@ -98,8 +64,6 @@ if SERVER then
     self:SelectWeapon("ttt_perk_staminup")
     if self:HasWeapon("ttt_perk_staminup") then
       self:GetWeapon("ttt_perk_staminup"):DrinkTheBottle()
-    elseif IsValid(self) and !self:HasWeapon("ttt_perk_staminup") then
-      self:CanDrinkStaminup()
     end
   end
 

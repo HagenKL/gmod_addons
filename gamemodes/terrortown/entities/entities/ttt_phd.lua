@@ -38,41 +38,8 @@ if CLIENT then
       end
     end)
 
-end
-
-function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
-      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
-end
-
-EQUIP_PHD = getNextFreeID()
-
-local PHD = {
-  id = EQUIP_PHD,
-  loadout = false,
-  type = "item_passive",
-  material = "vgui/ttt/icon_phd",
-  name = "PHD Flopper",
-  desc = "PHD Flopper Perk.\nAutomatically drinks perk to become \nimmune to fall damage,\nexplosion damage, and create an explosion\nwhere you land.",
-  hud = true
-}
-
-local detectiveCanUse = CreateConVar("ttt_phd_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the PHD.")
-local traitorCanUse = CreateConVar("ttt_phd_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the PHD.")
-
-if (detectiveCanUse:GetBool()) then
-  table.insert(EquipmentItems[ROLE_DETECTIVE], PHD)
-end
-if (traitorCanUse:GetBool()) then
-  table.insert(EquipmentItems[ROLE_TRAITOR], PHD)
+    LANG.AddToLanguage("english", "item_phd_name", "PHD Flopper")
+    LANG.AddToLanguage("english", "item_phd_desc", "PHD Flopper Perk.\nAutomatically drinks perk to become \nimmune to fall damage,\nexplosion damage, and create an explosion\nwhere you land.")
 end
 
 if SERVER then
@@ -80,9 +47,9 @@ if SERVER then
   local plymeta = FindMetaTable("Player")
   function plymeta:CanDrinkPHD()
     if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() == "ttt_perk_juggernog" or self:GetActiveWeapon():GetClass() == "ttt_perk_staminup") then
+      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_phd") then
         timer.Create("MakethePHDDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and (self:GetActiveWeapon():GetClass() != "ttt_perk_juggernog" and self:GetActiveWeapon():GetClass() != "ttt_perk_staminup") then
+            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_phd") then
               self:GivethePHD()
               timer.Remove("MakethePHDDrink" .. self:EntIndex())
             end
@@ -98,14 +65,13 @@ if SERVER then
     self:SelectWeapon("ttt_perk_phd")
     if self:HasWeapon("ttt_perk_phd") then
       self:GetWeapon("ttt_perk_phd"):DrinkTheBottle()
-    elseif IsValid(self) and !self:HasWeapon("ttt_perk_phd") then
-      self:CanDrinkPHD()
     end
   end
 
   hook.Add("TTTOrderedEquipment", "TTTPHD", function(ply, equipment, is_item)
       if is_item == EQUIP_PHD then
         ply:CanDrinkPHD()
+        print(ply:IsDrinking("ttt_perk_phd"))
       end
     end)
     hook.Add("TTTPrepareRound", "TTTPHDResettin", function()

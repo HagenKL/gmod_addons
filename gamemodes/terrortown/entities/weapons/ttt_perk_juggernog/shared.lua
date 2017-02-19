@@ -1,6 +1,8 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
   util.AddNetworkString("JuggerBlurHUD")
+  resource.AddFile("sound/perks/buy_jug.wav")
+  resource.AddFile("materials/models/perk_bottle/c_perk_bottle_jugg.vmt")
 end
 
 SWEP.Author = "Gamefreak"
@@ -18,7 +20,7 @@ SWEP.Spawnable = false
 SWEP.AdminSpawnable = true
 SWEP.HoldType = "camera"
 
-SWEP.ViewModel = "models/hoff/animations/perks/juggernog/jug.mdl"
+SWEP.ViewModel = "models/weapons/c_perk_bottle.mdl"
 SWEP.WorldModel = ""
 
 SWEP.Primary.ClipSize = -1
@@ -44,27 +46,29 @@ SWEP.DrawCrosshair = false
 SWEP.ViewModelFOV = 70
 SWEP.ViewModelFlip = false
 SWEP.DeploySpeed = 4
+SWEP.UseHands = true
 
 function SWEP:DrinkTheBottle()
   net.Start("DrinkingtheJuggernog")
   net.Send(self.Owner)
   timer.Simple(0.5,function()
       if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-        self:EmitSound("hoff/animations/perks/017f11fa.wav")
+        self:EmitSound("perks/open.wav")
         self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
         timer.Simple(0.8,function()
             if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-              self:EmitSound("hoff/animations/perks/0180acfa.wav")
+              self:EmitSound("perks/drink.wav")
               self.Owner:ViewPunch( Angle( -2.5, 0, 0 ) )
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-                    self:EmitSound("hoff/animations/perks/017c99be.wav")
+                    self:EmitSound("perks/smash.wav")
                     net.Start("JuggerBlurHUD")
                     net.Send(self.Owner)
                     timer.Create("TTTJuggernog" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-                          self:EmitSound("hoff/animations/perks/017bf9c0.wav")
+                          self:EmitSound("perks/burp.wav")
                           self.Owner:SetHealth(self.Owner:GetMaxHealth())
+                          self.Owner:SetNWBool("JuggernogActive",true)
                           self:Remove()
                         end
                       end)
@@ -78,13 +82,34 @@ end
 
 hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
   for k,v in pairs(player.GetAll()) do
+    v:SetNWBool("JuggernogActive",false)
     timer.Remove("TTTJuggernog" .. v:EntIndex())
+  end
+end)
+
+hook.Add("DoPlayerDeath","TTTPHDReset", function(pl)
+    if pl:HasEquipmentItem(EQUIP_JUGGERNOG) then
+      pl:SetNWBool("JuggernogActive",false)
+    end
+  end)
+
+hook.Add("EntityTakeDamage", "TTTJuggernogReduction", function(target, dmginfo)
+  if target:IsPlayer() and target:GetNWBool("JuggernogActive",false) and target:HasEquipmentItem(EQUIP_JUGGERNOG) then
+    dmginfo:ScaleDamage(0.8)
   end
 end)
 
 function SWEP:OnRemove()
   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
     RunConsoleCommand("lastinv")
+  end
+
+  if CLIENT then
+    if self.Owner == LocalPlayer() then
+      local vm = LocalPlayer():GetViewModel()
+      vm:SetMaterial(oldmat)
+      oldmat = nil
+    end
   end
 end
 
@@ -111,21 +136,35 @@ if CLIENT then
     end)
 
     net.Receive("JuggerBlurHUD", function()
-      local matBlurScreen = Material( "pp/blurscreen" )
+      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "JuggerBlurHUD", function()
         if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_juggernog" then
-          surface.SetMaterial( matBlurScreen )
-          surface.SetDrawColor( 255, 255, 255, 255 )
-
-          matBlurScreen:SetFloat( "$blur",6 )
-          render.UpdateScreenEffectTexture()
-
-          surface.DrawTexturedRect( 0,0, ScrW(), ScrH() )
-
-          surface.SetDrawColor( 205, 0, 0, 40 )
-          surface.DrawRect( 0,0, ScrW(), ScrH() )
+          DrawMotionBlur(0.4, 0.8, 0.01)
         end
       end)
       timer.Simple(0.7,function() hook.Remove( "HUDPaint", "JuggerBlurHUD" ) end)
     end)
+end
+
+function SWEP:Initialize()
+  if CLIENT then
+    if self.Owner == LocalPlayer() then
+      local vm = LocalPlayer():GetViewModel()
+      local mat = "models/perk_bottle/c_perk_bottle_jugg" --perk_materials[self:GetPerk()]
+      oldmat = vm:GetMaterial() or ""
+      vm:SetMaterial(mat)
+    end
+  end
+end
+
+function SWEP:GetViewModelPosition( pos, ang )
+
+ 	local newpos = LocalPlayer():EyePos()
+	local newang = LocalPlayer():EyeAngles()
+	local up = newang:Up()
+
+	newpos = newpos + LocalPlayer():GetAimVector()*3 - up*65
+
+	return newpos, newang
+
 end

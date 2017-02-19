@@ -1,6 +1,8 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
   util.AddNetworkString("StaminBlurHUD")
+  resource.AddFile("sound/perks/buy_stam.wav")
+  resource.AddFile("materials/models/perk_bottle/c_perk_bottle_stamin.vmt")
 end
 
 SWEP.Author = "Gamefreak"
@@ -17,7 +19,7 @@ SWEP.AllowDrop = false
 SWEP.IsSilent = false
 SWEP.NoSights = false
 SWEP.AutoSpawnable = false
-SWEP.ViewModel = "models/hoff/animations/perks/staminup/stam.mdl"
+SWEP.ViewModel = "models/weapons/c_perk_bottle.mdl"
 SWEP.WorldModel = ""
 SWEP.HoldType = "camera"
 
@@ -44,26 +46,27 @@ SWEP.DrawAmmo = false
 SWEP.DrawCrosshair = false
 SWEP.ViewModelFlip = false
 SWEP.DeploySpeed = 4
+SWEP.UseHands = true
 
 function SWEP:DrinkTheBottle()
   net.Start("DrinkingtheStaminup")
   net.Send(self.Owner)
   timer.Simple(0.5,function()
       if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-        self:EmitSound("hoff/animations/perks/017f11fa.wav")
+        self:EmitSound("perks/open.wav")
         self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
         timer.Simple(0.8,function()
             if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-              self:EmitSound("hoff/animations/perks/0180acfa.wav")
+              self:EmitSound("perks/drink.wav")
               self.Owner:ViewPunch( Angle( -2.5, 0, 0 ) )
               timer.Simple(1,function()
                   if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-                    self:EmitSound("hoff/animations/perks/017c99be.wav")
+                    self:EmitSound("perks/smash.wav")
                     net.Start("StaminBlurHUD")
                     net.Send(self.Owner)
                     timer.Create("TTTStaminUp" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and self.Owner:IsTerror() then
-                          self:EmitSound("hoff/animations/perks/017bf9c0.wav")
+                          self:EmitSound("perks/burp.wav")
                           self.Owner:SetNWBool("StaminUpActive",true)
                           self:Remove()
                         end
@@ -93,6 +96,14 @@ function SWEP:OnRemove()
   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
     RunConsoleCommand("lastinv")
   end
+
+	if CLIENT then
+		if self.Owner == LocalPlayer() then
+			local vm = LocalPlayer():GetViewModel()
+			vm:SetMaterial(oldmat)
+      oldmat = nil
+		end
+	end
 end
 
 function SWEP:Holster()
@@ -111,19 +122,10 @@ if CLIENT then
       surface.PlaySound("hoff/animations/perks/buy_stam.wav")
     end)
     net.Receive("StaminBlurHUD", function()
-      local matBlurScreen = Material( "pp/blurscreen" )
+      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "StaminBlurHUD", function()
         if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_staminup" then
-          surface.SetMaterial( matBlurScreen )
-          surface.SetDrawColor( 255, 255, 255, 255 )
-
-          matBlurScreen:SetFloat( "$blur",6 )
-          render.UpdateScreenEffectTexture()
-
-          surface.DrawTexturedRect( 0,0, ScrW(), ScrH() )
-
-          surface.SetDrawColor( 238, 154, 0, 40 )
-          surface.DrawRect( 0,0, ScrW(), ScrH() )
+          DrawMotionBlur(0.4, 0.8, 0.01)
         end
       end)
       timer.Simple(0.7,function() hook.Remove( "HUDPaint", "StaminBlurHUD" ) end)
@@ -132,6 +134,29 @@ end
 
 hook.Add("TTTPlayerSpeed", "StaminUpSpeed", function(ply)
     if ply:GetNWBool("StaminUpActive",false) and ply:HasEquipmentItem(EQUIP_STAMINUP) then
-      return 2
+      return 1.5
     end
   end)
+
+  function SWEP:Initialize()
+    if CLIENT then
+      if self.Owner == LocalPlayer() then
+        local vm = LocalPlayer():GetViewModel()
+        local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
+        oldmat = vm:GetMaterial() or ""
+        vm:SetMaterial(mat)
+      end
+    end
+  end
+
+  function SWEP:GetViewModelPosition( pos, ang )
+
+ 	local newpos = LocalPlayer():EyePos()
+	local newang = LocalPlayer():EyeAngles()
+	local up = newang:Up()
+
+	newpos = newpos + LocalPlayer():GetAimVector()*3 - up*65
+
+	return newpos, newang
+
+end
