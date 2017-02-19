@@ -87,7 +87,6 @@ function ApplySpeed(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
     wep:SetDeploySpeed(2)
     if wep.AmmoEnt != "item_box_buckshot_ttt" then
-      print("hi")
       wep.OldReload = wep.Reload
       wep.Reload = function( self, ... )
         if ( self:Clip1() == self.Primary.ClipSize or self.Owner:GetAmmoCount( self.Primary.Ammo ) <= 0 ) or self.Reloading then return end
@@ -134,7 +133,6 @@ function ApplySpeed(wep)
         end
       end
     elseif wep.AmmoEnt == "item_box_buckshot_ttt" then
-      print("hi")
       wep.OldStartReload = wep.StartReload
       wep.OldPerformReload = wep.PerformReload
       wep.OldFinishReload = wep.FinishReload

@@ -71,7 +71,6 @@ if SERVER then
   hook.Add("TTTOrderedEquipment", "TTTPHD", function(ply, equipment, is_item)
       if is_item == EQUIP_PHD then
         ply:CanDrinkPHD()
-        print(ply:IsDrinking("ttt_perk_phd"))
       end
     end)
     hook.Add("TTTPrepareRound", "TTTPHDResettin", function()
