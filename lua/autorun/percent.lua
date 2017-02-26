@@ -3,7 +3,6 @@ if SERVER then
   CreateConVar("ttt_startpercent"," 150",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Prozentzahl mit der jeder startet.")
   TTTPercent.percentbetters = TTTPercent.percentbetters or {}
   AddCSLuaFile()
-  local beaconplaced = false
   util.AddNetworkString("TTTPercentMenu")
   util.AddNetworkString("TTTPercentFailed")
   util.AddNetworkString("TTTPlacedPercent")
@@ -37,7 +36,7 @@ if SERVER then
       end
     elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
       TTTPercent.PlaceBeacon(sender)
-			return false
+      return false
     end
   end
 
@@ -141,7 +140,6 @@ if SERVER then
       for k,v in pairs(player.GetAll()) do
         TTTPercent.ResetPercent(v, false)
       end
-      beaconplaced = false
       table.Empty(TTTPercent.percentbetters)
       net.Start("TTTResetPercent")
       net.WriteBool(true)
@@ -201,7 +199,6 @@ if SERVER then
         v:SetNWInt("UsedPercentageontarget " .. ply:SteamID(), 0)
       end
     end
-    beaconplaced = false
     net.Start("TTTPercentRemoveAllHalos")
     net.Broadcast()
   end
@@ -267,7 +264,7 @@ if SERVER then
       net.Start("TTTPercentBeacon")
       net.WriteFloat(2)
       net.Send(ply)
-			return
+      return
     end
 
     if ply:IsInWorld() then
@@ -285,42 +282,27 @@ if SERVER then
           phys:EnableMotion(false)
         end
 
-        beaconplaced = true
         ply:SetNWBool("CanSpawnVoteBeacon",false)
         ply:SetNWEntity("VoteBeacon",votebeacon)
-				net.Start("TTTPercentBeacon")
-				net.WriteFloat(3)
-				net.Send(ply)
+        net.Start("TTTPercentBeacon")
+        net.WriteFloat(3)
+        net.Send(ply)
       end
     end
   end
 
   function TTTPercent.AdjustSpeed(ply)
-    if beaconplaced then
-      local arethereanybeacons
-      for k,v in pairs(util.GetAlivePlayers()) do
-        if IsValid(v:GetNWEntity("VoteBeacon")) and v:GetNWEntity("VoteBeacon"):IsInWorld() then
-          arethereanybeacons = true
-          break
-        elseif !IsValid(v:GetNWEntity("VoteBeacon")) then
-          arethereanybeacons = false
-        end
-      end
-      if arethereanybeacons then
-        local beacon = ply:GetNWEntity("VoteBeacon")
-        if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 and GetRoundState() == ROUND_ACTIVE then
-          return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
-        elseif !IsValid(beacon) then
-          return 0.75
-        elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 and GetRoundState() == ROUND_ACTIVE then
-          return 1.25
-        elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 and GetRoundState() == ROUND_ACTIVE then
-          return 1
-        end
-      end
-    else
+    local beacon = ply:GetNWEntity("VoteBeacon")
+    if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 and GetRoundState() == ROUND_ACTIVE then
+      return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
+    elseif !IsValid(beacon) then
       return 0.75
+    elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 and GetRoundState() == ROUND_ACTIVE then
+      return 1.25
+    elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 and GetRoundState() == ROUND_ACTIVE then
+      return 1
     end
+    return 1
   end
 
   local plymeta = FindMetaTable("Player")
@@ -565,8 +547,8 @@ elseif CLIENT then
     elseif bool == 2 then
       chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du musst beim Plazieren auf dem Boden stehen!")
     elseif bool == 3 then
-			chat.AddText("TTT Prozent: ", COLOR_WHITE, "Dein Beacon wurde erfolgreicht plaziert!")
-		end
+      chat.AddText("TTT Prozent: ", COLOR_WHITE, "Dein Beacon wurde erfolgreicht plaziert!")
+    end
     chat.PlaySound()
   end
 
