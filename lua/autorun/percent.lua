@@ -35,7 +35,7 @@ if SERVER then
         net.Send(sender)
         return false
       end
-    elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
+    elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
       TTTPercent.PlaceBeacon(sender)
       return false
     end
@@ -308,11 +308,15 @@ if SERVER then
       local plymeta = FindMetaTable("Player")
 
       function plymeta:SetSpeed(slowed)
-        local mul = TTTPercent.AdjustSpeed(self) or 0.75
-        if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-          mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
-        elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-          mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
+        if GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST then
+          local mul = TTTPercent.AdjustSpeed(self) or 0.75
+          if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+            mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
+          elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+            mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
+          end
+        else
+          local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or 1
         end
 
         if slowed then
