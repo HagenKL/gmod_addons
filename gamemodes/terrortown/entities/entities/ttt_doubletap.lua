@@ -1,8 +1,8 @@
-if SERVER then
-  AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_doubletap.vmt")
-  resource.AddFile("materials/vgui/ttt/perks/hud_doubletap.png")
-  util.AddNetworkString("DrinkingtheDoubleTap")
+if SERVER then -- Currently Disabled due to balance reason, uncomment so enable, also uncomment in sh_functions.lua line 27
+  -- AddCSLuaFile()
+  -- resource.AddFile("materials/vgui/ttt/icon_doubletap.vmt")
+  -- resource.AddFile("materials/vgui/ttt/perks/hud_doubletap.png")
+  -- util.AddNetworkString("DrinkingtheDoubleTap")
 end
 
 if CLIENT then
