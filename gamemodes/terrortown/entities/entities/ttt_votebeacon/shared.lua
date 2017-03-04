@@ -1,9 +1,14 @@
-AddCSLuaFile()
+if SERVER then
+  AddCSLuaFile()
+  resource.AddFile("models/radio_reference.mdl")
+  resource.AddFile("materials/models/props/radio.vmt")
+end
 
 ENT.Type = "anim"
-ENT.Model = Model("models/props_lab/reciever01b.mdl")
+ENT.Base = "base_anim"
+ENT.Model = Model("models/radio_reference.mdl")
 ENT.CanUseKey = true
-ENT.CanPickup = false
+ENT.CanPickup = true
 
 function ENT:Initialize()
   self:SetModel(self.Model)
@@ -14,27 +19,27 @@ function ENT:Initialize()
 
   self:SetMoveType(MOVETYPE_NONE)
   self:SetSolid(SOLID_VPHYSICS)
-  self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+  self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
+
 
   if SERVER then
     self:SetMaxHealth(100)
-  end
-  self:SetHealth(100)
-
-  if SERVER then
     self:SetUseType(SIMPLE_USE)
-    self:NextThink(CurTime() + 1)
     if self:GetOwner():IsValid() and self:GetOwner():GetNWInt("PercentCounter",0) >= 100 then
       net.Start("TTTPercentAddHalos")
       net.WriteEntity(self)
       net.Broadcast()
     end
   end
+
+  self:SetHealth(self:GetOwner():GetNWInt("VoteBeaconHealth",100))
+
 end
 
 function ENT:UseOverride(activator)
   if IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator then
     activator:SetNWBool("CanSpawnVoteBeacon",true)
+    activator:SetNWInt("VoteBeaconHealth",self:Health())
     net.Start("TTTVoteBeaconPickUp")
     net.Send(activator)
     self:Remove()
@@ -43,10 +48,11 @@ end
 
 local zapsound = Sound("npc/assassin/ball_zap1.wav")
 function ENT:OnTakeDamage(dmginfo)
+  if dmginfo:GetInflictor() == self:GetOwner() or dmginfo:GetAttacker() == self:GetOwner() then return end
   self:TakePhysicsDamage(dmginfo)
 
   self:SetHealth(self:Health() - dmginfo:GetDamage())
-  if self:Health() < 0 then
+  if self:Health() <= 0 then
     self:Remove()
 
     if SERVER and self:GetOwner():IsValid() and self:GetOwner():GetNWInt("PercentCounter",0) >= 100 then
@@ -68,28 +74,15 @@ function ENT:OnTakeDamage(dmginfo)
   end
 end
 
---local beep = Sound("weapons/c4/c4_beep1.wav")
-function ENT:Think()
-  if CLIENT then
-    local dlight = DynamicLight(self:EntIndex())
-    if dlight then
-      dlight.Pos = self:GetPos()
-      dlight.r = 255
-      dlight.g = 255
-      dlight.b = 255
-      dlight.Brightness = 1
-      dlight.Size = 256
-      dlight.Decay = 500
+if CLIENT then
+  hook.Add("HUDDrawTargetID", "DrawVoteBeacon", function()
+    local e = LocalPlayer():GetEyeTrace().Entity
+    if IsValid(e) and e:GetClass() == "ttt_votebeacon" then
+      draw.SimpleText( e:GetOwner():Nick() .. "'s Beacon", "TargetID", ScrW() / 2.0 + 1, ScrH() / 2.0 + 41, COLOR_BLACK,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+      draw.SimpleText(e:GetOwner():Nick() .. "'s Beacon","TargetID",ScrW() / 2.0, ScrH() / 2.0 + 40,Color( 255, 255, 255, 255 ),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+      local _, color = util.HealthToString(e:Health(),e:GetMaxHealth())
+      draw.SimpleText(e:Health() .. " HP ","TargetIDSmall2",ScrW() / 2.0 + 1,ScrH() / 2.0 + 61,COLOR_BLACK,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+      draw.SimpleText(e:Health() .. " HP ","TargetIDSmall2",ScrW() / 2.0,ScrH() / 2.0 + 60,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
     end
-
-    self:NextThink(CurTime() + 5)
-    return true
-  end
-end
-
-
-if SERVER then
-function ENT:UpdateTransmitState()
-  return TRANSMIT_ALWAYS
-end
+  end)
 end

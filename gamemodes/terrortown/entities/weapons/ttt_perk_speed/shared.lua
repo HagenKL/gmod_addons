@@ -40,7 +40,7 @@ SWEP.Weight = 5
 SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 
-SWEP.PrintName = "Speed-Up"
+SWEP.PrintName = "Speed Cola"
 SWEP.Slot = 9
 SWEP.SlotPos = 1
 SWEP.DrawAmmo = false
@@ -69,9 +69,6 @@ function SWEP:DrinkTheBottle()
                         if IsValid(self) and self.Owner:IsTerror() then
                           self:EmitSound("perks/burp.wav")
                           self.Owner:SetNWBool("SpeedActive",true)
-                          for _,wep in pairs(self.Owner:GetWeapons()) do
-                            ApplySpeed(wep)
-                          end
                           self:Remove()
                         end
                       end)
@@ -103,6 +100,8 @@ function ApplySpeed(wep)
         self.Owner:GetViewModel():SetPlaybackRate(2)
         self:SetNextPrimaryFire(diff)
         self:SetNextSecondaryFire(diff)
+        self.Owner:SetFOV(0,0.2)
+        self:SetIronsights( false )
       end
       wep.OldThink = wep.Think
       wep.Think = function( self, ...)
@@ -211,7 +210,7 @@ function ApplySpeed(wep)
 end
 
 hook.Add("PlayerSwitchWeapon", "TTTSpeedEnable", function(ply, old, new)
-    if ply:GetNWBool("SpeedActive",false) then
+    if ply:GetNWBool("SpeedActive",false) and ply:HasEquipmentItem(EQUIP_SPEED) then
       ApplySpeed(new)
     end
   end)
@@ -221,13 +220,6 @@ hook.Add("TTTPrepareRound", "TTTSpeedReset", function()
       v:SetNWBool("SpeedActive",false)
       timer.Remove("TTTSpeed" .. v:EntIndex())
     end
-    oldondrop1 = nil
-    oldondrop2 = nil
-    oldfinishreload = nil
-    oldstartreload = nil
-    oldperformreload = nil
-    oldthink = nil
-    olddeploy = nil
   end)
 
 hook.Add("DoPlayerDeath", "TTTSpeedReset",function(ply)

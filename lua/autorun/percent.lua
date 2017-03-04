@@ -1,5 +1,6 @@
 TTTPercent = TTTPercent or {}
 if SERVER then
+  resource.AddWorkshop("828347015")
   CreateConVar("ttt_startpercent"," 150",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Prozentzahl mit der jeder startet.")
   TTTPercent.percentbetters = TTTPercent.percentbetters or {}
   AddCSLuaFile()
@@ -195,6 +196,7 @@ if SERVER then
       v:SetNWInt("UsedPercentage",0)
       v:SetNWBool("CanSpawnVoteBeacon", true)
       v:SetNWEntity("VoteBeacon",NULL)
+      v:SetNWInt("VoteBeaconHealth",100)
       for key,ply in pairs(player.GetAll()) do
         v:SetNWInt("UsedPercentageontarget " .. ply:SteamID(), 0)
       end
@@ -270,16 +272,14 @@ if SERVER then
     if ply:IsInWorld() then
       local votebeacon = ents.Create("ttt_votebeacon")
       if IsValid(votebeacon) then
-        votebeacon:PointAtEntity(ply)
+        votebeacon:SetAngles(ply:GetAngles())
 
-        votebeacon:SetPos(ply:GetPos() + Vector(0,0,5))
+        votebeacon:SetPos(ply:GetPos())
         votebeacon:SetOwner(ply)
         votebeacon:Spawn()
-        votebeacon:PhysWake()
-
         local phys = votebeacon:GetPhysicsObject()
         if ( phys:IsValid() ) then
-          phys:EnableMotion(false)
+          phys:Wake()
         end
 
         ply:SetNWBool("CanSpawnVoteBeacon",false)
@@ -295,37 +295,51 @@ if SERVER then
     local beacon = ply:GetNWEntity("VoteBeacon")
     if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 and GetRoundState() == ROUND_ACTIVE then
       return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
-    elseif !IsValid(beacon) then
-      return 0.75
     elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 and GetRoundState() == ROUND_ACTIVE then
       return 1.25
     elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 and GetRoundState() == ROUND_ACTIVE then
       return 1
-    end
-    return 1
-  end
-
-  local plymeta = FindMetaTable("Player")
-
-  function plymeta:SetSpeed(slowed)
-    local mul = TTTPercent.AdjustSpeed(self) or 0.75
-    if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-      mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
-    elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-      mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
-    end
-
-    --print(mul)
-    if slowed then
-      self:SetWalkSpeed(120 * mul)
-      self:SetRunSpeed(120 * mul)
-      self:SetMaxSpeed(120 * mul)
-    else
-      self:SetWalkSpeed(220 * mul)
-      self:SetRunSpeed(220 * mul)
-      self:SetMaxSpeed(220 * mul)
+    elseif !IsValid(beacon) then
+      return 0.75
     end
   end
+
+  hook.Add("Initialize", "TTTBeaconOverrideFunction", function ()
+      local plymeta = FindMetaTable("Player")
+
+      function plymeta:SetSpeed(slowed)
+        local mul = TTTPercent.AdjustSpeed(self) or 0.75
+        if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+          mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
+        elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+          mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
+        end
+
+        if slowed then
+          self:SetWalkSpeed(120 * mul)
+          self:SetRunSpeed(120 * mul)
+          self:SetMaxSpeed(120 * mul)
+        else
+          self:SetWalkSpeed(220 * mul)
+          self:SetRunSpeed(220 * mul)
+          self:SetMaxSpeed(220 * mul)
+        end
+      end
+    end )
+
+    function TTTPercent.RemoveBeacon(ply)
+      local beacon = ply:GetNWEntity("VoteBeacon")
+      if IsValid(beacon) then
+        beacon:TakeDamage(1000)
+        ply:SetNWEntity("VoteBeacon", NULL)
+      end
+    end
+
+    function TTTPercent.AddBeacon(ply)
+      if !IsValid(ply:GetNWEntity("VoteBeacon")) then
+        ply:SetNWBool("CanSpawnVoteBeacon", true)
+      end
+    end
 
   --hook.Add("TTTPlayerSpeed", "TTTVoteBeacon", TTTPercent.AdjustSpeed)
   concommand.Add("ttt_resetallpercentages", TTTPercent.ResetPercentforEveryOne)
@@ -338,8 +352,10 @@ if SERVER then
   hook.Add("TTTBeginRound", "ResetPercentages", TTTPercent.PunishtheInnocents)
   hook.Add("TTTEndRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
   hook.Add("ShutDown", "TTTSavePercentage", TTTPercent.SavePercentAll)
-  hook.Add("PlayerDeath", "TTTPercentRemoveHalos", TTTPercent.RemoveHalos )
+  hook.Add("PlayerDeath", "TTTPercentRemoveHalos", TTTPercent.RemoveHalos)
+  hook.Add("PlayerDeath", "TTTPercentRemoveBeacon" , TTTPercent.RemoveBeacon)
   hook.Add("PlayerSpawn", "TTTPercentAddHalos", TTTPercent.AddHalos)
+  hook.Add("PlayerSpawn", "TTTPercentAddBeacon", TTTPercent.AddBeacon)
 elseif CLIENT then
   TTTPercent.halos = TTTPercent.halos or {}
   surface.CreateFont("TTTPercentfont", {

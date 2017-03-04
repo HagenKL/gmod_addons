@@ -23,7 +23,8 @@ local Perks = {
   "PHD",
   "StaminUp",
   "Juggernog",
-  "Speed"
+  "Speed",
+  "DoubleTap"
 }
 
 local plymeta = FindMetaTable("Player")
@@ -47,8 +48,8 @@ end
 hook.Add("Initialize", "InitPerks", function()
   local count = 1
   for _,perk in pairs(Perks) do
-    _G["EQUIP_" .. string.upper(perk)] = getNextFreeID()*count
-    count = count*2
+    count = count * 2
+    _G["EQUIP_" .. string.upper(perk)] = getNextFreeID() * count
   end
 end)
 
