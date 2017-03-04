@@ -292,15 +292,19 @@ if SERVER then
   end
 
   function TTTPercent.AdjustSpeed(ply)
-    local beacon = ply:GetNWEntity("VoteBeacon")
-    if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 and GetRoundState() == ROUND_ACTIVE then
-      return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
-    elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 and GetRoundState() == ROUND_ACTIVE then
-      return 1.25
-    elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 and GetRoundState() == ROUND_ACTIVE then
+    if GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST then
+      local beacon = ply:GetNWEntity("VoteBeacon")
+      if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 then
+        return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
+      elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 then
+        return 1.25
+      elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 then
+        return 1
+      elseif !IsValid(beacon) then
+        return 0.75
+      end
+    else
       return 1
-    elseif !IsValid(beacon) then
-      return 0.75
     end
   end
 
@@ -308,17 +312,13 @@ if SERVER then
       local plymeta = FindMetaTable("Player")
 
       function plymeta:SetSpeed(slowed)
-        if GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST then
-          local mul = TTTPercent.AdjustSpeed(self) or 0.75
-          if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-            mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
-          elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-            mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
-          end
-        else
-          local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or 1
+        local mul = TTTPercent.AdjustSpeed(self) or 0.75
+        if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+          mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
+        elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+          mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
         end
-
+        print(mul)
         if slowed then
           self:SetWalkSpeed(120 * mul)
           self:SetRunSpeed(120 * mul)
