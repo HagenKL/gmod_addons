@@ -318,7 +318,7 @@ if SERVER then
         elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
           mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
         end
-        print(mul)
+
         if slowed then
           self:SetWalkSpeed(120 * mul)
           self:SetRunSpeed(120 * mul)
