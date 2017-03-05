@@ -1,4 +1,4 @@
-if SERVER then -- Currently Disabled due to balance reason, uncomment so enable, also uncomment in sh_functions.lua line 27
+/*if SERVER then -- Currently Disabled due to balance reason, uncomment so enable, also uncomment in sh_functions.lua line 27
   -- AddCSLuaFile()
   -- resource.AddFile("materials/vgui/ttt/icon_doubletap.vmt")
   -- resource.AddFile("materials/vgui/ttt/perks/hud_doubletap.png")
@@ -95,4 +95,4 @@ if CLIENT then
 
         search.eq_doubletap = {img = "vgui/ttt/icon_doubletap", text = "They drunk a Double Tap Root Beer.", p = highest + 1}
       end )
-  end
+  end*/

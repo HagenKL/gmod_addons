@@ -14,7 +14,7 @@ if SERVER then
   util.AddNetworkString("TTTPercentRemoveHalos")
   util.AddNetworkString("TTTPercentBeacon")
   util.AddNetworkString("TTTPercentRemoveAllHalos")
-  util.AddNetworkString("TTTVoteBeaconPickUp")
+  util.AddNetworkString("TTTNoBeacons")
   function TTTPercent.GetPercentMessage(sender, text, teamchat)
     local msg = string.lower(text)
     if string.sub(msg,1,8) == "!prozent" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
@@ -194,9 +194,6 @@ if SERVER then
     for k,v in pairs(player.GetAll()) do
       v:SetNWInt("PercentCounter", 0)
       v:SetNWInt("UsedPercentage",0)
-      v:SetNWBool("CanSpawnVoteBeacon", true)
-      v:SetNWEntity("VoteBeacon",NULL)
-      v:SetNWInt("VoteBeaconHealth",100)
       for key,ply in pairs(player.GetAll()) do
         v:SetNWInt("UsedPercentageontarget " .. ply:SteamID(), 0)
       end
@@ -231,6 +228,7 @@ if SERVER then
         v:SetHealth(v:GetMaxHealth() - 10)
         v:SetNWBool("TTTPercentPunishment",false)
       end
+      v.VoteBeaconSuffer = 0
     end
   end
 
@@ -255,8 +253,8 @@ if SERVER then
   end
 
   function TTTPercent.PlaceBeacon(ply)
-    if !IsValid(ply) then return end
-    if !ply:GetNWBool("CanSpawnVoteBeacon",true) and ply:GetNWEntity("VoteBeacon") then
+    if !IsValid(ply) or !ply:IsTerror() then return end
+    if !ply:GetNWBool("CanSpawnVoteBeacon", true) or IsValid(ply:GetNWEntity("VoteBeacon",NULL)) or ply:GetNWBool("PlacedBeacon") then
       net.Start("TTTPercentBeacon")
       net.WriteFloat(1)
       net.Send(ply)
@@ -283,6 +281,7 @@ if SERVER then
         end
 
         ply:SetNWBool("CanSpawnVoteBeacon",false)
+        ply:SetNWBool("PlacedBeacon", true)
         ply:SetNWEntity("VoteBeacon",votebeacon)
         net.Start("TTTPercentBeacon")
         net.WriteFloat(3)
@@ -290,18 +289,39 @@ if SERVER then
       end
     end
   end
-
+  local NoBeaconsMessage = false
   function TTTPercent.AdjustSpeed(ply)
     if GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST then
+      local beacons
+      for k,v in pairs(player.GetAll()) do
+        if v:GetNWBool("CanSpawnVoteBeacon", false) or IsValid(v:GetNWEntity("VoteBeacon", NULL)) then
+          beacons = true
+          break
+        else
+          beacons = false
+          continue
+        end
+      end
       local beacon = ply:GetNWEntity("VoteBeacon")
-      if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 then
-        return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
-      elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 then
-        return 1.25
-      elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 then
+      if beacons then
+        NoBeaconsMessage = false
+        if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 2000 then
+          return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
+        elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) < 1000 then
+          return 1.25
+        elseif IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) > 1000 and beacon:GetPos():Distance(ply:GetPos()) < 2000 then
+          return 1
+        elseif !IsValid(beacon) then
+          return 0.75
+        end
+      elseif !beacons then
+        if !NoBeaconsMessage then
+          NoBeaconsMessage = true
+          net.Start("TTTNoBeacons")
+          net.ReadBool(false)
+          net.Broadcast()
+        end
         return 1
-      elseif !IsValid(beacon) then
-        return 0.75
       end
     else
       return 1
@@ -331,19 +351,46 @@ if SERVER then
       end
     end )
 
-    function TTTPercent.RemoveBeacon(ply)
-      local beacon = ply:GetNWEntity("VoteBeacon")
-      if IsValid(beacon) then
-        beacon:TakeDamage(1000)
-        ply:SetNWEntity("VoteBeacon", NULL)
+  function TTTPercent.VoteBeaconSuffer()
+    if GetRoundState() == ROUND_ACTIVE then
+      for k,v in pairs(player.GetAll()) do
+        if v:IsTerror() and !v:GetNWBool("PlacedBeacon", true) and v:GetNWEntity("VoteBeacon", NULL) == NULL and isnumber(v.VoteBeaconSuffer) then
+          if v.VoteBeaconSuffer == 0 then
+            v.VoteBeaconSuffer = CurTime() + 30
+            v.DamageNotified = false
+          elseif v.VoteBeaconSuffer <= CurTime() then
+            if !v.DamageNotified then
+              net.Start("TTTPercentBeacon")
+              net.WriteFloat(6)
+              net.Send(v)
+              v.DamageNotified = true
+            end
+            v:TakeDamage(1,v,v)
+            v.VoteBeaconSuffer = CurTime() + 1
+          end
+        elseif v:IsTerror() and (v:GetNWEntity("VoteBeacon",NULL) or !isnumber(v.VoteBeaconSuffer)) then
+          v.VoteBeaconSuffer = 0
+          v.DamageNotified = false
+        end
       end
     end
+  end
 
-    function TTTPercent.AddBeacon(ply)
-      if !IsValid(ply:GetNWEntity("VoteBeacon")) then
-        ply:SetNWBool("CanSpawnVoteBeacon", true)
-      end
+  function TTTPercent.ResetValues()
+    for k,v in pairs(player.GetAll()) do
+      v:SetNWBool("CanSpawnVoteBeacon", true)
+      v:SetNWBool("PlacedBeacon", false)
+      v:SetNWEntity("VoteBeacon", NULL)
+      v:SetNWInt("VoteBeaconHealth",100)
+      v.VoteBeaconSuffer = 0
+      v.DamageNotified = false
     end
+    NoBeaconsMessage = false
+  end
+
+  function TTTPercent.DestroyBeacon(ply)
+    ply:SetNWBool("CanSpawnVoteBeacon", false)
+  end
 
   --hook.Add("TTTPlayerSpeed", "TTTVoteBeacon", TTTPercent.AdjustSpeed)
   concommand.Add("ttt_resetallpercentages", TTTPercent.ResetPercentforEveryOne)
@@ -353,13 +400,14 @@ if SERVER then
   net.Receive("TTTPlacedPercent", TTTPercent.CalculatePercent)
   hook.Add("PlayerDisconnected","TTTSavePercentage", TTTPercent.SavePercent)
   hook.Add("TTTPrepareRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
-  hook.Add("TTTBeginRound", "ResetPercentages", TTTPercent.PunishtheInnocents)
+  hook.Add("TTTPrepareRound", "ResetValues", TTTPercent.ResetValues)
+  hook.Add("TTTBeginRound", "PunishtheInnocents", TTTPercent.PunishtheInnocents)
   hook.Add("TTTEndRound", "ResetPercentages", TTTPercent.CalculatePercentRoundstart)
   hook.Add("ShutDown", "TTTSavePercentage", TTTPercent.SavePercentAll)
   hook.Add("PlayerDeath", "TTTPercentRemoveHalos", TTTPercent.RemoveHalos)
-  hook.Add("PlayerDeath", "TTTPercentRemoveBeacon" , TTTPercent.RemoveBeacon)
+  hook.Add("PlayerDeath", "TTTPercentDestroyBeacn", TTTPercent.DestroyBeacon)
   hook.Add("PlayerSpawn", "TTTPercentAddHalos", TTTPercent.AddHalos)
-  hook.Add("PlayerSpawn", "TTTPercentAddBeacon", TTTPercent.AddBeacon)
+  hook.Add("Think", "VoteBeaconSuffer", TTTPercent.VoteBeaconSuffer)
 elseif CLIENT then
   TTTPercent.halos = TTTPercent.halos or {}
   surface.CreateFont("TTTPercentfont", {
@@ -406,7 +454,9 @@ elseif CLIENT then
       DComboBox:SetPos(100, frame:GetTall() / 2 - 10)
       DComboBox:SetValue( "Spieler" )
       for k,v in pairs(player.GetAll()) do
-        if !v:IsBot() and v != LocalPlayer() and !v:GetDetective() then
+        if !v:IsBot() 
+          --and v != LocalPlayer() 
+          and !v:GetDetective() then
           DComboBox:AddChoice(v:Nick(), v:SteamID())
         end
       end
@@ -418,9 +468,9 @@ elseif CLIENT then
       Slider:SetPos(frame:GetWide() - 250, frame:GetTall() / 2-50)
       Slider:SetText( "Prozent" )
       Slider:SetMin( 1 )
-      Slider:SetMax( 34 )
+      Slider:SetMax( 100 )
       Slider:SetDecimals( 0 )
-      Slider:SetValue(25)
+      Slider:SetValue( 34 )
       local DButton2 = vgui.Create("DButton",frame)
       DButton2:SetText( "Schließen" )
       DButton2:SetSize( 125, 30 )
@@ -525,6 +575,13 @@ elseif CLIENT then
           return 100
         end
       end)
+     pnl:AddColumn("Beacon", function(ply)
+        if ply:GetNWEntity("VoteBeacon",NULL) != NULL then
+          return "Ja"
+        else
+          return "Nein"
+        end
+      end)
   end
   function TTTPercent.MakePercentScoreBoardColor(ply)
     if ply:GetNWInt("PercentCounter",0) >= 100 then
@@ -560,24 +617,32 @@ elseif CLIENT then
 
   function TTTPercent.BeaconMessage()
     local bool = net.ReadFloat()
-    if bool == 0 then
-      chat.AddText("TTT Prozent: ", COLOR_WHITE, "Dein Beacon wurde zerstört!")
-    elseif bool == 1 then
-      chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast schon einen Beacon plaziert!")
+    if bool == 1 then
+      chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast schon ein Totem plaziert!")
     elseif bool == 2 then
-      chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du musst beim Plazieren auf dem Boden stehen!")
+      chat.AddText("TTT Totem: ", COLOR_WHITE, "Du musst beim Plazieren deines Totems auf dem Boden stehen!")
     elseif bool == 3 then
-      chat.AddText("TTT Prozent: ", COLOR_WHITE, "Dein Beacon wurde erfolgreicht plaziert!")
+      chat.AddText("TTT Totem: ", COLOR_WHITE, "Dein Totem wurde erfolgreicht plaziert!")
+    elseif bool == 4 then
+      chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem erfolgreich aufgehoben!")
+    elseif bool == 5 then
+      local owner = net.ReadEntity()
+      local attacker = net.ReadEntity()
+      if IsValid(attacker) and IsValid(owner) then
+        chat.AddText("TTT Totem: ", COLOR_WHITE, "Das Totem von " ,COLOR_GREEN, owner:Nick(), COLOR_WHITE, " wurde von ", COLOR_RED, attacker:Nick(), COLOR_WHITE, " zerstört!")
+      end
+    elseif bool == 6 then
+      chat.AddText("TTT Totem: ", COLOR_WHITE, "Du verlierst nun leben weil du kein Totem plaziert hast!")
     end
     chat.PlaySound()
   end
 
-  function TTTPercent.BeaconPickup()
-    chat.AddText("TTT Prozent: ", COLOR_WHITE, "Du hast deinen Beacon aufgehoben!")
+  function TTTPercent.NoBeacons()
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Alle Totems wurden zerstört, ihr seid nun wieder normal schnell!")
     chat.PlaySound()
   end
 
-  net.Receive("TTTVoteBeaconPickUp",TTTPercent.BeaconPickup)
+  net.Receive("TTTNoBeacons", TTTPercent.NoBeacons)
   net.Receive("TTTPercentBeacon",TTTPercent.BeaconMessage)
   net.Receive("TTTPercentRemoveAllHalos", TTTPercent.RemoveAllHalos)
   net.Receive("TTTPercentRemoveHalos",TTTPercent.ClientRemoveHalos)

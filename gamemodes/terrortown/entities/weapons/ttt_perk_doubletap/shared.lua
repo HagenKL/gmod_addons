@@ -1,4 +1,4 @@
-if SERVER then
+/*if SERVER then
   AddCSLuaFile( "shared.lua" )
   util.AddNetworkString("DoubleTapBlurHUD")
   util.AddNetworkString("Doubletap")
@@ -242,4 +242,4 @@ if CLIENT then
       wep.OnDrop = wep.OldOnDrop
     end
   end )
-end
+end*/
