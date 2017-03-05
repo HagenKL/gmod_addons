@@ -389,7 +389,9 @@ if SERVER then
   end
 
   function TTTPercent.DestroyBeacon(ply)
-    ply:SetNWBool("CanSpawnVoteBeacon", false)
+    if GetRoundState() == ROUND_ACTIVE then
+      ply:SetNWBool("CanSpawnVoteBeacon", false)
+    end
   end
 
   concommand.Add("ttt_resetallpercentages", TTTPercent.ResetPercentforEveryOne)
