@@ -572,7 +572,7 @@ elseif CLIENT then
           return 100
         end
       end)
-     pnl:AddColumn("Beacon", function(ply)
+     pnl:AddColumn("Totem", function(ply)
         if ply:GetNWEntity("VoteBeacon",NULL) != NULL then
           return "Ja"
         else

@@ -85,8 +85,8 @@ if CLIENT then
   hook.Add("HUDDrawTargetID", "DrawVoteBeacon", function()
     local e = LocalPlayer():GetEyeTrace().Entity
     if IsValid(e) and e:GetClass() == "ttt_votebeacon" then
-      draw.SimpleText( e:GetOwner():Nick() .. "'s Beacon", "TargetID", ScrW() / 2.0 + 1, ScrH() / 2.0 + 41, COLOR_BLACK,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
-      draw.SimpleText(e:GetOwner():Nick() .. "'s Beacon","TargetID",ScrW() / 2.0, ScrH() / 2.0 + 40,Color( 255, 255, 255, 255 ),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+      draw.SimpleText(e:GetOwner():Nick() .. "'s Totem", "TargetID", ScrW() / 2.0 + 1, ScrH() / 2.0 + 41, COLOR_BLACK,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+      draw.SimpleText(e:GetOwner():Nick() .. "'s Totem","TargetID",ScrW() / 2.0, ScrH() / 2.0 + 40,Color( 255, 255, 255, 255 ),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
       local _, color = util.HealthToString(e:Health(),e:GetMaxHealth())
       draw.SimpleText(e:Health() .. " HP ","TargetIDSmall2",ScrW() / 2.0 + 1,ScrH() / 2.0 + 61,COLOR_BLACK,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
       draw.SimpleText(e:Health() .. " HP ","TargetIDSmall2",ScrW() / 2.0,ScrH() / 2.0 + 60,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
