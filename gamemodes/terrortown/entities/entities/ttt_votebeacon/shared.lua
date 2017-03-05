@@ -71,7 +71,7 @@ function ENT:OnTakeDamage(dmginfo)
       net.WriteFloat(5)
       net.WriteEntity(self:GetOwner())
       net.WriteEntity(dmginfo:GetAttacker())
-      net.Send(self:GetOwner())
+      net.Broadcast()
     end
 
     local effect = EffectData()
