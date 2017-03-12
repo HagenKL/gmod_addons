@@ -89,7 +89,7 @@ if SERVER then
     for key,v in pairs(player.GetAll()) do
       ply:SetNWInt("UsedVotesontarget " .. v:SteamID(), 0)
     end
-    if reset then
+    if reset and TTTVote.votebetters[ply:SteamID()] != nil then
       table.Empty(TTTVote.votebetters[ply:SteamID()])
     end
   end
