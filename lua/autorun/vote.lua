@@ -61,9 +61,9 @@ if SERVER then
       for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
           TTTVote.SetVotes(v,v:GetNWInt("PlayerVotes") - 1)
           ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") - 1 )
-          if v:IsRole(ROLE_INNOCENT) or v:GetDetective() then
-            v:SetNWBool("TTTVotePunishment", true)
-          end
+          if target:IsRole(ROLE_INNOCENT) and (v:IsRole(ROLE_INNOCENT) or v:GetDetective()) then
+ 	        v:SetNWBool("TTTVotePunishment", true)
+ 	    end
       end
       table.Empty(TTTVote.votebetters[target:SteamID()])
     end
@@ -449,7 +449,7 @@ elseif CLIENT then
         ListView:AddLine(v:Nick(),v:SteamID())
       end
     end
-    ListView.DoDoubleClick = function(List, lineID,line) 
+    ListView.DoDoubleClick = function(List, lineID,line)
         if LocalPlayer():IsTerror() and GetRoundState() == ROUND_ACTIVE then
           local nick,steamid = line:GetColumnText(1), line:GetColumnText(2)
           if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
