@@ -23,7 +23,7 @@ local Perks = {
   "PHD",
   "StaminUp",
   "Juggernog",
-  "Speed",
+  -- "Speed",
   -- "DoubleTap" -- Disabled because too strong
 }
 

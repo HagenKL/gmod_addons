@@ -1,4 +1,4 @@
-if SERVER then
+/*if SERVER then
   AddCSLuaFile()
   resource.AddFile("materials/vgui/ttt/icon_speed.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_speed.png")
@@ -95,4 +95,4 @@ if CLIENT then
 
         search.eq_speed = {img = "vgui/ttt/icon_speed", text = "They drunk a Speed Cola.", p = highest + 1}
       end )
-  end
+  end*/
