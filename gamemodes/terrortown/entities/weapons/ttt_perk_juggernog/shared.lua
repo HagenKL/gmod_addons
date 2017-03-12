@@ -132,7 +132,7 @@ end
 
 if CLIENT then
   net.Receive("DrinkingtheJuggernog", function()
-      surface.PlaySound("hoff/animations/perks/buy_jug.wav")
+      surface.PlaySound("perks/buy_jug.wav")
     end)
 
     net.Receive("JuggerBlurHUD", function()

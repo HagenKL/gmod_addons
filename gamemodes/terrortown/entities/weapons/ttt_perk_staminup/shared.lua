@@ -119,7 +119,7 @@ end
 
 if CLIENT then
   net.Receive("DrinkingtheStaminup", function()
-      surface.PlaySound("hoff/animations/perks/buy_stam.wav")
+      surface.PlaySound("perks/buy_stam.wav")
     end)
     net.Receive("StaminBlurHUD", function()
       local mat = Material( "pp/blurscreen" )

@@ -139,7 +139,7 @@ end
 
 if CLIENT then
   net.Receive("DrinkingthePHD", function()
-      surface.PlaySound("hoff/animations/perks/buy_phd.wav")
+      surface.PlaySound("perks/buy_phd.wav")
     end)
 
     net.Receive("PHDBlurHUD", function()

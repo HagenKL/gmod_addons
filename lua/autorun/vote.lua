@@ -196,7 +196,7 @@ if SERVER then
       local nick = v:Nick()
       if string.find( string.lower( nick ), stringargs ) then
         nick = "\"" .. nick .. "\"" -- We put quotes around it incase players have spaces in their names.
-        nick = "ttt_resetVotes " .. nick -- We also need to put the cmd before for it to work properly.
+        nick = "ttt_resetvotes " .. nick -- We also need to put the cmd before for it to work properly.
 
         table.insert( tbl, nick )
       end
@@ -377,7 +377,7 @@ if SERVER then
   end
 
   concommand.Add("ttt_resetallvotes", TTTVote.ResetVoteforEveryOne)
-  concommand.Add("ttt_resetVotes",TTTVote.ResetVoteforOnePlayer, AutoCompleteVote)
+  concommand.Add("ttt_resetvotes",TTTVote.ResetVoteforOnePlayer, AutoCompleteVote)
   hook.Add("PlayerSay","TTTVote", TTTVote.GetVoteMessage)
   hook.Add("PlayerInitialSpawn", "InitialVote", TTTVote.InitVote)
   net.Receive("TTTPlacedVote", TTTVote.ReceiveVotes)
