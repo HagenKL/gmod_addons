@@ -218,6 +218,7 @@ if SERVER then
   function TTTVote.RemoveHalos(ply)
     if ply:GetNWInt("VoteCounter",0) >= 3 then
       net.Start("TTTVoteRemoveHalos")
+      net.WriteBool(true)
       net.WriteEntity(ply)
       net.Broadcast()
     end
