@@ -29,12 +29,12 @@ if CLIENT then
 end
 
 //Damage\\
-SWEP.Primary.Delay       = 0.2
-SWEP.Primary.Recoil      = 1
+SWEP.Primary.Delay       = 0.18
+SWEP.Primary.Recoil      = 0.8
 SWEP.Primary.Automatic   = true
 SWEP.Primary.NumShots    = 1
-SWEP.Primary.Damage      = 25
-SWEP.Primary.Cone        = 0.013
+SWEP.Primary.Damage      = 20
+SWEP.Primary.Cone        = 0.01
 SWEP.Primary.Ammo        = "SMG1"
 SWEP.Primary.ClipSize    = 20
 SWEP.Primary.ClipMax     = 60
@@ -48,7 +48,7 @@ SWEP.AllowDrop = true
 SWEP.IsSilent = false
 SWEP.NoSights = false
 SWEP.UseHands = true
-SWEP.HeadshotMultiplier = 2
+SWEP.HeadshotMultiplier = 2.5
 
 //Sounds/Models\\
 SWEP.ViewModel	= "models/weapons/gamefreak/v_kid_sg552.mdl"
