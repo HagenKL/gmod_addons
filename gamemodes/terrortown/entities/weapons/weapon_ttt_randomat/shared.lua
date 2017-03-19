@@ -304,7 +304,7 @@ if SERVER then
   end*/
 
   function RandomatSpeedLiveJump()
-    RandomatBroadcast("Randomat: ", Color(255,255,255), "50% More Speed, Jump Power and Live for everyone!")
+    RandomatBroadcast("Randomat: ", Color(255,255,255), "50% More Speed, Jump Power and Life for everyone!")
     for k,v in pairs(player.GetAll()) do
       v:SetHealth(v:Health() * 1.5)
       v:SetMaxHealth(v:Health() * 1.5)
