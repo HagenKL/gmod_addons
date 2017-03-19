@@ -193,8 +193,8 @@ function ApplySpeed(wep)
         self.dt.reloading = false
 
         self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-        self:SetPlaybackRate(1)
-        self.Owner:GetViewModel():SetPlaybackRate(1)
+        self:SetPlaybackRate(2)
+        self.Owner:GetViewModel():SetPlaybackRate(2)
 
         self.reloadtimer = CurTime() + self:SequenceDuration()/2
       end

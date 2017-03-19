@@ -1,0 +1,14 @@
+TTT_Vote\gamemodes\terrortown\entities\entities\ttt_votebeacon\shared.lua 
+TTT_Vote\lua\autorun\vote.lua 
+TTT_Vote\materials\models\frenchie\bulkytotem\6348b211.vmt 
+TTT_Vote\materials\models\frenchie\bulkytotem\6348b211.vtf 
+TTT_Vote\materials\models\frenchie\bulkytotem\a4c3dbeb.vmt 
+TTT_Vote\materials\models\frenchie\bulkytotem\a4c3dbeb.vtf 
+TTT_Vote\materials\models\frenchie\bulkytotem\ed3555af.vmt 
+TTT_Vote\materials\models\frenchie\bulkytotem\ed3555af.vtf 
+TTT_Vote\models\gamefreak\frenchie\bulkytotem.dx80.vtx 
+TTT_Vote\models\gamefreak\frenchie\bulkytotem.dx90.vtx 
+TTT_Vote\models\gamefreak\frenchie\bulkytotem.mdl 
+TTT_Vote\models\gamefreak\frenchie\bulkytotem.phy 
+TTT_Vote\models\gamefreak\frenchie\bulkytotem.sw.vtx 
+TTT_Vote\models\gamefreak\frenchie\bulkytotem.vvd 
