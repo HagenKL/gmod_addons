@@ -36,9 +36,9 @@ SWEP.Primary.NumShots    = 1
 SWEP.Primary.Damage      = 20
 SWEP.Primary.Cone        = 0.01
 SWEP.Primary.Ammo        = "SMG1"
-SWEP.Primary.ClipSize    = 20
-SWEP.Primary.ClipMax     = 60
-SWEP.Primary.DefaultClip = 20
+SWEP.Primary.ClipSize    = 25
+SWEP.Primary.ClipMax     = 50
+SWEP.Primary.DefaultClip = 25
 SWEP.AmmoEnt = "item_ammo_smg1_ttt"
 
 

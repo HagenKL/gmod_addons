@@ -83,25 +83,25 @@ end
 
 function ApplyDoubleTap(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
-    local delay = math.Round(wep.Primary.Delay / 1.5,3)
+    local delay = math.Round(wep.Primary.Delay / 1.33,3)
     --local numshots =  math.Round(wep.Primary.NumShots * 2,3) // too OP to make the numshots higher.
     --local cone =  math.Round(wep.Primary.Cone * 1.33,3)
-    local recoil =  math.Round(wep.Primary.Recoil * 1.5,3)
+    --local recoil =  math.Round(wep.Primary.Recoil * 1.5,3)
     wep.OldDelay = wep.Primary.Delay
     --wep.OldNumShots = wep.Primary.NumShots
     --wep.OldCone = wep.Primary.Cone
-    wep.OldRecoil = wep.Primary.Recoil
+    --wep.OldRecoil = wep.Primary.Recoil
     wep.Primary.Delay = delay
     --wep.Primary.NumShots = numshots
     --wep.Primary.Cone = cone
-    wep.Primary.Recoil = recoil
+    --wep.Primary.Recoil = recoil
     wep.OldOnDrop = wep.OnDrop
     wep.OnDrop = function( self, ...)
       if IsValid(self) then
         self.Primary.Delay = self.OldDelay
         --self.Primary.NumShots = self.OldNumShots
         --self.Primary.Cone = self.OldCone
-        self.Primary.Recoil = self.OldRecoil
+        --self.Primary.Recoil = self.OldRecoil
         self.OnDrop = self.OldOnDrop
       end
     end
@@ -111,9 +111,11 @@ function ApplyDoubleTap(wep)
     net.WriteFloat(wep.Primary.Delay)
     --net.WriteFloat(wep.Primary.NumShots)
     --net.WriteFloat(wep.Primary.Cone)
-    net.WriteFloat(wep.Primary.Recoil)
+    --net.WriteFloat(wep.Primary.Recoil)
     net.WriteFloat(wep.OldDelay)
-    net.WriteFloat(wep.OldRecoil)
+    --net.WriteFloat(wep.OldNumShots)
+    --net.WriteFloat(wep.OldCone)
+    --net.WriteFloat(wep.OldRecoil)
     net.Send(wep.Owner)
   end
 end
@@ -123,7 +125,7 @@ function RemoveDoubleTap(wep)
     wep.Primary.Delay = wep.OldDelay
     --wep.Primary.NumShots = wep.OldNumShots
     --wep.Primary.Cone = wep.OldCone
-    wep.Primary.Recoil = wep.OldRecoil
+    --wep.Primary.Recoil = wep.OldRecoil
     wep.OnDrop = wep.OldOnDrop
     net.Start("Doubletap")
     net.WriteBool(false)
@@ -131,7 +133,7 @@ function RemoveDoubleTap(wep)
     net.WriteFloat(wep.Primary.Delay)
     --net.WriteFloat(wep.Primary.NumShots)
     --net.WriteFloat(wep.Primary.Cone)
-    net.WriteFloat(wep.Primary.Recoil)
+    --net.WriteFloat(wep.Primary.Recoil)
     net.Send(wep.Owner)
   end
 end
@@ -233,15 +235,15 @@ if CLIENT then
     wep.Primary.Delay = net.ReadFloat()
     --wep.Primary.NumShots = net.ReadFloat()
     --wep.Primary.Cone = net.ReadFloat()
-    wep.Primary.Recoil = net.ReadFloat()
+    --wep.Primary.Recoil = net.ReadFloat()
     if apply then
       wep.OldOnDrop = wep.OnDrop
       wep.OnDrop = function( self, ...)
         if IsValid(self) then
           self.Primary.Delay = net.ReadFloat()
-          --self.Primary.NumShots = self.Primary.NumShots / 2
-          --self.Primary.Cone = self.Primary.Cone / 1.33
-          self.Primary.Recoil = net.ReadFloat()
+          --self.Primary.NumShots = net.ReadFloat()
+          --self.Primary.Cone = net.ReadFloat()
+          --self.Primary.Recoil = net.ReadFloat()
           self.OnDrop = self.OldOnDrop
         end
       end
