@@ -117,6 +117,12 @@ function SWEP:ShouldDropOnDie()
   return false
 end
 
+function SWEP:OnDrop()
+  if IsValid(self) then
+    self:Remove()
+  end
+end
+
 if CLIENT then
   net.Receive("DrinkingtheStaminup", function()
       surface.PlaySound("perks/buy_stam.wav")

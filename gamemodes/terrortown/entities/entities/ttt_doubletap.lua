@@ -41,6 +41,8 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_doubletap_desc", "Double Tap Root Beer Perk.\nAutomatically drinks perk to get \n33% higher firerate, 33% higher recoil,\ntwice the spread and twice the amount of bullets.")
 end
 
+EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
+
 if SERVER then
 
   local plymeta = FindMetaTable("Player")

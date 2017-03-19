@@ -41,6 +41,8 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_staminup_desc", "Stamin-Up Perk.\nAutomatically drinks perk to greatly increase\nwalk speed!")
 end
 
+EQUIP_STAMINUP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID() or 512
+
 if SERVER then
 
   local plymeta = FindMetaTable("Player")

@@ -175,3 +175,9 @@ function SWEP:GetViewModelPosition( pos, ang )
 	return newpos, newang
 
 end
+
+function SWEP:OnDrop()
+  if IsValid(self) then
+    self:Remove()
+  end
+end

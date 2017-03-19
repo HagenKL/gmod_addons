@@ -42,6 +42,8 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_juggernog_desc", "Juggernog Perk.\nAutomatically drinks perk to get \nthe maximum health avaible!")
 end
 
+EQUIP_JUGGERNOG = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID() or 128
+
 if SERVER then
   local plymeta = FindMetaTable("Player")
   function plymeta:CanDrinkJugger()

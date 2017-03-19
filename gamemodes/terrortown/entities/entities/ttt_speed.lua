@@ -41,6 +41,8 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_speed_desc", "Speed Cola Perk.\nAutomatically drinks perk to get \ndouble the reload speed.")
 end
 
+EQUIP_SPEED = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
+
 if SERVER then
 
   local plymeta = FindMetaTable("Player")

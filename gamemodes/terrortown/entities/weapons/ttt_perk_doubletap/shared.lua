@@ -134,6 +134,12 @@ function RemoveDoubleTap(wep)
   end
 end
 
+function SWEP:OnDrop()
+  if IsValid(self) then
+    self:Remove()
+  end
+end
+
 hook.Add("PlayerSwitchWeapon", "TTTDoubleTapEnable", function(ply, old, new)
     if SERVER and (ply:GetNWBool("DoubleTapActive",false) and ply:HasEquipmentItem(EQUIP_DOUBLETAP)) and (new.Kind == WEAPON_HEAVY or new.Kind == WEAPON_PISTOL) then
       ApplyDoubleTap(new)

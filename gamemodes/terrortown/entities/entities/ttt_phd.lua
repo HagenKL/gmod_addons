@@ -42,6 +42,8 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_phd_desc", "PHD Flopper Perk.\nAutomatically drinks perk to become \nimmune to fall damage,\nexplosion damage, and create an explosion\nwhere you land.")
 end
 
+EQUIP_PHD = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID() or 256
+
 if SERVER then
 
   local plymeta = FindMetaTable("Player")

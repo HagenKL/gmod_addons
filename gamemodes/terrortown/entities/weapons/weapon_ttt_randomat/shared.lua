@@ -108,8 +108,7 @@ if SERVER then
     self:Remove()
   end
 
-  function RandomEvent()
-    local RandomEvents = {
+  local RandomEvents = {
       RandomatRoles,
       RandomatFalldamage,
       RandomatJump,
@@ -135,8 +134,12 @@ if SERVER then
       RandomatSideWays,
       RandomatScreenFlip,
       RandomatInvert
-    }
-    RandomEvents[math.random(1,#RandomEvents)]()
+  }
+
+  function RandomEvent()
+    table.Shuffle(RandomEvents)
+    local randomevent = RandomEvents[math.random(1,#RandomEvents)]
+    randomevent()
   end
 
   /*function RandomatJackpot()

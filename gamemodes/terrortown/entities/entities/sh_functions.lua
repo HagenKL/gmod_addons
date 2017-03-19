@@ -4,6 +4,7 @@ if SERVER then
   resource.AddFile("sound/perks/smash.wav")
   resource.AddFile("sound/perks/drink.wav")
   resource.AddFile("sound/perks/burp.wav")
+  util.AddNetworkString("ZPBResetMaterials")
 end
 
 function getNextFreeID()
@@ -45,14 +46,6 @@ function plymeta:IsDrinking(activeperk)
   return false
 end
 
-hook.Add("Initialize", "InitPerks", function()
-  local count = 1
-  for _,perk in pairs(Perks) do
-    count = count * 2
-    _G["EQUIP_" .. string.upper(perk)] = getNextFreeID() * count
-  end
-end)
-
 hook.Add("InitPostEntity", "InitPerks", function()
   for _,perk in pairs(Perks) do
     local tbl = {
@@ -75,10 +68,28 @@ hook.Add("InitPostEntity", "InitPerks", function()
   end
 end)
 
-hook.Add("TTTPrepareRound", "ResetMaterial", function()
-  if CLIENT and oldmat != nil then
+hook.Add("TTTPrepareRound", "ZPBResetMaterial", function()
+  if SERVER then
+    net.Start("ZPBResetMaterials")
+    net.Broadcast()
+  end
+end)
+
+hook.Add("PlayerSpawn", "ZPBResetMaterial", function(ply)
+  if IsValid(ply) then
+    net.Start("ZPBResetMaterials")
+    net.Send(ply)
+  end
+end)
+
+net.Receive("ZPBResetMaterials", function()
+  if CLIENT and IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetViewModel()) then
     local vm = LocalPlayer():GetViewModel()
-    vm:SetMaterial(oldmat)
-    oldmat = nil
+    if oldmat then
+      vm:SetMaterial(oldmat)
+      oldmat = nil
+    else
+      vm:SetMaterial("")
+    end
   end
 end)

@@ -95,7 +95,7 @@ hook.Add("DoPlayerDeath","TTTPHDReset", function(pl)
 
 hook.Add("EntityTakeDamage", "TTTJuggernogReduction", function(target, dmginfo)
   if target:IsPlayer() and target:GetNWBool("JuggernogActive",false) and target:HasEquipmentItem(EQUIP_JUGGERNOG) then
-    dmginfo:ScaleDamage(0.8)
+    dmginfo:ScaleDamage(0.85)
   end
 end)
 

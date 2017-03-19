@@ -80,6 +80,12 @@ function SWEP:DrinkTheBottle()
     end)
 end
 
+function SWEP:OnDrop()
+  if IsValid(self) then
+    self:Remove()
+  end
+end
+
 function ApplySpeed(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
     wep:SetDeploySpeed(2)
@@ -90,7 +96,6 @@ function ApplySpeed(wep)
         if !IsFirstTimePredicted() then return end
         timer.Remove("SpeedReload" .. self:EntIndex())
         local ct = CurTime()
-        self.oldclip = self:Clip1()
         self.Reloading = true
         self:SendWeaponAnim(ACT_VM_RELOAD)
         local sequencetime = self:SequenceDuration()
@@ -106,29 +111,28 @@ function ApplySpeed(wep)
       wep.OldThink = wep.Think
       wep.Think = function( self, ...)
         if IsValid(self) and self.Reloading and IsFirstTimePredicted() and self.reloadtimer <= CurTime() and
-        IsValid(self.Owner) and self.Owner:IsTerror() and self.Owner:GetActiveWeapon() == self and self.oldclip == self:Clip1() then
+        IsValid(self.Owner) and self.Owner:IsTerror() and self.Owner:GetActiveWeapon() == self then
           local maxclip = self.Primary.ClipSize
           local curclip = self:Clip1()
           local amounttoreplace = math.min(maxclip-curclip,self.Owner:GetAmmoCount(self.Primary.Ammo))
           self:SetClip1(curclip + amounttoreplace)
           self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
+          self:SetPlaybackRate(1)
+          self.Owner:GetViewModel():SetPlaybackRate(1)
           self.Reloading = false
         end
       end
-      wep.OldOnDrop1 = wep.OnDrop
+      wep.OldOnDrop = wep.OnDrop
       wep.OnDrop = function( self, ...)
         if IsValid(self) then
+          self:SetDeploySpeed(1)
           self.Reloading = false
           self.Reload = self.OldReload
-          self.Deploy = self.OldDeploy
-          self:SetDeploySpeed(1)
-          wep.OnDrop = wep.OldOnDrop1
-        end
-      end
-      wep.OldDeploy = wep.Deploy
-      wep.Deploy = function( self, ...)
-        if IsValid(self) then
-          self.Reloading = false
+          self.Think = self.OldThink
+          self.OnDrop = self.OldOnDrop1
+          self.OldReload = nil
+          self.OldOnDrop = nil
+          self.OldThink = nil
         end
       end
     elseif wep.AmmoEnt == "item_box_buckshot_ttt" then
@@ -191,20 +195,48 @@ function ApplySpeed(wep)
         self.dt.reloading = false
 
         self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-        self:SetPlaybackRate(2)
-        self.Owner:GetViewModel():SetPlaybackRate(2)
+        self:SetPlaybackRate(1)
+        self.Owner:GetViewModel():SetPlaybackRate(1)
 
         self.reloadtimer = CurTime() + self:SequenceDuration()/2
       end
-      wep.OldOnDrop2 = wep.OnDrop
+      wep.OldOnDrop = wep.OnDrop
       wep.OnDrop = function( self, ...)
         self.Reloading = false
+        self:SetDeploySpeed(1)
         self.StartReload = self.OldStartReload
         self.PerformReload = self.OldPerformReload
         self.FinishReload = self.OldFinishReload
-        self:SetDeploySpeed(1)
         self.OnDrop = self.OldOnDrop2
+        self.OldStartReload = nil
+        self.OldPerformReload = nil
+        self.OldFinishReload = nil
+        self.OldOnDrop = nil
       end
+    end
+  end
+end
+
+function RemoveSpeed(wep)
+  if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
+    self:SetDeploySpeed(1)
+    self.Reloading = false
+    if wep.AmmoEnt != "item_box_buckshot_ttt" then
+      self.Reload = self.OldReload
+      self.Think = self.OldThink
+      self.OnDrop = self.OldOnDrop
+      self.OldReload = nil
+      self.OldOnDrop = nil
+      self.OldThink = nil
+    elseif wep.AmmoEnt == "item_box_buckshot_ttt" then
+      self.StartReload = self.OldStartReload
+      self.PerformReload = self.OldPerformReload
+      self.FinishReload = self.OldFinishReload
+      self.OnDrop = self.OldOnDrop
+      self.OldStartReload = nil
+      self.OldPerformReload = nil
+      self.OldFinishReload = nil
+      self.OldOnDrop = nil
     end
   end
 end
@@ -212,6 +244,7 @@ end
 hook.Add("PlayerSwitchWeapon", "TTTSpeedEnable", function(ply, old, new)
     if ply:GetNWBool("SpeedActive",false) and ply:HasEquipmentItem(EQUIP_SPEED) then
       ApplySpeed(new)
+      RemoveSpeed(old)
     end
   end)
 
@@ -232,7 +265,6 @@ function SWEP:OnRemove()
   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
     RunConsoleCommand("lastinv")
   end
-
   if CLIENT then
     if self.Owner == LocalPlayer() then
       local vm = LocalPlayer():GetViewModel()
@@ -272,7 +304,7 @@ function SWEP:Initialize()
   if CLIENT then
     if self.Owner == LocalPlayer() then
       local vm = LocalPlayer():GetViewModel()
-      local mat = "models/perk_bottle/c_perk_bottle_speed" --perk_materials[self:GetPerk()]
+      local mat = "models/perk_bottle/c_perk_bottle_speed"
       oldmat = vm:GetMaterial() or ""
       vm:SetMaterial(mat)
     end
@@ -289,5 +321,4 @@ function SWEP:GetViewModelPosition( pos, ang )
 
   return newpos, newang
 
-end
-*/
+end*/

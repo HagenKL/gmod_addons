@@ -20,12 +20,10 @@ if SERVER then
   function TTTVote.GetVoteMessage(sender, text, teamchat)
     local msg = string.lower(text)
     if string.sub(msg,1,8) == "!prozent" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
-      if sender:GetNWInt("UsedVotes",0) <= 0 then
-        if sender:GetNWInt("PlayerVotes") - sender:GetNWInt("UsedVotes") >= 1 then
-          net.Start("TTTVoteMenu")
-          net.Send(sender)
-          return false
-      	end
+      if sender:GetNWInt("UsedVotes",0) <= 0 and sender:GetNWInt("PlayerVotes") - sender:GetNWInt("UsedVotes") >= 1 then
+        net.Start("TTTVoteMenu")
+        net.Send(sender)
+        return false
       end
     elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
       TTTVote.PlaceBeacon(nil, sender)
@@ -427,7 +425,7 @@ elseif CLIENT then
       draw.RoundedBox(5,4,4,w-8,h-8,Color(70,70,70))
     end
     local DLabel = vgui.Create("DLabel",frame)
-    DLabel:SetPos(frame:GetWide() / 2 - 75/2, frame:GetTall() / 2 + 100)
+    DLabel:SetPos(frame:GetWide() / 2 - 75 / 2, frame:GetTall() / 2 + 100)
     DLabel:SetText(LocalPlayer():GetNWInt("PlayerVotes") - LocalPlayer():GetNWInt("UsedVotes") .. " Votes Übrig." )
     DLabel:SetSize(75,100)
     DLabel:SetTextColor(COLOR_WHITE)
