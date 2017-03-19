@@ -117,8 +117,6 @@ function ApplySpeed(wep)
           local amounttoreplace = math.min(maxclip-curclip,self.Owner:GetAmmoCount(self.Primary.Ammo))
           self:SetClip1(curclip + amounttoreplace)
           self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
-          self:SetPlaybackRate(1)
-          self.Owner:GetViewModel():SetPlaybackRate(1)
           self.Reloading = false
         end
       end
@@ -129,7 +127,7 @@ function ApplySpeed(wep)
           self.Reloading = false
           self.Reload = self.OldReload
           self.Think = self.OldThink
-          self.OnDrop = self.OldOnDrop1
+          self.OnDrop = self.OldOnDrop
           self.OldReload = nil
           self.OldOnDrop = nil
           self.OldThink = nil
@@ -207,7 +205,7 @@ function ApplySpeed(wep)
         self.StartReload = self.OldStartReload
         self.PerformReload = self.OldPerformReload
         self.FinishReload = self.OldFinishReload
-        self.OnDrop = self.OldOnDrop2
+        self.OnDrop = self.OldOnDrop
         self.OldStartReload = nil
         self.OldPerformReload = nil
         self.OldFinishReload = nil
@@ -219,24 +217,24 @@ end
 
 function RemoveSpeed(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
-    self:SetDeploySpeed(1)
-    self.Reloading = false
+    wep:SetDeploySpeed(1)
+    wep.Reloading = false
     if wep.AmmoEnt != "item_box_buckshot_ttt" then
-      self.Reload = self.OldReload
-      self.Think = self.OldThink
-      self.OnDrop = self.OldOnDrop
-      self.OldReload = nil
-      self.OldOnDrop = nil
-      self.OldThink = nil
+      wep.Reload = wep.OldReload
+      wep.Think = wep.OldThink
+      wep.OnDrop = wep.OldOnDrop
+      wep.OldReload = nil
+      wep.OldOnDrop = nil
+      wep.OldThink = nil
     elseif wep.AmmoEnt == "item_box_buckshot_ttt" then
-      self.StartReload = self.OldStartReload
-      self.PerformReload = self.OldPerformReload
-      self.FinishReload = self.OldFinishReload
-      self.OnDrop = self.OldOnDrop
-      self.OldStartReload = nil
-      self.OldPerformReload = nil
-      self.OldFinishReload = nil
-      self.OldOnDrop = nil
+      wep.StartReload = wep.OldStartReload
+      wep.PerformReload = wep.OldPerformReload
+      wep.FinishReload = wep.OldFinishReload
+      wep.OnDrop = wep.OldOnDrop
+      wep.OldStartReload = nil
+      wep.OldPerformReload = nil
+      wep.OldFinishReload = nil
+      wep.OldOnDrop = nil
     end
   end
 end
