@@ -38,7 +38,7 @@ if CLIENT then
       end
     end)
     LANG.AddToLanguage("english", "item_doubletap_name", "DoubleTap Root Beer")
-    LANG.AddToLanguage("english", "item_doubletap_desc", "Double Tap Root Beer Perk.\nAutomatically drinks perk to get \ndelicious 50% higher fire rate,\nbut also 50% higher recoil.")
+    LANG.AddToLanguage("english", "item_doubletap_desc", "DoubleTap Root Beer Perk.\nAutomatically drinks perk to get \na 50% higher fire rate.")
 end
 
 EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 2048
