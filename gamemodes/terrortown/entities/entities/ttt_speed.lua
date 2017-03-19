@@ -41,6 +41,19 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_speed_desc", "Speed Cola Perk.\nAutomatically drinks perk to get \ndouble the reload speed.")
 end
 
+local function getNextFreeID()
+  local freeID, i = 1, 1
+  while (freeID == 1) do
+    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
+      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
+      freeID = i
+    end
+    i = i * 2
+  end
+
+  return freeID
+end
+
 EQUIP_SPEED = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 if SERVER then

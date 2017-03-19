@@ -90,25 +90,7 @@ end
 
 function SWEP:Initialize()
   util.PrecacheSound("weapons/c4_initiate.wav")
-end
-
-local NofalldamageRandomat = false
---local NodamageJackpot2 = false
-local NoexplosiondamageRandomat = false
---local NodamageJackpot = false
---local OnlyHeadshots = false
-local NoBulletdamageRandomat = false
-
-if SERVER then
-
-  function SWEP:PrimaryAttack()
-    RandomEvent()
-    DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat" )
-    self:SetNextPrimaryFire(CurTime() + 10)
-    self:Remove()
-  end
-
-  local RandomEvents = {
+  self.RandomEvents = {
       RandomatRoles,
       RandomatFalldamage,
       RandomatJump,
@@ -135,11 +117,25 @@ if SERVER then
       RandomatScreenFlip,
       RandomatInvert
   }
+end
 
-  function RandomEvent()
-    table.Shuffle(RandomEvents)
-    local randomevent = RandomEvents[math.random(1,#RandomEvents)]
-    randomevent()
+local NofalldamageRandomat = false
+--local NodamageJackpot2 = false
+local NoexplosiondamageRandomat = false
+--local NodamageJackpot = false
+--local OnlyHeadshots = false
+local NoBulletdamageRandomat = false
+
+if SERVER then
+
+
+  function SWEP:PrimaryAttack()
+    table.Shuffle(self.RandomEvents)
+    local Event = self.RandomEvents[math.random(1,#self.RandomEvents)]
+    Event()
+    DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat" )
+    self:SetNextPrimaryFire(CurTime() + 10)
+    self:Remove()
   end
 
   /*function RandomatJackpot()

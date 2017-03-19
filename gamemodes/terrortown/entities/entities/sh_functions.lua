@@ -7,19 +7,6 @@ if SERVER then
   util.AddNetworkString("ZPBResetMaterials")
 end
 
-function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
-      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
-end
-
 local Perks = {
   "PHD",
   "StaminUp",

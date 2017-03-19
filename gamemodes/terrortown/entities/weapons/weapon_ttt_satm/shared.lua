@@ -33,7 +33,7 @@ if CLIENT then
 
 	SWEP.EquipMenuData = {
 		type = "weapon",
-		desc = "The Space and Time-Manipulator! Short SATM!\nWith Leftclick you make everything faster. \nWith Rightclick you make everything slower. \nWith Reload you set everything back how it was."
+		desc = "The Space and Time-Manipulator! Short SATM!\nChoose a mode with MOUSE2 \nand active it with MOUSE1."
 	}
 end
 
@@ -74,7 +74,9 @@ function SWEP:Initialize()
 	self.satmmode = 1
 	self.timescale = 1.5
 	self:SetHoldType("normal")
-	self:AddHUDHelp("MOUSE1 to confirm.", "MOUSE2 to select mode.", false)
+	if CLIENT then
+		self:AddHUDHelp("MOUSE1 to confirm.", "MOUSE2 to select mode.", false)
+	end
 end
 
 local function ResetTimeScale()

@@ -41,7 +41,20 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_staminup_desc", "Stamin-Up Perk.\nAutomatically drinks perk to greatly increase\nwalk speed!")
 end
 
-EQUIP_STAMINUP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID() or 512
+local function getNextFreeID()
+  local freeID, i = 1, 1
+  while (freeID == 1) do
+    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
+      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
+      freeID = i
+    end
+    i = i * 2
+  end
+
+  return freeID
+end
+
+EQUIP_STAMINUP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 if SERVER then
 

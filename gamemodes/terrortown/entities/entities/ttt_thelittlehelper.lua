@@ -88,7 +88,7 @@ local function getNextFreeID()
 	return freeID
 end
 
-EQUIP_TLH = getNextFreeID()
+EQUIP_TLH = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 local TheLittleHelper = {
 	id = EQUIP_TLH,

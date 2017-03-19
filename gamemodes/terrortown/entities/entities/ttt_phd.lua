@@ -42,7 +42,20 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_phd_desc", "PHD Flopper Perk.\nAutomatically drinks perk to become \nimmune to fall damage,\nexplosion damage, and create an explosion\nwhere you land.")
 end
 
-EQUIP_PHD = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID() or 256
+local function getNextFreeID()
+  local freeID, i = 1, 1
+  while (freeID == 1) do
+    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
+      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
+      freeID = i
+    end
+    i = i * 2
+  end
+
+  return freeID
+end
+
+EQUIP_PHD = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 if SERVER then
 

@@ -43,7 +43,7 @@ if CLIENT then
 
 end
 
-function getNextFreeID()
+local function getNextFreeID()
   local freeID, i = 1, 1
   while (freeID == 1) do
     if (!GetEquipmentItem(ROLE_DETECTIVE, i)
@@ -56,7 +56,7 @@ function getNextFreeID()
   return freeID
 end
 
-EQUIP_ASC = getNextFreeID()
+EQUIP_ASC = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 local ASecondChance = {
   id = EQUIP_ASC,
@@ -130,13 +130,11 @@ if SERVER then
       timer.Create("TTTASC" .. victim:EntIndex() , 1 ,10, function()
           if IsValid(victim) then
             victim:SetNWInt("ASCthetimeleft", victim:GetNWInt("ASCthetimeleft") - 1)
-            if ( victim:GetNWInt("ASCthetimeleft") <= 0 ) then
-              victim:SetNWBool("ASCCanRespawn", false)
-              victim:ASCHandleRespawn(true)
-              victim.NOWINASC = false
-            end
             if ( victim:GetNWInt("ASCthetimeleft") <= 9 ) then
               victim:SetNWBool("ASCCanRespawn", true)
+            end
+            if ( victim:GetNWInt("ASCthetimeleft") <= 0 ) then
+              victim:ASCHandleRespawn(true)
             end
           end
         end )
@@ -185,37 +183,45 @@ if SERVER then
   end
 
   function plymeta:ASCHandleRespawn(corpse)
-    if !IsValid(self) then return end
+  if !IsValid(self) then return end
+    local body = FindCorpse(self)
+
+    if !IsValid(body) then
+    	if SERVER then
+    		net.Start("ASCError")
+    		net.Send(self)
+    	end
+
+    	return
+    end
+
+    if corpse then
+    	local spawnPos = FindASCPosition(body)
+
+    	if !spawnPos then
+    		if SERVER then
+    			net.Start("ASCError")
+    			net.Send(self)
+    		end
+
+    		return
+    	end
+
+    	self:SpawnForRound(true)
+    	self:SetPos(spawnPos)
+    	self:SetEyeAngles(Angle(0, body:GetAngles().y, 0))
+    else
+    	self:SpawnForRound(true)
+    end
+    self:SetNWBool("ASCCanRespawn", false)
     self.shouldasc = false
     self.NOWINASC = false
-    timer.Remove("TTTASC" .. self:EntIndex())
-    self:SetNWBool("ASCCanRespawn", false)
-    local body = FindCorpse( self )
-    if !IsValid(body) then
-      if SERVER then
-        net.Start("ASCError")
-        net.Send(self)
-      end
-      return
-    end
-    local spawnPos = FindASCPosition(body)
-    if !spawnPos then
-      if SERVER then
-        net.Start("ASCError")
-        net.Send(self)
-      end
-      return
-    end
     local credits = CORPSE.GetCredits(body, 0)
-    self:SpawnForRound(true)
     DamageLog("SecondChance: " .. self:Nick() .. " has been respawned.")
     self:SetNWInt("ASCthetimeleft", 10)
     self:SetCredits(credits)
+    timer.Remove("TTTASC" .. self:EntIndex())
     body:Remove()
-    if corpse then
-      self:SetPos(spawnPos)
-      self:SetEyeAngles(Angle(0, body:GetAngles().y, 0))
-    end
     --if keepweapons:GetBool() and istable(self.ASCWeapons) then
     --  ASCRetrieveWeapons(self)
     --end

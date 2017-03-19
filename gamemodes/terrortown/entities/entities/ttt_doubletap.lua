@@ -41,6 +41,19 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_doubletap_desc", "Double Tap Root Beer Perk.\nAutomatically drinks perk to get \n33% higher firerate, 33% higher recoil,\ntwice the spread and twice the amount of bullets.")
 end
 
+local function getNextFreeID()
+  local freeID, i = 1, 1
+  while (freeID == 1) do
+    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
+      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
+      freeID = i
+    end
+    i = i * 2
+  end
+
+  return freeID
+end
+
 EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 if SERVER then

@@ -16,7 +16,7 @@ local function getNextFreeID()
 	return freeID
 end
 
-EQUIP_BLUE_BULL = getNextFreeID()
+EQUIP_BLUE_BULL = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
 
 local bluebull = {
 	id = EQUIP_BLUE_BULL,
@@ -24,7 +24,7 @@ local bluebull = {
 	type = "item_passive",
 	material = "vgui/ttt/icon_bluebull",
 	name = "Blue Bull",
-	desc = "Let you jump more then twice as high. \nAnd this combined with a Tripple Jump. \nYou also can run faster. \nYou also get less Fall damage.",
+	desc = "Let you jump more then twice as high. \nAnd this combined with a triple Jump. \nYou also can run faster. \nYou also get less Fall damage.",
 	hud = true
 }
 
