@@ -143,7 +143,6 @@ if CLIENT then
     end)
 
     net.Receive("PHDBlurHUD", function()
-      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "PHDBlurPaint", function()
         if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_phd" then
           DrawMotionBlur(0.4, 0.8, 0.01)

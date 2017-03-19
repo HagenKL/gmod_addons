@@ -83,10 +83,10 @@ end
 
 function ApplyDoubleTap(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
-    local delay = math.Round(wep.Primary.Delay / 1.33,3)
+    local delay = math.Round(wep.Primary.Delay / 1.5,3)
     --local numshots =  math.Round(wep.Primary.NumShots * 2,3) // too OP to make the numshots higher.
     --local cone =  math.Round(wep.Primary.Cone * 1.33,3)
-    local recoil =  math.Round(wep.Primary.Recoil * 2,3)
+    local recoil =  math.Round(wep.Primary.Recoil * 1.5,3)
     wep.OldDelay = wep.Primary.Delay
     --wep.OldNumShots = wep.Primary.NumShots
     --wep.OldCone = wep.Primary.Cone
@@ -112,6 +112,8 @@ function ApplyDoubleTap(wep)
     --net.WriteFloat(wep.Primary.NumShots)
     --net.WriteFloat(wep.Primary.Cone)
     net.WriteFloat(wep.Primary.Recoil)
+    net.WriteFloat(wep.OldDelay)
+    net.WriteFloat(wep.OldRecoil)
     net.Send(wep.Owner)
   end
 end
@@ -192,7 +194,6 @@ if CLIENT then
       surface.PlaySound("perks/buy_doubletap.wav")
     end)
   net.Receive("DoubleTapBlurHUD", function()
-      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "DoubleTapBlurHUD", function()
           if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_doubletap" then
             DrawMotionBlur(0.4, 0.8, 0.01)
@@ -237,10 +238,10 @@ if CLIENT then
       wep.OldOnDrop = wep.OnDrop
       wep.OnDrop = function( self, ...)
         if IsValid(self) then
-          self.Primary.Delay = self.Primary.Delay * 1.33
+          self.Primary.Delay = net.ReadFloat()
           --self.Primary.NumShots = self.Primary.NumShots / 2
           --self.Primary.Cone = self.Primary.Cone / 1.33
-          self.Primary.Recoil = self.Primary.Recoil / 1.33
+          self.Primary.Recoil = net.ReadFloat()
           self.OnDrop = self.OldOnDrop
         end
       end

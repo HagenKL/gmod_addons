@@ -128,7 +128,6 @@ if CLIENT then
       surface.PlaySound("perks/buy_stam.wav")
     end)
     net.Receive("StaminBlurHUD", function()
-      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "StaminBlurHUD", function()
         if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_staminup" then
           DrawMotionBlur(0.4, 0.8, 0.01)

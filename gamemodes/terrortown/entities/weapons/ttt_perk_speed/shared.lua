@@ -288,7 +288,6 @@ if CLIENT then
       surface.PlaySound("perks/buy_speed.wav")
     end)
   net.Receive("SpeedBlurHUD", function()
-      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "SpeedBlurHUD", function()
           if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_speed" then
             DrawMotionBlur(0.4, 0.8, 0.01)

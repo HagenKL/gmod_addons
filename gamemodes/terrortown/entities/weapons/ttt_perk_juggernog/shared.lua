@@ -136,7 +136,6 @@ if CLIENT then
     end)
 
     net.Receive("JuggerBlurHUD", function()
-      local mat = Material( "pp/blurscreen" )
       hook.Add( "HUDPaint", "JuggerBlurHUD", function()
         if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "ttt_perk_juggernog" then
           DrawMotionBlur(0.4, 0.8, 0.01)
