@@ -43,20 +43,7 @@ if CLIENT then
 
 end
 
-local function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
-      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
-end
-
-EQUIP_ASC = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
+EQUIP_ASC = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 8
 
 local ASecondChance = {
   id = EQUIP_ASC,
@@ -187,31 +174,31 @@ if SERVER then
     local body = FindCorpse(self)
 
     if !IsValid(body) then
-    	if SERVER then
-    		net.Start("ASCError")
-    		net.Send(self)
-    	end
+      if SERVER then
+        net.Start("ASCError")
+        net.Send(self)
+      end
 
-    	return
+      return
     end
 
     if corpse then
-    	local spawnPos = FindASCPosition(body)
+      local spawnPos = FindASCPosition(body)
 
-    	if !spawnPos then
-    		if SERVER then
-    			net.Start("ASCError")
-    			net.Send(self)
-    		end
+      if !spawnPos then
+        if SERVER then
+          net.Start("ASCError")
+          net.Send(self)
+        end
 
-    		return
-    	end
+        return
+      end
 
-    	self:SpawnForRound(true)
-    	self:SetPos(spawnPos)
-    	self:SetEyeAngles(Angle(0, body:GetAngles().y, 0))
+      self:SpawnForRound(true)
+      self:SetPos(spawnPos)
+      self:SetEyeAngles(Angle(0, body:GetAngles().y, 0))
     else
-    	self:SpawnForRound(true)
+      self:SpawnForRound(true)
     end
     self:SetNWBool("ASCCanRespawn", false)
     self.shouldasc = false

@@ -42,20 +42,7 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_juggernog_desc", "Juggernog Perk.\nAutomatically drinks perk to get \nthe maximum health avaible!")
 end
 
-local function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!GetEquipmentItem(ROLE_DETECTIVE, i)
-      and !GetEquipmentItem(ROLE_TRAITOR, i)) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
-end
-
-EQUIP_JUGGERNOG = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
+EQUIP_JUGGERNOG = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 64
 
 if SERVER then
   local plymeta = FindMetaTable("Player")

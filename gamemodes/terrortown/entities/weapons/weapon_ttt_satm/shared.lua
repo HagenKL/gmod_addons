@@ -100,6 +100,13 @@ function SWEP:PrimaryAttack()
 				timer.Create("ResetSATM", satmduration:GetInt() * self.timescale, 1, ResetTimeScale)
 			end
 		elseif self.satmmode == 4 then
+			if !self.Owner:OnGround() then 
+				net.Start("SATMMessage")
+				net.WriteInt(20, 16)
+				net.Send(self.Owner)
+
+				return 
+			end
 			local aliveplayers = {}
 
 			for k, v in pairs(player.GetAll()) do
@@ -224,6 +231,8 @@ else
 		elseif mode == 10 then
 			local nick = net.ReadString()
 			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with " .. nick .. ".")
+		elseif mode == 20 then
+			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the Ground to switch Positions!")
 		end
 
 		chat.PlaySound()

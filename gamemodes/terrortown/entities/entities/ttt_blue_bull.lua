@@ -3,20 +3,7 @@ if SERVER then
 	resource.AddWorkshop("653258161")
 end
 
-local function getNextFreeID()
-	local freeID, i = 1, 1
-	while (freeID == 1) do
-		if (!istable(GetEquipmentItem(ROLE_DETECTIVE, i))
-			and !istable(GetEquipmentItem(ROLE_TRAITOR, i))) then
-			freeID = i
-		end
-		i = i * 2
-	end
-
-	return freeID
-end
-
-EQUIP_BLUE_BULL = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or getNextFreeID()
+EQUIP_BLUE_BULL = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 16
 
 local bluebull = {
 	id = EQUIP_BLUE_BULL,
