@@ -11,8 +11,8 @@ local Perks = {
   "PHD",
   "StaminUp",
   "Juggernog",
-  -- "Speed",
-  -- "DoubleTap" -- Disabled because too strong
+  "Speed",
+  "DoubleTap"
 }
 
 local plymeta = FindMetaTable("Player")

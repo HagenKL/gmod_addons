@@ -1,8 +1,8 @@
-/*if SERVER then -- Currently Disabled due to balance reason, uncomment so enable, also uncomment in sh_functions.lua line 27
-  -- AddCSLuaFile()
-  -- resource.AddFile("materials/vgui/ttt/icon_doubletap.vmt")
-  -- resource.AddFile("materials/vgui/ttt/perks/hud_doubletap.png")
-  -- util.AddNetworkString("DrinkingtheDoubleTap")
+if SERVER then
+  AddCSLuaFile()
+  resource.AddFile("materials/vgui/ttt/icon_doubletap.vmt")
+  resource.AddFile("materials/vgui/ttt/perks/hud_doubletap.png")
+  util.AddNetworkString("DrinkingtheDoubleTap")
 end
 
 if CLIENT then
@@ -38,20 +38,7 @@ if CLIENT then
       end
     end)
     LANG.AddToLanguage("english", "item_doubletap_name", "DoubleTap Root Beer")
-    LANG.AddToLanguage("english", "item_doubletap_desc", "Double Tap Root Beer Perk.\nAutomatically drinks perk to get \n33% higher firerate, 33% higher recoil,\ntwice the spread and twice the amount of bullets.")
-end
-
-local function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!istable(GetEquipmentItem(ROLE_DETECTIVE, i))
-      and !istable(GetEquipmentItem(ROLE_TRAITOR, i))) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
+    LANG.AddToLanguage("english", "item_doubletap_desc", "Double Tap Root Beer Perk.\nAutomatically drinks perk to get \n33% higher firerate,\nbut 33% higher recoil.")
 end
 
 EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 2048
@@ -110,4 +97,4 @@ if CLIENT then
 
         search.eq_doubletap = {img = "vgui/ttt/icon_doubletap", text = "They drunk a Double Tap Root Beer.", p = highest + 1}
       end )
-  end*/
+  end

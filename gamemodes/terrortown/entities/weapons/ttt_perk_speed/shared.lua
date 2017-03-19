@@ -1,4 +1,4 @@
-/*if SERVER then
+if SERVER then
   AddCSLuaFile( "shared.lua" )
   util.AddNetworkString("SpeedBlurHUD")
   resource.AddFile("sound/perks/buy_speed.wav")
@@ -321,4 +321,4 @@ function SWEP:GetViewModelPosition( pos, ang )
 
   return newpos, newang
 
-end*/
+end

@@ -1,4 +1,4 @@
-/*if SERVER then
+if SERVER then
   AddCSLuaFile()
   resource.AddFile("materials/vgui/ttt/icon_speed.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_speed.png")
@@ -39,19 +39,6 @@ if CLIENT then
     end)
     LANG.AddToLanguage("english", "item_speed_name", "Speed Cola")
     LANG.AddToLanguage("english", "item_speed_desc", "Speed Cola Perk.\nAutomatically drinks perk to get \ndouble the reload speed.")
-end
-
-local function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!istable(GetEquipmentItem(ROLE_DETECTIVE, i))
-      and !istable(GetEquipmentItem(ROLE_TRAITOR, i))) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
 end
 
 EQUIP_SPEED = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 512
@@ -110,4 +97,4 @@ if CLIENT then
 
         search.eq_speed = {img = "vgui/ttt/icon_speed", text = "They drunk a Speed Cola.", p = highest + 1}
       end )
-  end*/
+  end
