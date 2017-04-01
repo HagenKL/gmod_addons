@@ -59,8 +59,10 @@ function ENT:UseOverride(activator)
     net.Start("TTTVoteBeacon")
     net.WriteFloat(4)
     net.Send(activator)
+    self:GetOwner():SetNWEntity("VoteBeacon",NULL)
     self:RemoveHalos()
     self:Remove()
+    if SERVER then TTTVote.VoteBeaconUpdate() end
   end
 end
 
@@ -72,8 +74,6 @@ function ENT:OnTakeDamage(dmginfo)
 
   self:SetHealth(self:Health() - dmginfo:GetDamage())
   if self:Health() <= 0 then
-
-    self:RemoveHalos()
 
     if SERVER and self:GetOwner():IsValid() and dmginfo:GetAttacker():IsValid() and dmginfo:GetAttacker():IsPlayer() then
       net.Start("TTTVoteBeacon")
@@ -87,7 +87,10 @@ function ENT:OnTakeDamage(dmginfo)
     effect:SetOrigin(self:GetPos())
     util.Effect("cball_explode", effect)
     sound.Play(zapsound, self:GetPos())
+    self:GetOwner():SetNWEntity("VoteBeacon",NULL)
+    self:RemoveHalos()
     self:Remove()
+    if SERVER then TTTVote.VoteBeaconUpdate() end
   end
 end
 
