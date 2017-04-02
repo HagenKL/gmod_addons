@@ -4,12 +4,12 @@ local satmduration = CreateConVar("ttt_satm_duration", 10, {FCVAR_SERVER_CAN_EXE
 --GeneralSettings\\
 SWEP.Base = "weapon_tttbase"
 SWEP.Spawnable = true
-SWEP.AutoSpawnable = not detectiveEnabled:GetBool() and not traitorEnabled:GetBool()
+SWEP.AutoSpawnable = !detectiveEnabled:GetBool() && !traitorEnabled:GetBool()
 SWEP.HoldType = "normal"
 SWEP.AdminSpawnable = true
 SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
-SWEP.Kind = not detectiveEnabled:GetBool() and not traitorEnabled:GetBool() and WEAPON_NADE or WEAPON_EQUIP2
+SWEP.Kind = !detectiveEnabled:GetBool() && !traitorEnabled:GetBool() && WEAPON_NADE || WEAPON_EQUIP2
 
 --Serverside\\
 if SERVER then
@@ -86,33 +86,40 @@ local function ResetTimeScale()
 end
 
 function SWEP:PrimaryAttack()
-	if not self:CanPrimaryAttack() then return end
+	if !self:CanPrimaryAttack() then return end
 	self:DoSATMAnimation(true)
 
 	if SERVER then
-		if self.satmmode == 1 or self.satmmode == 2 or self.satmmode == 3 then
+		if self.satmmode == 1 || self.satmmode == 2 || self.satmmode == 3 then
 			timer.Remove("ResetSATM")
 			game.SetTimeScale(self.timescale)
 			net.Start("SATMStartSound")
 			net.Broadcast()
 
-			if self.satmmode ~= 3 then
+			if self.satmmode != 3 then
 				timer.Create("ResetSATM", satmduration:GetInt() * self.timescale, 1, ResetTimeScale)
 			end
 		elseif self.satmmode == 4 then
-			if !self.Owner:OnGround() then 
+			if !self.Owner:OnGround() then
 				net.Start("SATMMessage")
 				net.WriteInt(20, 16)
 				net.Send(self.Owner)
 
-				return 
+				return
 			end
 			local aliveplayers = {}
 
 			for k, v in pairs(player.GetAll()) do
-				if v:IsTerror() and v ~= self.Owner then
+				if v:IsTerror() && v != self.Owner then
 					table.insert(aliveplayers, v)
 				end
+			end
+
+			if #aliveplayers <= 0 then
+				net.Start("SATMMessage")
+				net.WriteInt(15, 16)
+				net.Send(self.Owner)
+				return
 			end
 
 			table.Shuffle(aliveplayers)
@@ -168,11 +175,11 @@ function SWEP:DoSATMAnimation(bool)
 		if IsValid(self) then
 			self:SendWeaponAnim(ACT_VM_IDLE)
 
-			if switchweapon and CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+			if switchweapon && CLIENT && IsValid(self.Owner) && self.Owner == LocalPlayer() && self.Owner:Alive() then
 				RunConsoleCommand("lastinv")
 			end
 
-			if SERVER and self:Clip1() <= 0 then
+			if SERVER && self:Clip1() <= 0 then
 				self:Remove()
 			end
 		end
@@ -180,14 +187,14 @@ function SWEP:DoSATMAnimation(bool)
 end
 
 function SWEP:OnRemove()
-	if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+	if CLIENT && IsValid(self.Owner) && self.Owner == LocalPlayer() && self.Owner:Alive() then
 		RunConsoleCommand("lastinv")
 	end
 end
 
 function SWEP:OnDrop()
 	if SERVER then
-		if game.GetTimeScale() ~= 1 then
+		if game.GetTimeScale() != 1 then
 			net.Start("SATMMessage")
 			net.WriteInt(0, 16)
 			net.Broadcast()
@@ -230,7 +237,7 @@ else
 			chat.AddText("SATM: ", Color(255, 255, 255), "Mode: Swap your position with a random player.")
 		elseif mode == 10 then
 			local nick = net.ReadString()
-			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with " .. nick .. ".")
+			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with ", COLOR_WHITE, nick, COLOR_GREEN, ".")
 		elseif mode == 20 then
 			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the Ground to switch Positions!")
 		end

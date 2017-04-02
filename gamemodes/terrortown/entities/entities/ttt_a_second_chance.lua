@@ -100,9 +100,8 @@ if SERVER then
         elseif ply:GetRole() == ROLE_DETECTIVE then
           ply.SecondChanceChance = 50
         end
-        local chance = math.Clamp(math.Round(ply.SecondChanceChance, 0), 0, 99)
         net.Start("ASCBuyed")
-        net.WriteInt(chance, 8)
+        net.WriteInt(ply.SecondChanceChance, 8)
         net.Send(ply)
       end
     end)
@@ -111,7 +110,8 @@ if SERVER then
 
   function SecondChance( victim, inflictor, attacker)
     local SecondChanceRandom = math.random(1,100)
-    if victim.shouldasc == true and SecondChanceRandom < math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99) then
+    local PlayerChance = math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99)
+    if victim.shouldasc == true and SecondChanceRandom <= PlayerChance then
       victim.NOWINASC = true
       victim:SetNWInt("ASCthetimeleft", 10)
       timer.Create("TTTASC" .. victim:EntIndex() , 1 ,10, function()
@@ -128,7 +128,7 @@ if SERVER then
       net.Start("ASCRespawn")
       net.WriteBit(true)
       net.Send(victim)
-    elseif victim.shouldasc == true and SecondChanceRandom > math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99) then
+    elseif victim.shouldasc == true and SecondChanceRandom > PlayerChance then
       victim.shouldasc = false
       --if keepweapons:GetBool() then
       --  table.Empty(victim.ASCWeapons)
@@ -143,7 +143,7 @@ if SERVER then
   for i = 0,360,22.5 do table.insert( Positions, Vector(math.cos(i),math.sin(i),0) ) end -- Populate Around Player
   table.insert(Positions, Vector(0, 0, 1)) -- Populate Above Player
 
-  function FindASCPosition(ply) -- I stole a bit of the Code from NiandraLades because its good
+  local function FindASCPosition(ply) -- I stole a bit of the Code from NiandraLades because its good
     local size = Vector(32, 32, 72)
 
     local StartPos = ply:GetPos() + Vector(0, 0, size.z / 2)
@@ -169,6 +169,14 @@ if SERVER then
     return false
   end
 
+  local function FindCorpse(ply) -- From TTT Ulx Commands, sorry
+    for _, ent in pairs( ents.FindByClass( "prop_ragdoll" )) do
+      if ent.uqid == ply:UniqueID() and IsValid(ent) then
+        return ent or false
+      end
+    end
+  end
+
   function plymeta:ASCHandleRespawn(corpse)
   if !IsValid(self) then return end
     local body = FindCorpse(self)
@@ -176,9 +184,11 @@ if SERVER then
     if !IsValid(body) then
       if SERVER then
         net.Start("ASCError")
+        net.WriteBool(false)
         net.Send(self)
       end
-
+      self.shouldasc = false
+      self.NOWINASC = false
       return
     end
 
@@ -188,9 +198,10 @@ if SERVER then
       if !spawnPos then
         if SERVER then
           net.Start("ASCError")
+          net.WriteBool(true)
           net.Send(self)
         end
-
+        self:ASCHandleRespawn(false)
         return
       end
 
@@ -200,19 +211,19 @@ if SERVER then
     else
       self:SpawnForRound(true)
     end
+
+    timer.Remove("TTTASC" .. self:EntIndex())
     self:SetNWBool("ASCCanRespawn", false)
+    self:SetNWInt("ASCthetimeleft", 10)
     self.shouldasc = false
     self.NOWINASC = false
     local credits = CORPSE.GetCredits(body, 0)
-    DamageLog("SecondChance: " .. self:Nick() .. " has been respawned.")
-    self:SetNWInt("ASCthetimeleft", 10)
     self:SetCredits(credits)
-    timer.Remove("TTTASC" .. self:EntIndex())
     body:Remove()
+    DamageLog("SecondChance: " .. self:Nick() .. " has been respawned.")
     --if keepweapons:GetBool() and istable(self.ASCWeapons) then
     --  ASCRetrieveWeapons(self)
     --end
-    return true
   end
 
   hook.Add( "KeyPress", "ASCRespawn", function( ply, key )
@@ -228,14 +239,6 @@ if SERVER then
   function CUSTOMWIN()
     for k,v in pairs(player.GetAll()) do
       if v.NOWINASC == true then return WIN_NONE end
-    end
-  end
-
-  function FindCorpse(ply) -- From TTT Ulx Commands, sorry
-    for _, ent in pairs( ents.FindByClass( "prop_ragdoll" )) do
-      if ent.uqid == ply:UniqueID() and IsValid(ent) then
-        return ent or false
-      end
     end
   end
 
@@ -257,15 +260,12 @@ if SERVER then
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
       if attacker:GetRole() == ROLE_TRAITOR and ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 15, 0, 99)
-        net.Start("ASCKill")
-        net.WriteInt(attacker.SecondChanceChance,8)
-        net.Send(attacker)
       elseif attacker:GetRole() == ROLE_DETECTIVE and ply:GetRole() == ROLE_TRAITOR then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 25, 0, 99)
-        net.Start("ASCKill")
-        net.WriteInt(attacker.SecondChanceChance,8)
-        net.Send(attacker)
       end
+      net.Start("ASCKill")
+      net.WriteInt(attacker.SecondChanceChance,8)
+      net.Send(attacker)
     end
     --if keepweapons:GetBool() and IsValid(ply) and ply:HasEquipmentItem(EQUIP_ASC) then
     --  ASCStoreWeapons(ply)
@@ -341,7 +341,12 @@ if CLIENT then
       chat.PlaySound()
     end)
   net.Receive("ASCError",function()
-      chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found! No respawn.")
+      local spawnpos = net.ReadBool()
+      if spawnpos then
+        chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found! No respawn.")
+      else
+        chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "No Valid Spawnpoints! Spawning at Map Spawn.")
+      end
       chat.PlaySound()
     end)
 

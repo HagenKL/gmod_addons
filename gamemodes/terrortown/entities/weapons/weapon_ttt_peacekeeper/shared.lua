@@ -217,7 +217,7 @@ function SWEP:PrimaryAttack()
 				v:SetNWBool("highnoonpositionscreen", false)
 
 				timer.Create("MakeHighnoonsound" .. v:EntIndex(), 0.01, 0, function()
-						if v:GetNWBool("IsHighnoonfinished") then
+						if v:GetNWBool("IsHighnoonfinished") and SERVER then
 							net.Start("HNOnLockSound")
 							net.Send(ply)
 							timer.Remove("MakeHighnoonsound" .. v:EntIndex())
@@ -225,21 +225,21 @@ function SWEP:PrimaryAttack()
 					end)
 			end
 
-			net.Start("HNStartSound")
-			net.Broadcast()
+			if SERVER then
+				net.Start("HNStartSound")
+				net.Broadcast()
+			end
 			self.highnoonactive = true
 			self.canpressattackhighnoon = false
 			self:SendWeaponAnim(ACT_VM_IDLE_3)
 			self.Owner:SetNWBool("WhiteandBlackHighNoon", true)
-			net.Start("HNChat")
-			net.WriteEntity(self.Owner)
-			net.Broadcast()
+
 			timer.Remove("canusehighnoonnow" .. self.Owner:EntIndex())
 			timer.Remove("highnoonisover" .. self.Owner:EntIndex())
 
 			timer.Create("canusehighnoonnow" .. self.Owner:EntIndex(), 1, 1, function()
 					if self.Owner:GetNWBool("ItsHighNoon") then
-						if IsValid(ply) and IsValid(wep) and wep:GetClass() == "weapon_ttt_peacekeeper" and ply:Alive() then
+						if IsValid(ply) and IsValid(self) and self:GetClass() == "weapon_ttt_peacekeeper" and ply:Alive() and SERVER then
 							net.Start("HNHighNoonSound")
 							net.Broadcast()
 						end
@@ -278,21 +278,23 @@ function SWEP:HighNoon()
 	if !IsValid(ply) or !IsValid(self) or self:GetClass() != "weapon_ttt_peacekeeper" then return end
 	if self:Clip1() <= 0 then return end
 	self.highnoonactive = false
-	self.Owner:SetNWBool("ItsHighNoon", false)
-	self.Owner:SetNWBool("HNBegin", false)
-	self.Owner:SetNWBool("ItsHighNoonshooting", true)
+	ply:SetNWBool("ItsHighNoon", false)
+	ply:SetNWBool("HNBegin", false)
+	ply:SetNWBool("ItsHighNoonshooting", true)
 	self.highnoonshooting = true
 	self:SetHoldType("pistol")
 
 	timer.Create("drawsound" .. ply:EntIndex(), 0.16, 1, function()
-			net.Start("HNDrawSound")
-			net.Broadcast()
+			if SERVER then
+				net.Start("HNDrawSound")
+				net.Broadcast()
+			end
 		end)
 
 	timer.Create("highnoon" .. ply:EntIndex(), 0.15, 6, function()
 			if !IsValid(ply) or !IsValid(self) or self:GetClass() != "weapon_ttt_peacekeeper" then return end
-			print(self.HNTarget)
-			if self.HNTarget != nil and self.HNTarget:IsPlayer() then
+			local target = self.HNTarget
+			if target != nil and target:IsPlayer() then
 				self:EmitSound(self.Primary.Sound, 511, 100, 1, CHAN_AUTO)
 				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 
@@ -301,17 +303,17 @@ function SWEP:HighNoon()
 					end)
 
 				local dmg = DamageInfo()
-				dmg:SetDamage(self.HNTarget:GetNWFloat("HighNoonDamage"))
+				dmg:SetDamage(target:GetNWFloat("HighNoonDamage"))
 				dmg:SetAttacker(ply)
 				dmg:SetInflictor(self)
 				dmg:SetDamagePosition(ply:GetPos())
 				dmg:SetDamageType(DMG_BULLET)
 
 				if SERVER then
-					self.HNTarget:TakeDamageInfo(dmg)
+					target:TakeDamageInfo(dmg)
 				end
 
-				self.HNTarget:SetNWBool("highnoonhit", true)
+				target:SetNWBool("highnoonhit", true)
 				table.remove(highnoontargets, 1)
 				self:TakePrimaryAmmo(1)
 
@@ -327,8 +329,6 @@ function SWEP:HighNoon()
 				end
 			else
 				self:EndHighNoon()
-
-				return
 			end
 		end)
 end
@@ -357,6 +357,7 @@ function SWEP:EndHighNoon()
 end
 
 function RessetinPlayers(ply)
+	ResettinHighNoon(ply)
 	for k,v in pairs(player.GetAll()) do
 		v:SetNWBool("highnoonhit", false)
 		v:SetNWBool("IsHighnoonfinished", false)
@@ -364,7 +365,6 @@ function RessetinPlayers(ply)
 		v:SetNWFloat("HighnoonRadius", 100 )
 		v:SetNWFloat("HighnoonDamage", 1 )
 	end
-	ResettinHighNoon(ply)
 end
 
 function ResettinHighNoon(ply)
