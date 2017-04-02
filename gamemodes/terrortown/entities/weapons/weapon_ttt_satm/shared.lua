@@ -128,8 +128,12 @@ function SWEP:PrimaryAttack()
 			if ply:IsInWorld() then
 				local plypos = ply:GetPos()
 				local selfpos = self.Owner:GetPos()
+				local plyang = ply:EyeAngles()
+				local selfang = self.Owner:EyeAngles()
 				self.Owner:SetPos(plypos)
 				ply:SetPos(selfpos)
+				self.Owner:SetEyeAngles(plyang)
+				ply:SetEyeAngles(selfang)
 			end
 
 			net.Start("SATMMessage")
