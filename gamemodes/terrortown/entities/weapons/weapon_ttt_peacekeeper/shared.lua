@@ -121,7 +121,7 @@ function SWEP:Think()
 			local pos = v:LocalToWorld(v:OBBCenter()) + Vector(0, 0, 30)
 			v:SetNWBool("highnoonpositionscreen", IsInFOV(self.Owner, pos))
 
-			if v:IsTerror() and self.Owner:IsLineOfSightClear(v) and v != self.Owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and (v.IsFakeDead and !v:IsFakeDead()) then
+			if v:IsTerror() and self.Owner:IsLineOfSightClear(v) and v != self.Owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and ((isfunction(v.IsFakeDead) and !v:IsFakeDead()) or !isfunction(v.IsFakeDead)) then
 				if #highnoontargets < 6 and self.Owner:GetRole() == ROLE_TRAITOR and v:GetRole() != ROLE_TRAITOR then
 					table.insert(highnoontargets, v)
 				elseif #highnoontargets < 6 and (self.Owner:GetRole() == ROLE_DETECTIVE or self.Owner:GetRole() == ROLE_INNOCENT) then
