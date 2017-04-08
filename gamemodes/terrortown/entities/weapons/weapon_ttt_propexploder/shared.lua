@@ -125,14 +125,14 @@ function SWEP:PropExplodeHandler()
 		end
 			ply:PlayerMsg("Prop Exploder: ", Color(255,255,255), "PropExploder activated")
 			PropExploderUsed = true
-			timer.Create("ExplodePropReady",0.51, 1, function()
+			timer.Create("ExplodePropReady" .. ply:EntIndex(),0.51, 1, function()
 				ply.ExplodeProp = true
 				table.insert( ExplodeProps, ent)
 				SendWarnPE(true, ent, ply)
 			end )
-	timer.Create("PropExplodeFixError", 0.1, 0, function()
-		for k,v in pairs(player.GetAll()) do
-			if not IsValid(ent) and ent == true then
+	timer.Create("PropExplodeFixError" .. ply:EntIndex(), 0.1, 0, function()
+		for k,ent in pairs(ExplodeProps) do
+			if not IsValid(ent) then
 				SendWarnPE(false, ent, v)
 			end
 		end
@@ -155,14 +155,14 @@ function PropExploder(ply)
 					v:EmitSound("weapons/gamefreak/wtf.mp3" ,400, 200)
 					SendWarnPE(false, v, ply)
 					timer.Create("Explodewaiting" .. v:EntIndex(), 0.5, 1, function()
-						if IsValid(v) then
+						if IsValid(v) and IsValid(ply) then
 							local expl = ents.Create( "env_explosion" )
 							expl:SetPos( v:GetPos() )
 							expl:Spawn()
 							expl:SetOwner(ply)
 							expl:SetKeyValue( "iMagnitude", "0" )
 							expl:Fire( "Explode", 0, 0 )
-							util.BlastDamage( v, v, v:GetPos(), 400, 200 )
+							util.BlastDamage( v, ply, v:GetPos(), 400, 200 )
 							expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
 						end
 						timer.Create("PropRemove" .. v:EntIndex() , 0, 1, function()
@@ -180,10 +180,11 @@ end
 local function ResettinPropExploder()
 	for k,v in pairs(player.GetAll()) do
 		v.ExplodeProp = false
-		v.Explodeprop = nil
+		timer.Remove("ExplodePropReady" .. v:EntIndex())
+		timer.Remove("PropExplodeFixError" .. v:EntIndex())
+		timer.Remove("Explodewaiting" .. v:EntIndex())
+		timer.Remove("PropRemove" .. v:EntIndex())
 	end
-	timer.Remove("ExplodePropReady")
-	timer.Remove("PropExplodeFixError")
 	ExplodeProps = {}
 end
 
