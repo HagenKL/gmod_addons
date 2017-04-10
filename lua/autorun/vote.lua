@@ -3,6 +3,9 @@ if SERVER then
   AddCSLuaFile()
   resource.AddWorkshop("828347015")
   local startvotes = CreateConVar("ttt_startvotes","5",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Vote mit der jeder startet.")
+  local totemenabled = CreateConVar("ttt_totem", "1",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Soll TTT Totem an sein?")
+  SetGlobalBool("ttt_totem", totemenabled:GetBool())
+  local totem = GetGlobalBool("ttt_totem", true)
   TTTVote.votebetters = TTTVote.votebetters or {}
   TTTVote.AnyBeacons = true
   util.AddNetworkString("TTTVoteMenu")
@@ -26,7 +29,7 @@ if SERVER then
         net.Send(sender)
         return false
       end
-    elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
+    elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() and totem then
       TTTVote.PlaceBeacon(nil, sender)
       return false
     end
@@ -54,7 +57,7 @@ if SERVER then
       target:SetNWInt("VoteCounter", 3)
       TTTVote.AddHalos(target)
       local beacon = ply:GetNWEntity("VoteBeacon",NULL)
-      if IsValid(beacon) then
+      if totem and IsValid(beacon) then
         beacon:AddHalos()
       end
       for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
@@ -79,12 +82,14 @@ if SERVER then
     ply:SetNWInt("VoteCounter",0)
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWBool("TTTVotePunishment", false)
-    if IsValid(ply:GetNWEntity("VoteBeacon")) then
-      ply:GetNWEntity("VoteBeacon"):TakeDamage(100000)
+    if totem then
+      if IsValid(ply:GetNWEntity("VoteBeacon")) then
+        ply:GetNWEntity("VoteBeacon"):TakeDamage(100000)
+      end
+      ply:SetNWEntity("VoteBeacon",NULL)
+      ply:SetNWBool("PlacedBeacon", false)
+      ply:SetNWBool("CanSpawnVoteBeacon", true)
     end
-    ply:SetNWEntity("VoteBeacon",NULL)
-    ply:SetNWBool("PlacedBeacon", false)
-    ply:SetNWBool("CanSpawnVoteBeacon", true)
     for key,v in pairs(player.GetAll()) do
       ply:SetNWInt("UsedVotesontarget " .. v:SteamID(), 0)
     end
@@ -240,7 +245,7 @@ if SERVER then
 
   function TTTVote.PlaceBeacon(len, sender)
     local ply = sender
-    if !IsValid(ply) or !ply:IsTerror() then return end
+    if !IsValid(ply) or !ply:IsTerror() or !totem then return end
     if !ply:GetNWBool("CanSpawnVoteBeacon", true) or IsValid(ply:GetNWEntity("VoteBeacon",NULL)) or ply:GetNWBool("PlacedBeacon") then
       net.Start("TTTVoteBeacon")
       net.WriteFloat(1)
@@ -275,7 +280,7 @@ if SERVER then
   end
 
   function TTTVote.VoteBeaconUpdate()
-    if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyBeacons then
+    if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyBeacons and totem then
       --TTTVote.traitorbeacons = {}
       TTTVote.beacons = {}
       for k,v in pairs(player.GetAll()) do
@@ -300,7 +305,7 @@ if SERVER then
   end
 
   function TTTVote.AdjustSpeed(ply)
-    if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyBeacons then
+    if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyBeacons and totem then
       local beacon = ply:GetNWEntity("VoteBeacon", NULL)
       if IsValid(beacon) and beacon:GetPos():Distance(ply:GetPos()) >= 2000 then
         return math.Round(math.Clamp(math.Remap(beacon:GetPos():Distance(ply:GetPos()),2000,5000,1,0),0.5,1),2)
@@ -311,36 +316,38 @@ if SERVER then
       elseif !IsValid(beacon) then
         return 0.75
       end
-    elseif (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and !TTTVote.AnyBeacons then
+    elseif (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and !TTTVote.AnyBeacons and totem then
       return 1
     end
   end
 
   hook.Add("Initialize", "TTTBeaconOverrideFunction", function ()
-      local plymeta = FindMetaTable("Player")
+      if totem then
+        local plymeta = FindMetaTable("Player")
 
-      function plymeta:SetSpeed(slowed)
-        local mul = TTTVote.AdjustSpeed(self) or 1
-        if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-          mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
-        elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-          mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
-        end
+        function plymeta:SetSpeed(slowed)
+          local mul = TTTVote.AdjustSpeed(self) or 1
+          if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+            mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
+          elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+            mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
+          end
 
-        if slowed then
-          self:SetWalkSpeed(120 * mul)
-          self:SetRunSpeed(120 * mul)
-          self:SetMaxSpeed(120 * mul)
-        else
-          self:SetWalkSpeed(220 * mul)
-          self:SetRunSpeed(220 * mul)
-          self:SetMaxSpeed(220 * mul)
+          if slowed then
+            self:SetWalkSpeed(120 * mul)
+            self:SetRunSpeed(120 * mul)
+            self:SetMaxSpeed(120 * mul)
+          else
+            self:SetWalkSpeed(220 * mul)
+            self:SetRunSpeed(220 * mul)
+            self:SetMaxSpeed(220 * mul)
+          end
         end
       end
     end )
 
   function TTTVote.VoteBeaconSuffer()
-    if GetRoundState() == ROUND_ACTIVE then
+    if GetRoundState() == ROUND_ACTIVE and totem then
       for k,v in pairs(player.GetAll()) do
         if v:IsTerror() and !v:GetNWBool("PlacedBeacon", true) and v:GetNWEntity("VoteBeacon", NULL) == NULL and isnumber(v.VoteBeaconSuffer) then
           if v.VoteBeaconSuffer == 0 then
@@ -383,6 +390,7 @@ if SERVER then
   end*/
 
   function TTTVote.ResetValues()
+    if !totem then return end
     for k,v in pairs(player.GetAll()) do
       v:SetNWBool("CanSpawnVoteBeacon", true)
       v:SetNWBool("PlacedBeacon", false)
@@ -394,7 +402,7 @@ if SERVER then
   end
 
   function TTTVote.DestroyBeacon(ply)
-    if GetRoundState() == ROUND_ACTIVE then
+    if GetRoundState() == ROUND_ACTIVE and totem then
       ply:SetNWBool("CanSpawnVoteBeacon", false)
     end
   end
@@ -418,7 +426,7 @@ if SERVER then
   hook.Add("TTTBeginRound", "TTTVoteBeaconSync", TTTVote.VoteBeaconUpdate)
 elseif CLIENT then
   TTTVote.halos = TTTVote.halos or {}
-
+  local totem = GetGlobalBool("ttt_totem", true)
   surface.CreateFont("TTTVotefont", {
       font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
       extended = false,
@@ -534,6 +542,7 @@ elseif CLIENT then
       end
       chat.PlaySound()
     end)
+
   function TTTVote.VoteMakeCounter(pnl)
     pnl:AddColumn("Votes", function(ply)
         if ply:GetNWInt("VoteCounter",0) < 3 then
@@ -542,13 +551,15 @@ elseif CLIENT then
           return 3
         end
       end)
-    pnl:AddColumn("Totem", function(ply)
-        if ply:GetNWEntity("VoteBeacon",NULL) != NULL then
-          return "Ja"
-        else
-          return "Nein"
-        end
-      end)
+    if totem then
+      pnl:AddColumn("Totem", function(ply)
+          if ply:GetNWEntity("VoteBeacon",NULL) != NULL then
+            return "Ja"
+          else
+            return "Nein"
+          end
+        end)
+      end
   end
 
   function TTTVote.MakeVoteScoreBoardColor(ply)
@@ -661,14 +672,14 @@ elseif CLIENT then
   end*/
 
   function TTTVote.LookUpBeacon(ply, cmd, args, argStr)
-    if GetRoundState() != ROUND_WAIT and LocalPlayer() == ply and LocalPlayer():IsTerror() then
+    if GetRoundState() != ROUND_WAIT and LocalPlayer() == ply and LocalPlayer():IsTerror() and totem then
       net.Start("TTTVotePlaceBeacon")
       net.SendToServer()
     end
   end
 
   function TTTVote.ApplyBeaconHalos(ent)
-    if ent:GetClass() == "ttt_votebeacon" and ent:GetOwner():GetNWInt("VoteCounter",0) >= 3 then
+    if ent:GetClass() == "ttt_votebeacon" and ent:GetOwner():GetNWInt("VoteCounter",0) >= 3 and totem then
       table.insert(TTTVote.halos,ent)
     end
   end
