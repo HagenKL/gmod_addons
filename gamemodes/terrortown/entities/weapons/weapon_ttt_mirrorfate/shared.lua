@@ -71,27 +71,6 @@ if SERVER then
     net.Send(ply)
   end
 
-  function KillTheKillerMirrorfate(victim, killer)
-    timer.Create( "MirrorFatekill" .. killer:EntIndex(), victim.fatetimemode or 30 , 1, function()
-      if IsValid(victim) and IsValid(killer) and killer:IsTerror() then
-        killer:TTTMirrorfate(victim)
-      elseif IsValid(victim) and (!IsValid(killer) or !killer:IsTerror()) then
-        victim:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"Your killer is already dead!")
-      end
-    end)
-  end
-
-  local function Mirrorfate( victim, killer, damageinfo )
-    if IsValid(killer) and IsValid(victim) and victim:HasWeapon("weapon_ttt_mirrorfate") and !killer:HasWeapon("weapon_ttt_mirrorfate") then
-      KillTheKillerMirrorfate(victim, killer)
-    end
-    if IsValid(victim) and timer.Exists("MirrorFatekill" .. victim:EntIndex()) then
-      timer.Remove("MirrorFatekill" .. victim:EntIndex())
-    end
-  end
-
-  hook.Add( "DoPlayerDeath" , "MirrorfateKillhim" , Mirrorfate )
-
   local function MFHeartAttack(victim, killer)
     local dmginfo = DamageInfo()
     dmginfo:SetDamage(10000)
@@ -145,6 +124,25 @@ if SERVER then
     net.WriteInt(10,8)
     net.Send(victim)
   end
+  
+  local function KillTheKillerMirrorfate(victim, killer)
+    timer.Create( "MirrorFatekill" .. killer:EntIndex(), victim.fatetimemode or 30 , 1, function()
+      if IsValid(victim) and IsValid(killer) and killer:IsTerror() then
+        killer:TTTMirrorfate(victim)
+      elseif IsValid(victim) and (!IsValid(killer) or !killer:IsTerror()) then
+        victim:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"Your killer is already dead!")
+      end
+    end)
+  end
+
+  local function Mirrorfate( victim, killer, damageinfo )
+    if IsValid(killer) and IsValid(victim) and victim:HasWeapon("weapon_ttt_mirrorfate") and !killer:HasWeapon("weapon_ttt_mirrorfate") then
+      KillTheKillerMirrorfate(victim, killer)
+    end
+    if IsValid(victim) and timer.Exists("MirrorFatekill" .. victim:EntIndex()) then
+      timer.Remove("MirrorFatekill" .. victim:EntIndex())
+    end
+  end
 
   local function ResetMirrorFate(ply)
     timer.Remove("MirrorFatekill" .. ply:EntIndex())
@@ -152,10 +150,9 @@ if SERVER then
     ply.fatemode = 1
     ply.fatetimemode = 30
   end
-
-  hook.Add("PlayerSpawn", "ResetMirrorFate", function(ply)
-    ResetMirrorFate(ply)
-  end)
+  
+  hook.Add( "DoPlayerDeath" , "MirrorfateKillhim" , Mirrorfate )
+  hook.Add("PlayerSpawn", "ResetMirrorFate", ResetMirrorFate)
   hook.Add("TTTPrepareRound","ResetMirrorFate", function()
       for key,ply in pairs(player.GetAll()) do
         ResetMirrorFate(ply)
