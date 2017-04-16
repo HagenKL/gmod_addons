@@ -60,11 +60,11 @@ if SERVER then
     end
     local mode = ply.fatemode
     if mode == 1 then
-      ply.fatemode = 30
+      ply.fatetimemode = 30
     elseif mode == 2 then
-      ply.fatemode = 40
+      ply.fatetimemode = 40
     elseif mode == 3 then
-      ply.fatemode = 50
+      ply.fatetimemode = 50
     end
     net.Start("MFMessage")
     net.WriteInt(ply.fatemode, 8)
@@ -164,9 +164,9 @@ elseif CLIENT then
     if mode == 1 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die on a heart-attack, standart 30 seconds!")
     elseif mode == 2 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will burn in Hell, but the style takes 10 more seconds!")
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will burn in Hell, but due to more style the fate takes 40 seconds!")
     elseif mode == 3 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode, but it takes 20 more seconds than normal!")
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode, but due to more damage the fate takes 50 seconds!")
     elseif mode == 5 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"You have experienced the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim chose." )
     elseif mode == 10 then
