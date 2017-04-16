@@ -66,13 +66,13 @@ if CLIENT then
 end
 
 if SERVER then
-  function SWEP:Initialize()
-    if IsValid(self.Owner) then
-      self.Owner.fatemode = 1
-      self.Owner.fatetimemode = 30
+  function SWEP:WasBought(buyer)
+    if IsValid(buyer) then
+      buyer.fatemode = 1
+      buyer.fatetimemode = 30
     end
   end
-  function SWEP:PrimaryAttack()
+  function SWEP:SecondaryAttack()
     local ply = self.Owner
     ply.fatetimemode = ply.fatetimemode + 10
     if ply.fatetimemode >= 100 then
@@ -80,7 +80,7 @@ if SERVER then
     end
     ply:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"The Fate will now take " .. ply.fatetimemode .. " seconds!")
   end
-  function SWEP:SecondaryAttack()
+  function SWEP:PrimaryAttack()
     local ply = self.Owner
     ply.fatemode = ply.fatemode + 1
     if ply.fatemode >= 4 then
