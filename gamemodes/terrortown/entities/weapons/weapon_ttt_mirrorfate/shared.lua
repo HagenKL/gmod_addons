@@ -66,12 +66,6 @@ if CLIENT then
 end
 
 if SERVER then
-  function SWEP:WasBought(buyer)
-    if IsValid(buyer) then
-      buyer.fatemode = 1
-      buyer.fatetimemode = 30
-    end
-  end
   function SWEP:Initialize()
     if IsValid(self.Owner) then
       self.Owner.fatemode = 1
@@ -102,20 +96,16 @@ if SERVER then
   end
   function KillTheKillerMirrorfate( victim, killer, damageinfo )
     if IsValid(killer) and IsValid(victim) then
-      if killer.DyeOnFate == false then
-        if victim:HasWeapon("weapon_ttt_mirrorfate") and !killer:HasWeapon("weapon_ttt_mirrorfate") then
-          killer.DyeOnFate = true
-          TTTMirrorfateKillHim(victim, killer)
-        end
-      elseif victim.DyeOnFate == true then
-        victim.DyeOnFate = false
+      if !killer.DyeOnFate and victim:HasWeapon("weapon_ttt_mirrorfate") and !killer:HasWeapon("weapon_ttt_mirrorfate") then
+        killer.DyeOnFate = true
+        TTTMirrorfateKillHim(victim, killer)
       end
     end
   end
   function TTTMirrorfateKillHim(victim, killer)
-    timer.Create( "MirrorFatekill" .. killer:EntIndex(), victim.fatetimemode , 1, function()
+    timer.Create( "MirrorFatekill" .. killer:EntIndex(), victim.fatetimemode or 30 , 1, function()
         if IsValid(killer) then
-          if killer:Alive() and killer:IsTerror() and killer.DyeOnFate == true then
+          if killer:IsTerror() and killer.DyeOnFate then
             if victim.fatemode == 1 then
               local dmginfo = DamageInfo()
               dmginfo:SetDamage(10000)
@@ -144,29 +134,37 @@ if SERVER then
                     timer.Remove("BurnInHellMirrorfate" .. killer:EntIndex())
                   end
                 end )
+            else
+              local dmginfo = DamageInfo()
+              dmginfo:SetDamage(10000)
+              dmginfo:SetAttacker(victim)
+              dmginfo:SetDamageType(DMG_GENERIC)
+              killer:TakeDamageInfo(dmginfo)
             end
-            killer:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"You have shared the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim had choosed." )
-            victim:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"Your killer have shared your " ,Color(255,0,0), "fate." )
-          elseif IsValid(victim) and !IsValid(killer) or !killer:IsTerror() then
+            killer:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"You have experienced the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim choose." )
+            victim:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"Your killer has shared your " ,Color(255,0,0), "fate." )
+          elseif IsValid(victim) and (!IsValid(killer) or !killer:IsTerror()) then
             victim:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"Your killer is already dead!")
           end
         end
       end )
   end
   hook.Add( "DoPlayerDeath" , "MirrorfateKillhim" , KillTheKillerMirrorfate )
-  hook.Add("PlayerDeath", "ResetMirrorfate", function(victim, inflictor, attacker)
-      if victim.DyeOnFate == true then
-        victim.DyeOnFate = false
-      end
-    end)
-  hook.Add("TTTPrepareRound","RemoveMirrorFatekill", function()
-      timer.Remove("BurnInHellMirrorfate")
+
+  local function ResetMirrorFate(ply)
+    timer.Remove("MirrorFatekill" .. ply:EntIndex())
+    timer.Remove("BurnInHellMirrorfate" .. ply:EntIndex())
+    ply.fatemode = 1
+    ply.fatetimemode = 30
+    ply.DyeOnFate = false
+  end
+
+  hook.Add("PlayerSpawn", "ResetMirrorFate", function(ply)
+    ResetMirrorFate(ply)
+  end)
+  hook.Add("TTTPrepareRound","ResetMirrorFate", function()
       for key,ply in pairs(player.GetAll()) do
-        timer.Remove("MirrorFatekill" .. ply:EntIndex())
-        timer.Remove("BurnInHellMirrorfate" .. ply:EntIndex())
-        ply.fatemode = 1
-        ply.fatetimemode = 30
-        ply.DyeOnFate = false
+        ResetMirrorFate(ply)
       end
     end)
 end
