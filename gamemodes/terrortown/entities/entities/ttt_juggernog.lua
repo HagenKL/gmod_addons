@@ -80,3 +80,21 @@ if SERVER then
       end
     end)
 end
+
+if CLIENT then
+  hook.Add("TTTBodySearchEquipment", "JuggernogCorpseIcon", function(search, eq)
+      search.eq_juggernog = util.BitSet(eq, EQUIP_JUGGERNOG)
+    end )
+
+  hook.Add("TTTBodySearchPopulate", "JuggernogCorpseIcon", function(search, raw)
+      if (!raw.eq_juggernog) then
+        return end
+
+        local highest = 0
+        for _, v in pairs(search) do
+          highest = math.max(highest, v.p)
+        end
+
+        search.eq_juggernog = {img = "vgui/ttt/icon_juggernog", text = "They drunk a Juggernog.", p = highest + 1}
+   end )
+end

@@ -96,5 +96,5 @@ if CLIENT then
         end
 
         search.eq_doubletap = {img = "vgui/ttt/icon_doubletap", text = "They drunk a Double Tap Root Beer.", p = highest + 1}
-      end )
-  end
+   end )
+end
