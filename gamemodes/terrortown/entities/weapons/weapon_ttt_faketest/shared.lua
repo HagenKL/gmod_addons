@@ -1,5 +1,5 @@
-local FakeTesterenabled = CreateConVar("ttt_faketester_enable", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Fake Tester be enabled?")
-if !FakeTesterenabled:GetBool() then return end
+local faketesterenabled = CreateConVar("ttt_faketester", 0, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Fake Tester be enabled?")
+if !faketesterenabled:GetBool() then return end
 if SERVER then
    AddCSLuaFile()
    util.AddNetworkString("ft result")

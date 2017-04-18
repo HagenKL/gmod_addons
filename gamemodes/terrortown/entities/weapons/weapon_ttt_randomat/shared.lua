@@ -415,19 +415,19 @@ if SERVER then
       if ply:GetRole() == ROLE_TRAITOR then
         ply:GiveEquipmentItem(EQUIP_RADAR)
         ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
-        timer.Simple(0.01, function()
+        timer.Simple(0.1, function()
             ply:Give("weapon_ttt_knife")
             ply:Give("weapon_ttt_push")
           end )
       elseif ply:GetRole() == ROLE_DETECTIVE then
         ply:GiveEquipmentItem(EQUIP_RADAR)
         ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
-        timer.Simple(0.01, function()
+        timer.Simple(0.1, function()
             ply:Give("weapon_ttt_push")
             ply:Give("weapon_ttt_knife")
           end )
       elseif ply:GetRole() == ROLE_INNOCENT then
-        timer.Simple(0.01, function()
+        timer.Simple(0.1, function()
             ply:Give("weapon_ttt_push")
             ply:Give("weapon_ttt_knife")
           end )
