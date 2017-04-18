@@ -307,6 +307,9 @@ if SERVER then
     if ownerwep.Base == "weapon_tttbase" then
       ownerwep:SetIronsights(false)
     end
+    if ConVarExists("ttt_startvotes") then
+      TTTVote.RemoveHalos(self)
+    end
 
     DamageLog("DeadRinger: " .. self:Nick() .. " has faked his death.")
 
@@ -333,6 +336,7 @@ if SERVER then
 
     -- flag this ragdoll as being a player's
     rag.player_ragdoll = true
+
     rag.sid = self:SteamID()
 
     rag.uqid = self:UniqueID()
@@ -403,6 +407,9 @@ if SERVER then
 
     self:DrawWorldModel(true)
 
+    if ConVarExists("ttt_startvotes") then
+      TTTVote.AddHalos(self)
+    end
 
     self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
     DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")

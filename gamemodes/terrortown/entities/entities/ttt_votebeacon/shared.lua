@@ -33,7 +33,8 @@ function ENT:Initialize()
 end
 
 function ENT:AddHalos()
- if SERVER and self:GetOwner():IsValid() and self:GetOwner():GetNWInt("VoteCounter",0) >= 3 then
+  local owner = self:GetOwner()
+ if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
    net.Start("TTTVoteAddHalos")
    net.WriteBool(false)
    net.WriteEntity(self)
@@ -42,11 +43,17 @@ function ENT:AddHalos()
 end
 
 function ENT:RemoveHalos()
- if SERVER and self:GetOwner():IsValid() and self:GetOwner():GetNWInt("VoteCounter",0) >= 3 then
+  local owner = self:GetOwner()
+ if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
     net.Start("TTTVoteRemoveHalos")
     net.WriteBool(false)
     net.WriteEntity(self)
     net.Broadcast()
+    net.Start("TTTVoteBeacon")
+    net.WriteInt(7,8)
+    net.WriteEntity(owner)
+    net.Broadcast()
+    TTTVote.AddHalos(owner)
  end
 end
 
@@ -57,9 +64,8 @@ function ENT:UseOverride(activator)
     activator:SetNWInt("VoteBeaconHealth",self:Health())
     activator:SetNWEntity("VoteBeacon",NULL)
     net.Start("TTTVoteBeacon")
-    net.WriteFloat(4)
+    net.WriteInt(4,8)
     net.Send(activator)
-    self:GetOwner():SetNWEntity("VoteBeacon",NULL)
     self:RemoveHalos()
     self:Remove()
     if SERVER then TTTVote.VoteBeaconUpdate() end
@@ -77,7 +83,7 @@ function ENT:OnTakeDamage(dmginfo)
 
     if SERVER and self:GetOwner():IsValid() and dmginfo:GetAttacker():IsValid() and dmginfo:GetAttacker():IsPlayer() then
       net.Start("TTTVoteBeacon")
-      net.WriteFloat(5)
+      net.WriteInt(5,8)
       net.WriteEntity(self:GetOwner())
       net.WriteEntity(dmginfo:GetAttacker())
       net.Broadcast()

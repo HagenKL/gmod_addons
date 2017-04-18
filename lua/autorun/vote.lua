@@ -41,24 +41,29 @@ if SERVER then
     TTTVote.CalculateVotes(sender, target, sender)
   end
 
-  function TTTVote.SendVoteNotify(sender, target, totalvotes)
+  function TTTVote.SendVoteNotify(sender, target, totalvotes, hasbeacon)
     net.Start("TTTVoteMessage")
     net.WriteEntity(sender)
     net.WriteEntity(target)
     net.WriteInt(totalvotes,16)
+    net.WriteBool(hasbeacon)
     net.Broadcast()
   end
 
   function TTTVote.CalculateVotes(ply, target, sender)
+  local hasbeacon = false
     TTTVote.votebetters[target:SteamID()] = TTTVote.votebetters[target:SteamID()] or {}
     table.insert(TTTVote.votebetters[target:SteamID()], ply)
     ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
     if target:GetNWInt("VoteCounter",0) >= 3 then
       target:SetNWInt("VoteCounter", 3)
-      TTTVote.AddHalos(target)
       local beacon = ply:GetNWEntity("VoteBeacon",NULL)
       if totem and IsValid(beacon) then
         beacon:AddHalos()
+        hasbeacon = true
+      else
+        TTTVote.AddHalos(target)
+        hasbeacon = false
       end
       for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
         TTTVote.SetVotes(v,v:GetNWInt("PlayerVotes") - 1)
@@ -69,7 +74,7 @@ if SERVER then
       end
       table.Empty(TTTVote.votebetters[target:SteamID()])
     end
-    TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
+    TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0), hasbeacon)
   end
 
   function TTTVote.SetVotes(ply, vote)
@@ -248,13 +253,13 @@ if SERVER then
     if !IsValid(ply) or !ply:IsTerror() or !totem then return end
     if !ply:GetNWBool("CanSpawnVoteBeacon", true) or IsValid(ply:GetNWEntity("VoteBeacon",NULL)) or ply:GetNWBool("PlacedBeacon") then
       net.Start("TTTVoteBeacon")
-      net.WriteFloat(1)
+      net.WriteInt(1,8)
       net.Send(ply)
       return
     end
     if !ply:OnGround() then
       net.Start("TTTVoteBeacon")
-      net.WriteFloat(2)
+      net.WriteInt(2,8)
       net.Send(ply)
       return
     end
@@ -272,7 +277,7 @@ if SERVER then
         ply:SetNWBool("PlacedBeacon", true)
         ply:SetNWEntity("VoteBeacon",votebeacon)
         net.Start("TTTVoteBeacon")
-        net.WriteFloat(3)
+        net.WriteInt(3,8)
         net.Send(ply)
         TTTVote.VoteBeaconUpdate()
       end
@@ -349,21 +354,21 @@ if SERVER then
   function TTTVote.VoteBeaconSuffer()
     if GetRoundState() == ROUND_ACTIVE and totem then
       for k,v in pairs(player.GetAll()) do
-        if v:IsTerror() and !v:GetNWBool("PlacedBeacon", true) and v:GetNWEntity("VoteBeacon", NULL) == NULL and isnumber(v.VoteBeaconSuffer) then
+        if v:IsTerror() and !v:GetNWBool("PlacedBeacon", true) and v:GetNWBool("CanSpawnVoteBeacon", false) and isnumber(v.VoteBeaconSuffer) then
           if v.VoteBeaconSuffer == 0 then
             v.VoteBeaconSuffer = CurTime() + 30
             v.DamageNotified = false
           elseif v.VoteBeaconSuffer <= CurTime() then
             if !v.DamageNotified then
               net.Start("TTTVoteBeacon")
-              net.WriteFloat(6)
+              net.WriteInt(6,8)
               net.Send(v)
               v.DamageNotified = true
             end
             v:TakeDamage(1,v,v)
             v.VoteBeaconSuffer = CurTime() + 1
           end
-        elseif v:IsTerror() and (v:GetNWEntity("VoteBeacon",NULL) or !isnumber(v.VoteBeaconSuffer)) then
+        elseif v:IsTerror() and (v:GetNWBool("PlacedBeacon", true) or !isnumber(v.VoteBeaconSuffer)) then
           v.VoteBeaconSuffer = 0
           v.DamageNotified = false
         end
@@ -510,10 +515,15 @@ elseif CLIENT then
       local sender = net.ReadEntity()
       local target = net.ReadEntity()
       local totalvotes = net.ReadInt(16)
+      local hasbeacon = net.ReadBool()
       if totalvotes < 3 then
         chat.AddText("TTT Vote: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " votet auf den verdächtigen ", COLOR_RED, target:Nick(), COLOR_WHITE, "! (" .. totalvotes .. "/3)")
       else
-        chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
+        if hasbeacon then
+          chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat! Bevor er markiert wird müsst ihr seinen Beacon finden und zerstören!")
+        else
+          chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
+        end
         TTTVote.PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
       end
       chat.PlaySound()
@@ -601,7 +611,7 @@ elseif CLIENT then
   end
 
   function TTTVote.BeaconMessage()
-    local bool = net.ReadFloat()
+    local bool = net.ReadInt(8)
     if bool == 1 then
       chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast schon ein Totem plaziert!")
     elseif bool == 2 then
@@ -618,6 +628,9 @@ elseif CLIENT then
       end
     elseif bool == 6 then
       chat.AddText("TTT Totem: ", COLOR_WHITE, "Du verlierst nun leben weil du kein Totem plaziert hast!")
+    elseif bool == 7 then
+      local ply = net.ReadEntity()
+      chat.AddText("TTT Vote: ", COLOR_WHITE, "Das Totem von ",COLOR_GREEN, ply:Nick(), COLOR_WHITE," wurde zerstört, er ist nun für alle durch die Wand sichtbar!")
     end
     chat.PlaySound()
   end
@@ -628,26 +641,6 @@ elseif CLIENT then
   end
 
   function TTTVote.LookUpVoteMenu(ply, cmd, args, argStr)
-    if votemenu and IsValid(votemenu) then votemenu:Close() return end
-    if LocalPlayer() == ply and GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
-      if ply:GetNWInt("PlayerVotes") - ply:GetNWInt("UsedVotes") >= 1 then
-        if ply:GetNWInt("UsedVotes",0) <= 0 then
-          TTTVote.OpenVoteMenu()
-        else
-          chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast diese Runde schon gevotet!")
-          chat.PlaySound()
-        end
-      else
-        chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast keine Votes mehr!")
-        chat.PlaySound()
-      end
-    else
-      chat.AddText("TTT Vote: ", COLOR_WHITE, "Du bist nicht mehr am leben oder die Runde ist nicht aktiv!")
-      chat.PlaySound()
-    end
-  end
-
-  function TTTVote.LookUpVoteMenuFallback(len)
     if votemenu and IsValid(votemenu) then votemenu:Close() return end
     if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
       if LocalPlayer():GetNWInt("PlayerVotes") - LocalPlayer():GetNWInt("UsedVotes") >= 1 then
@@ -703,7 +696,7 @@ elseif CLIENT then
   net.Receive("TTTVoteRemoveAllHalos", TTTVote.RemoveAllHalos)
   net.Receive("TTTVoteRemoveHalos",TTTVote.ClientRemoveHalos)
   net.Receive("TTTVoteAddHalos",TTTVote.ClientAddHalos)
-  net.Receive("TTTVoteMenu",TTTVote.LookUpVoteMenuFallback)
+  net.Receive("TTTVoteMenu",TTTVote.LookUpVoteMenu)
   --net.Receive("TTTVoteCurse",TTTVote.Curse)
   hook.Add("OnEntityCreated", "TTTVoteBeaconHalos", TTTVote.ApplyBeaconHalos)
   hook.Add("TTTPrepareRound","TTTVoteReset", TTTVote.PrepareRoundVote)

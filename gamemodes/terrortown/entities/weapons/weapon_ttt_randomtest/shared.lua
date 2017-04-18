@@ -108,13 +108,7 @@ function SWEP:HandleMessages(ply)
 
 	util.PrecacheSound("weapons/prank.mp3")
 
-	hook.Add("TTTPrepareRound","Remove RT Timer "..id,function()
-		for k,v in pairs(player.GetAll()) do
-			timer.Remove("RT Timer "..v:EntIndex())
-		end
-	end)
 	timer.Create("RT Timer "..id,self.Delay,1, function()
-		hook.Remove("TTTPrepareRound","Remove RT Timer "..id)
 		if GetRoundState()!=ROUND_ACTIVE then return end
 		do
 			local roleString,ownerRoleString=role==ROLE_INNOCENT and "innocent" or role==ROLE_TRAITOR and "traitor",ownerRole==ROLE_INNOCENT and "innocent" or ownerRole==ROLE_TRAITOR and "traitor" or "detective"
@@ -194,5 +188,6 @@ end
 hook.Add("TTTPrepareRound","RTReset",function()
 	for k,v in pairs(player.GetAll()) do
 		v:SetNWBool("RTTested", false)
+    timer.Remove("RT Timer "..v:EntIndex())
 	end
 end)

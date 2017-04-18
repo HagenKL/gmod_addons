@@ -242,6 +242,8 @@ else
 		elseif mode == 10 then
 			local nick = net.ReadString()
 			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with ", COLOR_WHITE, nick, COLOR_GREEN, ".")
+		elseif mode == 15 then
+			chat.AddText("SATM: ", Color(255, 255, 255), "No more Valid aliveplayers!")
 		elseif mode == 20 then
 			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the Ground to switch Positions!")
 		end
