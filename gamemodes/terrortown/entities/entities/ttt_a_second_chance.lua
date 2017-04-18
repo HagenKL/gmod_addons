@@ -181,7 +181,7 @@ if SERVER then
   if !IsValid(self) then return end
     local body = FindCorpse(self)
 
-    if !IsValid(body) then
+    if !IsValid(body) or body:IsOnFire() then
       if SERVER then
         net.Start("ASCError")
         net.WriteBool(false)
@@ -343,7 +343,7 @@ if CLIENT then
   net.Receive("ASCError",function()
       local spawnpos = net.ReadBool()
       if spawnpos then
-        chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found! No respawn.")
+        chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found or on fire, so you cant revive yourself.")
       else
         chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "No Valid Spawnpoints! Spawning at Map Spawn.")
       end
