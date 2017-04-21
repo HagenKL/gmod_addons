@@ -115,7 +115,7 @@ if SERVER then
 
 	function plymeta:SMReset()
 		local duration = GetConVar("ttt_slowmotion_duration"):GetFloat()
-		timer.Create("SMReset" .. self:EntIndex(), duration:GetInt() ,1, function()
+		timer.Create("SMReset" .. self:EntIndex(), duration ,1, function()
 				if self:IsValid() and self:GetNWBool("SlowMotionUsed") and self:IsTerror() then
 					game.SetTimeScale(1)
 					SlowMotion_active = false

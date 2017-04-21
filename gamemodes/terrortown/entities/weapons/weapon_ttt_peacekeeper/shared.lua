@@ -122,7 +122,7 @@ function SWEP:Think()
 			v:SetNWBool("highnoonpositionscreen", IsInFOV(owner, pos))
 
 			if v:IsTerror() and #highnoontargets < 6 and owner:IsLineOfSightClear(v) and v != owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and ((isfunction(v.IsFakeDead) and !v:IsFakeDead()) or !isfunction(v.IsFakeDead)) then
-				if owner:IsTraitor() and !v:IsTraitor() and !v:IsHunter() then
+				if owner:IsTraitor() and !v:IsTraitor() and ((v.IsHunter and !v:IsHunter()) or !v.IsHunter) then
 					table.insert(highnoontargets, v)
 				elseif owner.IsHunter and owner:IsHunter() and !v:IsHunter() and !v:IsTraitor() then
 					table.insert(highnoontargets, v)
