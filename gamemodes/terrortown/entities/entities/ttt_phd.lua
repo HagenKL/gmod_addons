@@ -47,20 +47,12 @@ EQUIP_PHD = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 128
 if SERVER then
 
   local plymeta = FindMetaTable("Player")
-  function plymeta:CanDrinkPHD()
-    if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_phd") then
-        timer.Create("MakethePHDDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_phd") then
-              self:GivethePHD()
-              timer.Remove("MakethePHDDrink" .. self:EntIndex())
-            end
-          end)
-      else
-        self:GivethePHD()
-      end
+
+  hook.Add("TTTCanOrderEquipment", "TTTPHD", function(ply, id, is_item)
+    if tonumber(id) == EQUIP_PHD and ply:IsDrinking() then
+      return false
     end
-  end
+  end)
 
   function plymeta:GivethePHD()
     self:Give("ttt_perk_phd")
@@ -70,9 +62,9 @@ if SERVER then
     end
   end
 
-  hook.Add("TTTOrderedEquipment", "TTTPHD", function(ply, equipment, is_item)
-      if is_item == EQUIP_PHD then
-        ply:CanDrinkPHD()
+  hook.Add("TTTOrderedEquipment", "TTTPHD", function(ply, id, is_item)
+      if id == EQUIP_PHD then
+        ply:GivethePHD()
       end
     end)
     hook.Add("TTTPrepareRound", "TTTPHDResettin", function()

@@ -46,20 +46,6 @@ EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 2048
 if SERVER then
 
   local plymeta = FindMetaTable("Player")
-  function plymeta:CanDrinkDoubleTap()
-    if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_doubletap") then
-        timer.Create("MaketheDoubleTapDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_doubletap") then
-              self:GivetheDoubleTap()
-              timer.Remove("MaketheDoubleTapDrink" .. self:EntIndex())
-            end
-          end)
-      else
-        self:GivetheDoubleTap()
-      end
-    end
-  end
 
   function plymeta:GivetheDoubleTap()
     self:Give("ttt_perk_doubletap")
@@ -69,11 +55,18 @@ if SERVER then
     end
   end
 
-  hook.Add("TTTOrderedEquipment", "TTTDoubleTap", function(ply, equipment, is_item)
-      if is_item == EQUIP_DOUBLETAP then
-        ply:CanDrinkDoubleTap()
+  hook.Add("TTTCanOrderEquipment", "TTTDoubleTap", function(ply, id, is_item)
+    if tonumber(id) == EQUIP_DOUBLETAP and ply:IsDrinking() then
+      return false
+    end
+  end)
+ 
+  hook.Add("TTTOrderedEquipment", "TTTDoubleTap", function(ply, id, is_item)
+      if id == EQUIP_DOUBLETAP then
+        ply:GivetheDoubleTap()
       end
     end)
+
     hook.Add("TTTPrepareRound", "TTTDoubleTapResettin", function()
       for k,v in pairs(player.GetAll()) do
         timer.Remove("MaketheDoubleTapDrink" .. v:EntIndex())

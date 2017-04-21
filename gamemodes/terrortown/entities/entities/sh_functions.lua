@@ -17,17 +17,11 @@ local Perks = {
 
 local plymeta = FindMetaTable("Player")
 
-function plymeta:IsDrinking(activeperk)
+function plymeta:IsDrinking()
   for _,perk in pairs(Perks) do
     perk = "ttt_perk_" .. string.lower(perk)
-    if perk != self:GetActiveWeapon():GetClass() then
-      continue
-    else
-      if perk != activeperk then
-        return true
-      else
-        return false
-      end
+    if perk == self:GetActiveWeapon():GetClass() then
+      return true
     end
   end
   return false

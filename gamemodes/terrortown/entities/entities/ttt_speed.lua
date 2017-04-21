@@ -46,20 +46,12 @@ EQUIP_SPEED = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 512
 if SERVER then
 
   local plymeta = FindMetaTable("Player")
-  function plymeta:CanDrinkSpeed()
-    if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_speed") then
-        timer.Create("MaketheSpeedDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_speed") then
-              self:GivetheSpeed()
-              timer.Remove("MaketheSpeedDrink" .. self:EntIndex())
-            end
-          end)
-      else
-        self:GivetheSpeed()
-      end
+
+  hook.Add("TTTCanOrderEquipment", "TTTSpeed", function(ply, id, is_item)
+    if tonumber(id) == EQUIP_SPEED and ply:IsDrinking() then
+      return false
     end
-  end
+  end)
 
   function plymeta:GivetheSpeed()
     self:Give("ttt_perk_speed")
@@ -69,9 +61,9 @@ if SERVER then
     end
   end
 
-  hook.Add("TTTOrderedEquipment", "TTTSpeed", function(ply, equipment, is_item)
-      if is_item == EQUIP_SPEED then
-        ply:CanDrinkSpeed()
+  hook.Add("TTTOrderedEquipment", "TTTSpeed", function(ply, id, is_item)
+      if id == EQUIP_SPEED then
+        ply:GivetheSpeed()
       end
     end)
     hook.Add("TTTPrepareRound", "TTTSpeedResettin", function()

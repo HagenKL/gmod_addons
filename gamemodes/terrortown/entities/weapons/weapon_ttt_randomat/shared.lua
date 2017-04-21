@@ -490,7 +490,7 @@ if SERVER then
         RandomatBroadcast("Randomat: ", Color(255,255,255), "The Models of the choosen ones have been revealed!")
         local Players = {}
         for key,v in RandomPairs(player.GetAll()) do
-          if v:IsTerror() then
+          if v:IsTerror() and !v:GetDetective() then
             table.insert(Players,v)
           end
         end
@@ -506,10 +506,8 @@ if SERVER then
             ply.Modelchanged = true
             if ply:GetRole() == ROLE_INNOCENT then
               ply:SetModel("models/player/mossman.mdl")
-            elseif ply:GetRole() == ROLE_TRAITOR then
+            elseif ply:GetTraitor() or (ply.GetHunter and ply.GetHunter()) then
               ply:SetModel("models/player/skeleton.mdl")
-            elseif ply:GetRole() == ROLE_DETECTIVE then
-              ply:SetModel("models/player/police.mdl")
             end
           end
           table.remove(Players, Num)
@@ -519,10 +517,8 @@ if SERVER then
         if ply.Modelchanged then
           if ply:GetRole() == ROLE_INNOCENT then
             ply:SetModel("models/player/mossman.mdl")
-          elseif ply:GetRole() == ROLE_TRAITOR then
+          elseif ply:GetTraitor() then
             ply:SetModel("models/player/skeleton.mdl")
-          elseif ply:GetRole() == ROLE_DETECTIVE then
-            ply:SetModel("models/player/police.mdl")
           end
         end
       end)

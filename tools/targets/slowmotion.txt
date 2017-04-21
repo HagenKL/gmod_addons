@@ -1,8 +1,6 @@
-lua\autorun\sh_slowmotion.lua 
-lua\autorun\Slowmo.lua 
-lua\autorun\client\cl_slowmotion.lua 
-lua\autorun\server\sv_slowmotion.lua 
+gamemodes\terrortown\entities\entities\ttt_slowmotion.lua 
 materials\vgui\ttt\slowmotion_icon.vmt 
-materials\vgui\ttt\slowmotion_icon.vtf 
+materials\vgui\ttt\slowmotion_icon.vtf
+materials\vgui\ttt\perks\hud_slowmo.png
 sound\sm_enter.wav 
 sound\sm_exit.wav 

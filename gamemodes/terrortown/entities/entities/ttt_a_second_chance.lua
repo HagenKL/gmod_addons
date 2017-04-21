@@ -92,13 +92,15 @@ if SERVER then
   end*/
 
 
-  hook.Add("TTTOrderedEquipment", "TTTASC", function(ply, equipment, is_item)
-      if is_item == EQUIP_ASC then
+  hook.Add("TTTOrderedEquipment", "TTTASC", function(ply, id, is_item)
+      if id == EQUIP_ASC then
         ply.shouldasc = true
-        if ply:GetRole() == ROLE_TRAITOR then
+        if ply:GetTraitor() then
           ply.SecondChanceChance = 25
         elseif ply:GetRole() == ROLE_DETECTIVE then
           ply.SecondChanceChance = 50
+        elseif ply.IsHunter and ply:IsHunter() then
+          ply.SecondChanceChance = 25
         end
         net.Start("ASCBuyed")
         net.WriteInt(ply.SecondChanceChance, 8)
@@ -258,9 +260,9 @@ if SERVER then
 
   function CheckifAsc(ply, attacker, dmg)
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
-      if attacker:GetRole() == ROLE_TRAITOR and ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE then
+      if (attacker:GetTraitor() or (attacker.IsHunter and attacker:IsHunter())) and (ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 15, 0, 99)
-      elseif attacker:GetRole() == ROLE_DETECTIVE and ply:GetRole() == ROLE_TRAITOR then
+      elseif attacker:GetRole() == ROLE_DETECTIVE and (ply:GetTraitor() or (ply.IsHunter and ply:IsHunter())) then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 25, 0, 99)
       end
       net.Start("ASCKill")

@@ -108,9 +108,9 @@ function SWEP:Think()
 		end
 
 		table.Empty(highnoontargets)
-
+		local owner = self.Owner
 		for k, v in pairs(player.GetAll()) do
-			if CLIENT and v:IsTerror() and self.Owner:IsLineOfSightClear(v) and v != self.Owner and !v:GetNWBool("highnoonhit") then
+			if CLIENT and v:IsTerror() and owner:IsLineOfSightClear(v) and v != owner and !v:GetNWBool("highnoonhit") then
 				local pos = v:LocalToWorld(v:OBBCenter()) + Vector(0, 0, 30)
 				pos.x = math.Round(pos.x)
 				pos.y = math.Round(pos.y)
@@ -119,12 +119,14 @@ function SWEP:Think()
 			end
 
 			local pos = v:LocalToWorld(v:OBBCenter()) + Vector(0, 0, 30)
-			v:SetNWBool("highnoonpositionscreen", IsInFOV(self.Owner, pos))
+			v:SetNWBool("highnoonpositionscreen", IsInFOV(owner, pos))
 
-			if v:IsTerror() and self.Owner:IsLineOfSightClear(v) and v != self.Owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and ((isfunction(v.IsFakeDead) and !v:IsFakeDead()) or !isfunction(v.IsFakeDead)) then
-				if #highnoontargets < 6 and self.Owner:GetRole() == ROLE_TRAITOR and v:GetRole() != ROLE_TRAITOR then
+			if v:IsTerror() and #highnoontargets < 6 and owner:IsLineOfSightClear(v) and v != owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and ((isfunction(v.IsFakeDead) and !v:IsFakeDead()) or !isfunction(v.IsFakeDead)) then
+				if owner:IsTraitor() and !v:IsTraitor() and !v:IsHunter() then
 					table.insert(highnoontargets, v)
-				elseif #highnoontargets < 6 and (self.Owner:GetRole() == ROLE_DETECTIVE or self.Owner:GetRole() == ROLE_INNOCENT) then
+				elseif owner.IsHunter and owner:IsHunter() and !v:IsHunter() and !v:IsTraitor() then
+					table.insert(highnoontargets, v)
+				elseif owner:GetRole() == ROLE_DETECTIVE or owner:GetRole() == ROLE_INNOCENT then
 					table.insert(highnoontargets, v)
 				end
 			end

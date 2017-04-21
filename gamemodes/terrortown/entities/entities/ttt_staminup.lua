@@ -59,20 +59,12 @@ EQUIP_STAMINUP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 256
 if SERVER then
 
   local plymeta = FindMetaTable("Player")
-  function plymeta:CanDrinkStaminup()
-    if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_staminup") then
-        timer.Create("MaketheStaminUpDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_staminup") then
-              self:GivetheStaminup()
-              timer.Remove("MaketheStaminUpDrink" .. self:EntIndex())
-            end
-          end)
-      else
-        self:GivetheStaminup()
-      end
+
+  hook.Add("TTTCanOrderEquipment", "TTTStaminup", function(ply, id, is_item)
+    if tonumber(id) == EQUIP_STAMINUP and ply:IsDrinking() then
+      return false
     end
-  end
+  end)
 
   function plymeta:GivetheStaminup()
     self:Give("ttt_perk_staminup")
@@ -82,9 +74,9 @@ if SERVER then
     end
   end
 
-  hook.Add("TTTOrderedEquipment", "TTTStaminup", function(ply, equipment, is_item)
-      if is_item == EQUIP_STAMINUP then
-        ply:CanDrinkStaminup()
+  hook.Add("TTTOrderedEquipment", "TTTStaminup", function(ply, id, is_item)
+      if id == EQUIP_STAMINUP then
+        ply:GivetheStaminup()
       end
     end)
     hook.Add("TTTPrepareRound", "TTTStaminupResettin", function()

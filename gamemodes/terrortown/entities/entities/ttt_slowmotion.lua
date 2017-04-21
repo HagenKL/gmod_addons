@@ -5,7 +5,7 @@ if SERVER then
 	resource.AddFile("sound/slowmotion/sm_exit.wav")
 	resource.AddFile("materials/VGUI/ttt/slowmotion_icon.vmt")
 	resource.AddFile("materials/VGUI/ttt/slowmotion_icon.vtf")
-
+	resource.AddFile("materials/vgui/ttt/perks/hud_slowmo.png")
 	util.AddNetworkString("SlowMotionSound")
 	util.AddNetworkString("SM_Ask")
 	util.AddNetworkString("SMReload")
@@ -36,7 +36,7 @@ if CLIENT then
 			end
 		end)
 
-	local material = Material("vgui/ttt/perks/hud_tlh.png")
+	local material = Material("vgui/ttt/perks/hud_slowmo.png")
 	hook.Add("HUDPaint", "TTTSM", function()
 			if (LocalPlayer():HasEquipmentItem(EQUIP_SM)) then
 				surface.SetMaterial(material)
@@ -60,7 +60,6 @@ if CLIENT then
 		local enabled = net.ReadBool()
 		local str = enabled and "enter" or "exit"
 		local sound = "slowmotion/sm_"..str..".wav"
-		print(sound)
 		surface.PlaySound(sound)
 	end
 
@@ -115,7 +114,7 @@ if SERVER then
 	end
 
 	function plymeta:SMReset()
-		local duration = GetConVar("ttt_SlowMotion_duration"):GetFloat()
+		local duration = GetConVar("ttt_slowmotion_duration"):GetFloat()
 		timer.Create("SMReset" .. self:EntIndex(), duration:GetInt() ,1, function()
 				if self:IsValid() and self:GetNWBool("SlowMotionUsed") and self:IsTerror() then
 					game.SetTimeScale(1)

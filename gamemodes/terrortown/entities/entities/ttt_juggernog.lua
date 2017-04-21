@@ -46,20 +46,6 @@ EQUIP_JUGGERNOG = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 64
 
 if SERVER then
   local plymeta = FindMetaTable("Player")
-  function plymeta:CanDrinkJugger()
-    if IsValid(self) and self:IsTerror() then
-      if IsValid(self:GetActiveWeapon()) and self:IsDrinking("ttt_perk_juggernog") then
-        timer.Create("MaketheJuggerDrink" .. self:EntIndex(),0.5,0, function()
-            if IsValid(self) and IsValid(self:GetActiveWeapon()) and !self:IsDrinking("ttt_perk_juggernog") then
-              self:GivetheJugger()
-              timer.Remove("MaketheJuggerDrink" .. self:EntIndex())
-            end
-          end)
-      else
-        self:GivetheJugger()
-      end
-    end
-  end
 
   function plymeta:GivetheJugger()
     self:Give("ttt_perk_juggernog")
@@ -69,9 +55,15 @@ if SERVER then
     end
   end
 
-  hook.Add("TTTOrderedEquipment", "TTTJuggernog", function(ply, equipment, is_item)
-      if is_item == EQUIP_JUGGERNOG then
-        ply:CanDrinkJugger()
+  hook.Add("TTTCanOrderEquipment", "TTTJuggernog", function(ply, id, is_item)
+    if tonumber(id) == EQUIP_JUGGERNOG and ply:IsDrinking() then
+      return false
+    end
+  end)
+
+  hook.Add("TTTOrderedEquipment", "TTTJuggernog", function(ply, id, is_item)
+      if id == EQUIP_JUGGERNOG then
+        ply:GivetheJugger()
       end
     end)
     hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()

@@ -22,10 +22,10 @@ if SERVER then
 		net.Send(self)
 	end
 	net.Receive("TLH_Ask", function(len,ply)
-			if ply.TLH == true and ply:Alive() and ply:IsTerror() then
-				ply:TheLittleHelper()
-			end
-		end )
+		if ply.TLH == true and ply:Alive() and ply:IsTerror() then
+			ply:TheLittleHelper()
+		end
+	end )
 end
 
 if CLIENT then
@@ -80,7 +80,7 @@ EQUIP_TLH = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 32
 local TheLittleHelper = {
 	id = EQUIP_TLH,
 	loadout = false,
-	type = "item_passive",
+	type = "item_active",
 	material = "vgui/ttt/icon_tlh",
 	name = "The Little Helper",
 	desc = "With this Item you get invincible for 7 seconds. \nBind a key to *thelittlehelper* to use it. \nCAUTION: YOU CAN�T SHOT IN THAT PERIOD OF TIME. \nIt will recharge in 20 seconds.",
@@ -98,8 +98,8 @@ if (traitorCanUse:GetBool()) then
 	table.insert(EquipmentItems[ROLE_TRAITOR], TheLittleHelper)
 end
 
-hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, equipment, is_item)
-		if is_item == EQUIP_TLH then
+hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, id, is_item)
+		if id == EQUIP_TLH then
 			ply.TLH = true
 		end
 	end)
@@ -118,7 +118,7 @@ if SERVER then
 	local plymeta = FindMetaTable("Player")
 	function plymeta:TheLittleHelper()
 		if IsValid(self) then
-			self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper was activated!")
+			self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is now watching over you!")
 			net.Start("TLHStart")
 			net.Send(self)
 			self.TLHInvincible = true
@@ -130,11 +130,9 @@ if SERVER then
 	function plymeta:TLHReset()
 		timer.Create("TLHReset" .. self:EntIndex(), tlhduration:GetInt() ,1, function()
 				if self:IsValid() and self.TLHInvincible and self:IsTerror() then
-					self.TLH = false
 					self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is exhausted!")
 					net.Start("TLHReload")
 					net.Send(self)
-					self:SetNWBool("CanAttack", true)
 					self.TLHInvincible = false
 					self:ReloadTLH()
 				end
@@ -203,6 +201,8 @@ local function ResettinTlh()
 end
 
 hook.Add("PlayerDeath", "TLHDeath", function(ply)
+		timer.Remove("TLHReset" .. ply:EntIndex())
+		timer.Remove("TLHReload" .. ply:EntIndex())
 		ply.TLH = false
 		ply.TLHInvincible = false
 	end )
