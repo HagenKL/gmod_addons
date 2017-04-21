@@ -8,30 +8,22 @@ function TTTVote.ReceiveVotes(len, sender)
   TTTVote.CalculateVotes(sender, target, sender)
 end
 
-function TTTVote.SendVoteNotify(sender, target, totalvotes, hastotem)
+function TTTVote.SendVoteNotify(sender, target, totalvotes)
   net.Start("TTTVoteMessage")
   net.WriteEntity(sender)
   net.WriteEntity(target)
   net.WriteInt(totalvotes,16)
-  net.WriteBool(hastotem)
   net.Broadcast()
 end
 
 function TTTVote.CalculateVotes(ply, target, sender)
-  local hastotem = false
   TTTVote.votebetters[target:SteamID()] = TTTVote.votebetters[target:SteamID()] or {}
   table.insert(TTTVote.votebetters[target:SteamID()], ply)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
     local totem = ply:GetNWEntity("Totem",NULL)
-    if IsValid(totem) then
-      totem:AddHalos()
-      hastotem = true
-    else
-      TTTVote.AddHalos(target)
-      hastotem = false
-    end
+    TTTVote.AddHalos(target)
     for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
       TTTVote.SetVotes(v,v:GetNWInt("PlayerVotes") - 1)
       ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") - 1 )
@@ -41,7 +33,7 @@ function TTTVote.CalculateVotes(ply, target, sender)
     end
     table.Empty(TTTVote.votebetters[target:SteamID()])
   end
-  TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0), hastotem)
+  TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
 end
 
 function TTTVote.SetVotes(ply, vote)

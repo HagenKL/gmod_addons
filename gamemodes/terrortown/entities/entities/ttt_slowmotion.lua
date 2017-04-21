@@ -141,8 +141,9 @@ if SERVER then
 	hook.Add("TTTPrepareRound", "BeginRoundSM", function()
 		for k,v in pairs(player.GetAll()) do
 			v:SetNWBool("SlowMotionUsed", false)
+			timer.Remove("SMReset" .. v:EntIndex())
+			timer.Remove("SMReload" .. v:EntIndex())
 		end
-		timer.Remove("TTTSlowMotion")
 	end)
 
 else

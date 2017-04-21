@@ -45,15 +45,14 @@ end
 function ENT:RemoveHalos()
   local owner = self:GetOwner()
  if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
-    net.Start("TTTVoteRemoveHalos")
-    net.WriteBool(false)
-    net.WriteEntity(self)
-    net.Broadcast()
-    net.Start("TTTTotem")
-    net.WriteInt(7,8)
-    net.WriteEntity(owner)
-    net.Broadcast()
-    TTTVote.AddHalos(owner)
+  net.Start("TTTVoteRemoveHalos")
+  net.WriteBool(false)
+  net.WriteEntity(self)
+  net.Broadcast()
+  net.Start("TTTTotem")
+  net.WriteInt(7,8)
+  net.WriteEntity(owner)
+  net.Broadcast()
  end
 end
 
@@ -83,7 +82,7 @@ function ENT:OnTakeDamage(dmginfo)
 
   local owner, att, infl, dmg = self:GetOwner(), dmginfo:GetAttacker(), dmginfo:GetInflictor(), dmginfo:GetDamage()
 
-  
+  if !IsValid(owner) then return end
   if infl == owner or att == owner or owner:IsHunter() or owner:IsTraitor() then return end
 
   if ((infl:IsPlayer() and infl:IsHunter()) or (att:IsPlayer() and att:IsHunter())) and infl:GetClass() == "weapon_ttt_totemknife" then
@@ -120,11 +119,17 @@ function ENT:FakeDestroy()
   timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
 end
 
+hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply) 
+  if TTTVote.HasTotem(ply) then
+    ply:GetNWEntity("Totem", NULL):FakeDestroy()
+  end
+end)
+
 if CLIENT then
   hook.Add("HUDDrawTargetID", "DrawTotem", function()
     local e = LocalPlayer():GetEyeTrace().Entity
 
-    if IsValid(e) and e:GetClass() == "ttt_totem" then
+    if IsValid(e) and e:GetClass() == "ttt_totem" and IsValid(e:GetOwner()) then
       local owner = e:GetOwner():Nick()
 
       if string.EndsWith(owner, "s") or string.EndsWith(owner, "x") or string.EndsWith(owner, "z") or string.EndsWith(owner, "ß") then

@@ -100,8 +100,8 @@ function TTTVote.TotemSuffer()
             net.Send(v)
             v.DamageNotified = true
           end
-          v:TakeDamage(5,v,v)
-          v.TotemSuffer = CurTime() + 1
+          v:TakeDamage(1,v,v)
+          v.TotemSuffer = CurTime() + 0.2
         end
       elseif v:IsTerror() and (v:GetNWBool("PlacedTotem", true) or !v.TotemSuffer) then
         v.TotemSuffer = 0
@@ -145,5 +145,6 @@ hook.Add("TTTPrepareRound", "ResetValues", TTTVote.ResetTotems)
 hook.Add("PlayerDeath", "TTTDestroyTotem", TTTVote.DestroyTotem)
 hook.Add("Think", "TotemSuffer", TTTVote.TotemSuffer)
 hook.Add("TTTBeginRound", "TTTTotemSync", TTTVote.TotemUpdate)
-hook.Add("TTTBeginRound", "TTTTotemSync", TTTVote.ResetSuffer)
+hook.Add("TTTBeginRound", "TTTTotemResetSuffer", TTTVote.ResetSuffer)
 hook.Add("PlayerDeath", "TTTTotemSync", TTTVote.TotemUpdate)
+hook.Add("PlayerDisconnected", "TTTTotemSync", TTTVote.TotemUpdate)

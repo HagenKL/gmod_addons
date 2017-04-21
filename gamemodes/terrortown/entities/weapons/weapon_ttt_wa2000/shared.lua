@@ -102,9 +102,9 @@ function SWEP:Reload()
   if ( self:Clip1() == self.Primary.ClipSize or self.Owner:GetAmmoCount( self.Primary.Ammo ) <= 0 ) then return end
   self:DefaultReload( ACT_VM_RELOAD )
   if CLIENT then
-    timer.Simple(0.52,function() if IsValid(self) and self.Owner:IsTerror() and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/Walther2000/Magout.wav") end end)
-    timer.Simple(2.5,function() if IsValid(self) and self.Owner:IsTerror() and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/Walther2000/Boltback.wav") end end)
-    timer.Simple(3.8,function() if IsValid(self) and self.Owner:IsTerror() and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/Walther2000/Boltforward.wav") end end)
+    timer.Simple(0.52,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_wa2000" then self:EmitSound("weapons/gamefreak/Walther2000/Magout.wav") end end)
+    timer.Simple(2.5,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_wa2000" then self:EmitSound("weapons/gamefreak/Walther2000/Boltback.wav") end end)
+    timer.Simple(3.8,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_wa2000" then self:EmitSound("weapons/gamefreak/Walther2000/Boltforward.wav") end end)
   end
   self:SetIronsights( false )
   self:SetZoom( false )
