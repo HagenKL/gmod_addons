@@ -24,10 +24,8 @@ function GM:PlayerInitialSpawn( ply )
    local rstate = GetRoundState() or ROUND_WAIT
    -- We should update the traitor list, if we are not about to send it
    if rstate <= ROUND_PREP then
-      SendTraitorList(GetTraitorFilter())
-	   SendTraitorList(GetHunterFilter())
-      SendHunterList(GetHunterFilter())
-      SendHunterList(GetTraitorFilter())
+	   SendTraitorList(GetHTFilter())
+      SendHunterList(GetHTFilter())
       SendConfirmedTraitors(GetInnocentFilter())
       SendDetectiveList()
    end
@@ -442,10 +440,8 @@ function GM:PlayerDisconnected(ply)
 
    if GetRoundState() != ROUND_PREP then
       -- Keep traitor entindices in sync on traitor clients
-      SendTraitorList(GetTraitorFilter(false), nil)
-	   SendTraitorList(GetHunterFilter(false), nil)
-      SendHunterList(GetTraitorFilter(false), nil)
-      SendHunterList(GetHunterFilter(false), nil)
+	   SendTraitorList(GetHTFilter(false), nil)
+      SendHunterList(GetHTFilter(false), nil)
 
       -- Same for confirmed traitors on innocent clients
       SendConfirmedTraitors(GetInnocentFilter(false))

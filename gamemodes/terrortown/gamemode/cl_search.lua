@@ -455,7 +455,7 @@ local function ReceiveRagdollSearch()
    search.eq_disg = util.BitSet(eq, EQUIP_DISGUISE)
 
    -- Traitor things
-   search.role = net.ReadUInt(2)
+   search.role = net.ReadUInt(4)
    search.c4 = net.ReadInt(bitsRequired(C4_WIRE_COUNT) + 1)
 
    -- Kill info

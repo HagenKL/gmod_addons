@@ -51,11 +51,16 @@ SWEP.DeploySpeed = 4-- Pull out faster than standard guns
 
 if CLIENT then
 
-  local minimalist = GetConVar("ttt_minimal_targetid")
-  local ring_tex = surface.GetTextureID("effects/select_ring")
-  local GetLang = LANG.GetUnsafeLanguageTable
+    local function AdvDisguiserInit()
+      local client = LocalPlayer()
+      local L = LANG.GetUnsafeLanguageTable()
 
-  local function DrawPropSpecLabels(client)
+
+      local trace = client:GetEyeTrace(MASK_SHOT)
+      local ent = trace.Entity
+	  
+	    if (not IsValid(ent)) or ent.NoTarget then return end
+      if !ent:GetNWBool("AdvDisguiseInDisguise") then return end
        if (not client:IsSpec()) and (GetRoundState() != ROUND_POST) then return end
 
        surface.SetFont("TabLarge")
@@ -94,29 +99,26 @@ if CLIENT then
              surface.DrawText(text)
           end
        end
-    end
 
-    function AdvDisguiserTID()
-      local client = LocalPlayer()
-      local L = GetLang()
-
-
-      local trace = client:GetEyeTrace(MASK_SHOT)
-      local ent = trace.Entity
-
-      if !ent:GetNWBool("AdvDisguiseInDisguise") then return end
-      if ent:GetNWBool("disguised", false) then return end
-
-      DrawPropSpecLabels(client)
-
+      
       local text = nil
       local color = COLOR_WHITE
 
-      local minimal = minimalist:GetBool()
+      local minimal = GetConVar("ttt_minimal_targetid"):GetBool()
 
-      client.last_id = nil
+      if ent:GetNWBool("disguised", false) then
+         client.last_id = nil
 
-      if ((client:IsTraitor() or (ent.IsHunter and ent:IsHunter()))) and (ent:IsTraitor() or (ent.IsHunter and ent:IsHunter())) or client:IsSpec() then
+         if client:IsTraitor() or client:IsHunter() or client:IsSpec() then
+            text = ent:Nick() .. L.target_disg
+         else
+            -- Do not show anything
+            return
+         end
+
+         color = COLOR_RED
+
+      elseif ((client:IsTraitor() or (ent.IsHunter and ent:IsHunter()))) and (ent:IsTraitor() or (ent.IsHunter and ent:IsHunter())) or client:IsSpec() then
         text = ent:Nick() .. " (Disguised as " .. ent:GetNWString("AdvDisguiseName") .. ")"
         color = COLOR_RED
       else
@@ -143,7 +145,7 @@ if CLIENT then
         local w, h = 0,0 -- text width/height, reused several times
 
         if target_traitor or target_detective then
-          surface.SetTexture(ring_tex)
+          surface.SetTexture(surface.GetTextureID("effects/select_ring"))
 
           if target_traitor then
             surface.SetDrawColor(255, 0, 0, 200)
@@ -220,41 +222,40 @@ if CLIENT then
           draw.SimpleText( text, font, x+1, y+1, COLOR_BLACK )
           draw.SimpleText( text, font, x, y, clr )
         end
-        return true
+        return false
     end
 
-  hook.Add( 'HUDDrawTargetID', 'AdvDisguiserInit', AdvDisguiserTID )
-  timer.Simple( 5, function()
-      function RADIO:GetTargetType()
-        if not IsValid(LocalPlayer()) then return end
-        local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
+  hook.Add( "HUDDrawTargetID", "AdvDisguiserInit", AdvDisguiserInit )
+  
+  /*function RADIO:GetTargetType()
+  	if not IsValid(LocalPlayer()) then return end
+  	local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
 
-        if not trace or (not trace.Hit) or (not IsValid(trace.Entity)) then return end
+  	if not trace or (not trace.Hit) or (not IsValid(trace.Entity)) then return end
 
-        local ent = trace.Entity
+  	local ent = trace.Entity
 
-        if ent:IsPlayer() then
-          if ent:GetNWBool("disguised", false) then
-            return "quick_disg", true
-          elseif ent:GetNWBool("AdvDisguiseInDisguise", false) then
-            if IsValid(ent:GetNWEntity("AdvDisguiseEnt",nil)) then
-              return ent:GetNWEntity("AdvDisguiseEnt",nil), false
-            else
-              return nil, false
-            end
+  	if ent:IsPlayer() then
+  	  if ent:GetNWBool("disguised", false) then
+  		  return "quick_disg", true
+  	  elseif ent:GetNWBool("AdvDisguiseInDisguise", false) then
+  		if IsValid(ent:GetNWEntity("AdvDisguiseEnt",nil)) then
+  		  return ent:GetNWEntity("AdvDisguiseEnt",nil), false
+  		else
+  		  return nil, false
+  		end
 
-          else
-            return ent, false
-          end
-        elseif ent:GetClass() == "prop_ragdoll" and CORPSE.GetPlayerNick(ent, "") != "" then
-          if DetectiveMode() and not CORPSE.GetFound(ent, false) then
-            return "quick_corpse", true
-          else
-            return ent, false
-          end
-        end
-      end
-    end )
+  	  else
+  		  return ent, false
+  	  end
+  	elseif ent:GetClass() == "prop_ragdoll" and CORPSE.GetPlayerNick(ent, "") != "" then
+  	  if DetectiveMode() and not CORPSE.GetFound(ent, false) then
+  		  return "quick_corpse", true
+  	  else
+  		  return ent, false
+  	  end
+  	end
+  end*/
 
   local function AdvDisguiseDraw()
     local client = LocalPlayer()
@@ -396,11 +397,6 @@ if CLIENT then
     return self.BaseClass.Initialize(self)
   end
 
-  function SWEP:DrawWorldModel()
-    if not IsValid(self.Owner) then
-      self:DrawModel()
-    end
-  end
   net.Receive("TTTAdvDisguiseSuccess",function()
     local printname = net.ReadString()
     chat.AddText("Advanced Disguiser: ", COLOR_WHITE, "Retrieved " .. printname .. "'s identity successfully!")

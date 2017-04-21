@@ -899,7 +899,7 @@ function SelectRoles()
       -- make this guy traitor if he was not a traitor last time, or if he makes
       -- a roll
       if IsValid(pply) and
-         ((not table.HasValue(prev_roles[ROLE_TRAITOR], pply) and table.HasValue(prev_roles[ROLE_HUNTER], pply)) or (math.random(1, 3) == 2)) then
+         (not table.HasValue(prev_roles[ROLE_TRAITOR], pply) and not table.HasValue(prev_roles[ROLE_HUNTER], pply)) or (math.random(1, 3) == 2) then
          pply:SetRole(ROLE_TRAITOR)
 
          table.remove(choices, pick)
@@ -915,7 +915,7 @@ function SelectRoles()
 
 
       if IsValid(pply) and
-         ((not table.HasValue(prev_roles[ROLE_TRAITOR], pply) and table.HasValue(prev_roles[ROLE_HUNTER], pply)) or (math.random(1, 3) == 2)) then
+         (not table.HasValue(prev_roles[ROLE_TRAITOR], pply) and not table.HasValue(prev_roles[ROLE_HUNTER], pply)) or (math.random(1, 3) == 2) then
          pply:SetRole(ROLE_HUNTER)
 
          table.remove(choices, pick)

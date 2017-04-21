@@ -74,7 +74,7 @@ local function RadarScan(ply, cmd, args)
          net.Start("TTT_Radar")
             net.WriteUInt(#targets, 8)
             for k, tgt in pairs(targets) do
-			   net.WriteUInt(tgt.role, 2)
+			   net.WriteUInt(tgt.role, 4)
 
                net.WriteInt(tgt.pos.x, 32)
                net.WriteInt(tgt.pos.y, 32)

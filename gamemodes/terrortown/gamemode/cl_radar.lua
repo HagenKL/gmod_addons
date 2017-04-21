@@ -240,7 +240,7 @@ local function ReceiveRadarScan()
 
    RADAR.targets = {}
    for i=1, num_targets do
-      local r = net.ReadUInt(2)
+      local r = net.ReadUInt(4)
 
       local pos = Vector()
       pos.x = net.ReadInt(32)

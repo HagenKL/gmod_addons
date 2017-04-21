@@ -15,14 +15,14 @@ function CountTraitors() return #GetTraitors() end
 local function SendPlayerRoles()
    for k, v in pairs(player.GetAll()) do
       net.Start("TTT_Role")
-         net.WriteUInt(v:GetRole(), 2)
+         net.WriteUInt(v:GetRole(), 4)
       net.Send(v)
    end
 end
 
 local function SendRoleListMessage(role, role_ids, ply_or_rf)
    net.Start("TTT_RoleList")
-      net.WriteUInt(role, 2)
+      net.WriteUInt(role, 4)
 
       -- list contents
       local num_ids = #role_ids
@@ -89,10 +89,8 @@ end
 function SendFullStateUpdate()
    SendPlayerRoles()
    SendInnocentList()
-   SendTraitorList(GetTraitorFilter())
-   SendTraitorList(GetHunterFilter())
-   SendHunterList(GetHunterFilter())
-   SendHunterList(GetTraitorFilter())
+   SendTraitorList(GetHTFilter())
+   SendHunterList(GetHTFilter())
    SendDetectiveList()
    -- not useful to sync confirmed traitors here
 end
@@ -101,7 +99,7 @@ function SendRoleReset(ply_or_rf)
    local plys = player.GetAll()
 
    net.Start("TTT_RoleList")
-      net.WriteUInt(ROLE_INNOCENT, 2)
+      net.WriteUInt(ROLE_INNOCENT, 4)
 
       net.WriteUInt(#plys, 8)
       for k, v in pairs(plys) do

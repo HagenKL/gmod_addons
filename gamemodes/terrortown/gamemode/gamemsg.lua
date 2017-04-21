@@ -46,7 +46,7 @@ end
 -- Traitorchat
 local function RoleChatMsg(sender, role, msg)
    net.Start("TTT_RoleChat")
-      net.WriteUInt(role, 2)
+      net.WriteUInt(role, 4)
       net.WriteEntity(sender)
       net.WriteString(msg)
    net.Send(GetRoleFilter(role))
@@ -72,8 +72,12 @@ local function GetPlayerFilter(pred)
    return filter
 end
 
+function GetHTFilter(alive_only)
+   return GetPlayerFilter(function(p) return (p:IsTraitor() or p:IsHunter()) and (not alive_only or p:IsTerror()) end)
+end
+
 function GetHunterFilter(alive_only)
-   return GetPlayerFilter(function(p) return p:GetHunter() and (not alive_only or p:IsTerror()) end)
+   return GetPlayerFilter(function(p) return p:IsHunter() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetTraitorFilter(alive_only)
@@ -85,7 +89,7 @@ function GetDetectiveFilter(alive_only)
 end
 
 function GetInnocentFilter(alive_only)
-   return GetPlayerFilter(function(p) return (not p:IsTraitor() and not p:IsHunter()) and (not alive_only or p:IsTerror()) end)
+   return GetPlayerFilter(function(p) return (not p:IsTraitor()) and (not p:IsHunter()) and (not alive_only or p:IsTerror()) end)
 end
 
 function GetRoleFilter(role, alive_only)

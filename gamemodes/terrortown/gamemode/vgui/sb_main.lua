@@ -56,10 +56,10 @@ function AddScoreGroup(name) -- Utility function to register a score group
 end
 
 function ScoreGroup(p)
+
    if not IsValid(p) then return -1 end -- will not match any group panel
 
    local group = hook.Call( "TTTScoreGroup", nil, p )
-
    if group then -- If that hook gave us a group, use it
       return group
    end
@@ -72,7 +72,8 @@ function ScoreGroup(p)
             local client = LocalPlayer()
             -- To terrorists, missing players show as alive
             if client:IsSpec() or
-               client:IsActiveTraitor() or client:IsActiveHunter() or
+               client:IsActiveTraitor() or
+               client:IsActiveHunter() or
                ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
                return GROUP_NOTFOUND
             else
@@ -81,6 +82,7 @@ function ScoreGroup(p)
          end
       end
    end
+
 
    return p:IsTerror() and GROUP_TERROR or GROUP_SPEC
 end

@@ -94,10 +94,10 @@ function GM:TTTScoreboardRowColorForPlayer(ply)
 
    if ply:IsTraitor() then
       return rolecolor.traitor
+   elseif ply:IsHunter() then
+     return rolecolor.hunter
    elseif ply:IsDetective() then
       return rolecolor.detective
-   elseif ply:IsHunter() then
-	  return rolecolor.hunter
    end
 
    return rolecolor.default

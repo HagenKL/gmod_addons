@@ -267,7 +267,7 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
       net.WriteUInt(owner, 8) -- 128 max players. ( 8 bits )
       net.WriteString(nick)
       net.WriteUInt(eq, 16) -- Equipment ( 16 = max. )
-      net.WriteUInt(role, 2) -- ( 2 bits )
+      net.WriteUInt(role, 4) -- ( 4 bits )
       net.WriteInt(c4, bitsRequired(C4_WIRE_COUNT) + 1) -- -1 -> 2^bits ( default c4: 4 bits )
       net.WriteUInt(dmg, 30) -- DMG_BUCKSHOT is the highest. ( 30 bits )
       net.WriteString(wep)
@@ -288,8 +288,8 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
 
       net.WriteString(words)
 
-      -- 133 + string data + #kill_entids * 8
-      -- 200
+      -- 135 + string data + #kill_entids * 8
+      -- 202
 
    -- If found by detective, send to all, else just the finder
    if ply:IsActiveDetective() then

@@ -137,6 +137,7 @@ end
 function TTTVote.DestroyTotem(ply)
   if GetRoundState() == ROUND_ACTIVE then
     ply:SetNWBool("CanSpawnTotem", false)
+    TTTVote.TotemUpdate()
   end
 end
 
@@ -146,5 +147,4 @@ hook.Add("PlayerDeath", "TTTDestroyTotem", TTTVote.DestroyTotem)
 hook.Add("Think", "TotemSuffer", TTTVote.TotemSuffer)
 hook.Add("TTTBeginRound", "TTTTotemSync", TTTVote.TotemUpdate)
 hook.Add("TTTBeginRound", "TTTTotemResetSuffer", TTTVote.ResetSuffer)
-hook.Add("PlayerDeath", "TTTTotemSync", TTTVote.TotemUpdate)
 hook.Add("PlayerDisconnected", "TTTTotemSync", TTTVote.TotemUpdate)
