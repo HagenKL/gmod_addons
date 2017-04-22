@@ -81,7 +81,6 @@ if SERVER then
 		local ply = self.Owner
 		if ply.ExplodeProps and #ply.ExplodeProps > 0 and IsValid(ply) then
 			self:PropExploder()
-			self:Remove()
 		end
 	end
 	
@@ -120,6 +119,7 @@ if SERVER then
 	end
 	
 	function SWEP:ExplodeProp(ent)
+	local ply = self.Owner
 		if IsValid(v) and IsValid(ply) then
 			local expl = ents.Create( "env_explosion" )
 			expl:SetPos( v:GetPos() )
@@ -132,6 +132,7 @@ if SERVER then
 			v:Remove()
 			table.remove(ply.ExplodeProps,k)
 		end
+		self:Remove()
 	end
 	
 	hook.Add("EntityRemoved","EnablePEAgain", function(ent)
