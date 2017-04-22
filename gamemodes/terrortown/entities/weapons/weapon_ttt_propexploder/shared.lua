@@ -71,7 +71,7 @@ end
 if SERVER then
 	
 	function SWEP:PrimaryAttack()
-		if !v.PEProp then
+		if !self.Owner.PEProp then
 			self:SetNextPrimaryFire( CurTime() + 1)
 			self:PropExplodeHandler()
 		end
@@ -122,7 +122,7 @@ if SERVER then
 	
 	hook.Add("EntityRemoved","EnablePEAgain", function(ent)
 		for k,v in pairs(player.GetAll()) do
-			if v.PEProp and v.PEProp = ent and v:HasWeapon("weapon_ttt_propexploder") then
+			if v.PEProp and v.PEProp == ent and v:HasWeapon("weapon_ttt_propexploder") then
 				v.PEProp = nil
 				v:GetWeapon("weapon_ttt_propexploder"):SendPEMessage("Ready")
 			end
