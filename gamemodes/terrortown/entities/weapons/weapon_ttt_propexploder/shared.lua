@@ -14,21 +14,7 @@ if SERVER then
    AddCSLuaFile( "shared.lua" )
    resource.AddFile("materials/VGUI/ttt/icon_propexploder.vmt")
    resource.AddWorkshop("680737032")
-   local PLAYER = FindMetaTable("Player")
-	util.AddNetworkString( "ColoredMessage" )
-	function BroadcastMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Broadcast()
-	end
-
-	function PLAYER:PlayerMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Send(self)
-	end
+   util.AddNetworkString( "TTTPEMessage" )
 end
 
 //Clientside\\
@@ -45,11 +31,6 @@ if CLIENT then
       type = "weapon",
       desc = "The PE will explode every Prop that you want! \nIt looks like an Magnet-O-Stick! \nJust left click a prop and then click rightclick to explode!."
    };
-   	net.Receive("ColoredMessage",function(len)
-		local msg = net.ReadTable()
-		chat.AddText(unpack(msg))
-		chat.PlaySound()
-	end)
 end
 
 //Damage\\
