@@ -28,8 +28,11 @@ function TTTVote.CalculateVotes(ply, target, sender)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
-    local totem = ply:GetNWEntity("Totem",NULL)
     TTTVote.AddHalos(target)
+	local totem = ply:GetNWEntity("Totem",NULL)
+	if IsValid(totem) then
+		totem:AddHalos()
+	end
     for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
       TTTVote.SetVotes(v,v:GetNWInt("PlayerVotes") - 1)
       ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") - 1 )

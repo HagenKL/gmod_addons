@@ -32,6 +32,9 @@ function TTTVote.PlaceTotem(len, sender)
       net.WriteInt(3,8)
       net.Send(ply)
       TTTVote.TotemUpdate()
+	  if sender:GetNWInt("VoteCounter",0) >= 3 then
+		totem:AddHalos()
+	  end
     end
   end
 end

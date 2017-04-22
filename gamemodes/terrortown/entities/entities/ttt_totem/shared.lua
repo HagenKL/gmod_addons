@@ -49,10 +49,6 @@ function ENT:RemoveHalos()
   net.WriteBool(false)
   net.WriteEntity(self)
   net.Broadcast()
-  net.Start("TTTTotem")
-  net.WriteInt(7,8)
-  net.WriteEntity(owner)
-  net.Broadcast()
  end
 end
 
@@ -71,7 +67,7 @@ function ENT:UseOverride(activator)
     timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
   elseif IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses >= 2 then
     net.Start("TTTTotem")
-    net.WriteInt(9,8)
+    net.WriteInt(7,8)
     net.Send(activator)
   end
 end
@@ -90,8 +86,6 @@ function ENT:OnTakeDamage(dmginfo)
     if SERVER and owner:IsValid() and att:IsValid() and att:IsPlayer() then
       net.Start("TTTTotem")
       net.WriteInt(5,8)
-      net.WriteEntity(self:GetOwner())
-      net.WriteEntity(att)
       net.Broadcast()
     end
 

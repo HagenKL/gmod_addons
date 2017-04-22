@@ -10,15 +10,10 @@ net.Receive("TTTVoteMessage",function()
     local sender = net.ReadEntity()
     local target = net.ReadEntity()
     local totalvotes = net.ReadInt(16)
-    local hastotem = net.ReadBool()
     if totalvotes < 3 then
       chat.AddText("TTT Vote: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " votet auf den verdächtigen ", COLOR_RED, target:Nick(), COLOR_WHITE, "! (" .. totalvotes .. "/3)")
     else
-      if hastotem then
-        chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat! Bevor er markiert wird müsst ihr sein Totem finden und zerstören!")
-      else
-        chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
-      end
+      chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
       TTTVote.PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
     end
     chat.PlaySound()
@@ -59,20 +54,13 @@ function TTTVote.TotemMessage()
   elseif bool == 4 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem erfolgreich aufgehoben!")
   elseif bool == 5 then
-    local owner = net.ReadEntity()
-    local attacker = net.ReadEntity()
-    if IsValid(attacker) and IsValid(owner) then
-      chat.AddText("TTT Totem: ", COLOR_WHITE, "Ein Totem wurde zerstört!")
-    end
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Ein Totem wurde zerstört!")
   elseif bool == 6 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du verlierst nun leben weil du kein Totem plaziert hast!")
   elseif bool == 7 then
-    local ply = net.ReadEntity()
-    chat.AddText("TTT Vote: ", COLOR_WHITE, "Das Totem von ",COLOR_GREEN, ply:Nick(), COLOR_WHITE," wurde zerstört, er ist nun für alle durch die Wand sichtbar!")
+	chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem schon 2 mal aufgehoben!")
   elseif bool == 8 then
-    chat.AddText("TTT Totem: ", COLOR_WHITE, "Alle Totems wurden zerstört!")
-  elseif bool == 9 then
-    chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem schon 2 mal aufgehoben!")
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Alle Totems wurden zerstört!")    
   end
   chat.PlaySound()
 end
