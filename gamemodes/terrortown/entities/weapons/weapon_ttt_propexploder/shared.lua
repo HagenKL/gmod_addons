@@ -93,11 +93,12 @@ if SERVER then
 					util.BlastDamage( prop, ply, prop:GetPos(), 400, 200 )
 					expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
 					prop:Remove()
+					ply.PEProp = nil
 				end
 			end)
 			self:SendPEMessage("Exploded")
+			self:Remove()
 		end
-		self:Remove()
 	end
 	
 	function SWEP:SendPEMessage(str)
