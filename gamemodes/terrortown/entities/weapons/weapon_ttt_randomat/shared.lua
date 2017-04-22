@@ -646,7 +646,9 @@ if SERVER then
     for k,v in pairs(player.GetAll()) do
       local randomhealth = math.random(1,200)
       v:SetHealth( randomhealth )
-      v:SetMaxHealth( randomhealth )
+      if randomhealth > v:GetMaxHealth() then
+		v:SetMaxHealth(randomhealth)
+      end
     end
   end
 
