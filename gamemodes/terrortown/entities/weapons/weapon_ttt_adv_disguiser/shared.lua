@@ -51,60 +51,72 @@ SWEP.DeploySpeed = 4-- Pull out faster than standard guns
 
 if CLIENT then
 
+	local function DrawPropSpecLabelsAdvDisguiser(client)
+	   if (not client:IsSpec()) and (GetRoundState() != ROUND_POST) then return end
+
+	   surface.SetFont("TabLarge")
+
+	   local tgt = nil
+	   local scrpos = nil
+	   local text = nil
+	   local w = 0
+	   for _, ply in pairs(player.GetAll()) do
+		  if ply:IsSpec() then
+			 surface.SetTextColor(220,200,0,120)
+
+			 tgt = ply:GetObserverTarget()
+
+			 if IsValid(tgt) and tgt:GetNWEntity("spec_owner", nil) == ply then
+
+				scrpos = tgt:GetPos():ToScreen()
+			 else
+				scrpos = nil
+			 end
+		  else
+			 local _, healthcolor = util.HealthToString(ply:Health(), ply:GetMaxHealth())
+			 surface.SetTextColor(clr(healthcolor))
+
+			 scrpos = ply:EyePos()
+			 scrpos.z = scrpos.z + 20
+
+			 scrpos = scrpos:ToScreen()
+		  end
+
+		  if scrpos and (not IsOffScreen(scrpos)) then
+			 text = ply:Nick()
+			 w, _ = surface.GetTextSize(text)
+
+			 surface.SetTextPos(scrpos.x - w / 2, scrpos.y)
+			 surface.DrawText(text)
+		  end
+	   end
+	end
+	
+	local minimalist = GetConVar("ttt_minimal_targetid")
+	local ring_tex = surface.GetTextureID("effects/select_ring")
+	local GetLang = LANG.GetUnsafeLanguageTable
+
     local function AdvDisguiserInit()
-      local client = LocalPlayer()
-      local L = LANG.GetUnsafeLanguageTable()
 
+	   local client = LocalPlayer()
 
-      local trace = client:GetEyeTrace(MASK_SHOT)
-      local ent = trace.Entity
-	  
-	    if (not IsValid(ent)) or ent.NoTarget then return end
-      if !ent:GetNWBool("AdvDisguiseInDisguise") then return end
-       if (not client:IsSpec()) and (GetRoundState() != ROUND_POST) then return end
+	   local L = GetLang()
 
-       surface.SetFont("TabLarge")
-
-       local tgt = nil
-       local scrpos = nil
-       local text = nil
-       local w = 0
-       for _, ply in pairs(player.GetAll()) do
-          if ply:IsSpec() then
-             surface.SetTextColor(220,200,0,120)
-
-             tgt = ply:GetObserverTarget()
-
-             if IsValid(tgt) and tgt:GetNWEntity("spec_owner", nil) == ply then
-
-                scrpos = tgt:GetPos():ToScreen()
-             else
-                scrpos = nil
-             end
-          else
-             local _, healthcolor = util.HealthToString(ply:Health(), ply:GetMaxHealth())
-             surface.SetTextColor(clr(healthcolor))
-
-             scrpos = ply:EyePos()
-             scrpos.z = scrpos.z + 20
-
-             scrpos = scrpos:ToScreen()
-          end
-
-          if scrpos and (not IsOffScreen(scrpos)) then
-             text = ply:Nick()
-             w, _ = surface.GetTextSize(text)
-
-             surface.SetTextPos(scrpos.x - w / 2, scrpos.y)
-             surface.DrawText(text)
-          end
-       end
-
+	   local trace = client:GetEyeTrace(MASK_SHOT)
+	   local ent = trace.Entity
+	   if (ent:IsPlayer() and !ent:GetNWBool("AdvDisguiseInDisguise", false)) or !ent:IsPlayer() then return end
+	   if (not IsValid(ent)) or ent.NoTarget then return end
       
+      DrawPropSpecLabelsAdvDisguiser(client)
+	  
+	  local target_traitor = false
+	  local target_detective = false
+	  local target_corpse = false
+	  
       local text = nil
       local color = COLOR_WHITE
 
-      local minimal = GetConVar("ttt_minimal_targetid"):GetBool()
+      local minimal = minimalist:GetBool()
 
       if ent:GetNWBool("disguised", false) then
          client.last_id = nil
@@ -133,7 +145,7 @@ if CLIENT then
       end
 
       if (client:IsTraitor() or (client.IsHunter and client:IsHunter())) and GetRoundState() == ROUND_ACTIVE then
-        target_traitor = ent:GetNWEntity("AdvDisguiseEnt",nil):IsTraitor()
+        target_traitor = ent:GetNWEntity("AdvDisguiseIsTraitor")
       end
 
       target_detective = ent:GetNWBool("AdvDisguiseIsDetective")
@@ -145,7 +157,7 @@ if CLIENT then
         local w, h = 0,0 -- text width/height, reused several times
 
         if target_traitor or target_detective then
-          surface.SetTexture(surface.GetTextureID("effects/select_ring"))
+          surface.SetTexture(ring_tex)
 
           if target_traitor then
             surface.SetDrawColor(255, 0, 0, 200)
@@ -227,7 +239,7 @@ if CLIENT then
 
   hook.Add( "HUDDrawTargetID", "AdvDisguiserInit", AdvDisguiserInit )
   
-  /*function RADIO:GetTargetType()
+  function RADIO:GetTargetType()
   	if not IsValid(LocalPlayer()) then return end
   	local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
 
@@ -255,7 +267,7 @@ if CLIENT then
   		  return ent, false
   	  end
   	end
-  end*/
+  end
 
   local function AdvDisguiseDraw()
     local client = LocalPlayer()
@@ -279,6 +291,7 @@ elseif SERVER then
     for _,ply in pairs (player.GetAll()) do
       ply:SetNWString( "AdvDisguiseName", "" )
       ply:SetNWBool( "AdvDisguiseIsDetective", false )
+	  ply:SetNWBool( "AdvDisguiseIsTraitor", false )
       ply:SetNWInt( "AdvDisguiseKarma", 0 )
       ply:SetNWEntity( "AdvDisguiseEnt", nil )
       ply:SetNWBool( "AdvDisguiseInDisguise", false )
@@ -354,6 +367,7 @@ function SWEP:PrimaryAttack()
     if hitEnt:IsPlayer() and not hitEnt:IsSpec() then
       self.Owner:SetNWString( "AdvDisguiseName", hitEnt:Nick() )
       self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt:IsDetective() )
+	  self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt:IsTraitor() )
       self.Owner:SetNWInt( "AdvDisguiseKarma", hitEnt:GetBaseKarma() )
       self.Owner:SetNWEntity( "AdvDisguiseEnt", hitEnt )
       self.Owner:SetNWString("AdvDisguiserModel",hitEnt:GetModel())
@@ -370,6 +384,7 @@ function SWEP:PrimaryAttack()
       if name != "" then
         self.Owner:SetNWString( "AdvDisguiseName", name )
         self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt.was_role == ROLE_DETECTIVE )
+		self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt.was_role == ROLE_TRAITOR )
         self.Owner:SetNWString("AdvDisguiserModel",hitEnt:GetModel())
         if IsValid(player.GetByUniqueID( hitEnt.uqid )) then
           self.Owner:SetNWInt( "AdvDisguiseKarma", player.GetByUniqueID( hitEnt.uqid ):GetBaseKarma())
