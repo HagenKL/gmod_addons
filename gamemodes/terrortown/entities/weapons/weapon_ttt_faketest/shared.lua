@@ -7,7 +7,7 @@ if SERVER then
    resource.AddFile("materials/VGUI/ttt/icon_randomtest.vmt")
 else
    SWEP.PrintName = "Fake Tester"
-   SWEP.Slot = 8
+   SWEP.Slot = 7
 
    SWEP.ViewModelFOV = 70
 

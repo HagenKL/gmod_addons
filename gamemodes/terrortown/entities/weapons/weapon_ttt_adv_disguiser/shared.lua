@@ -9,7 +9,7 @@ SWEP.HoldType = "knife"
 if CLIENT then
 
   SWEP.PrintName = "Advanced Disguiser"
-  SWEP.Slot = 8
+  SWEP.Slot = 7
 
   SWEP.ViewModelFlip = false
 

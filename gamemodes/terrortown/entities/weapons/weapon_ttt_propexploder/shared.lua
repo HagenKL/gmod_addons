@@ -55,7 +55,7 @@ SWEP.NoSights = true
 SWEP.UseHands = true
 SWEP.HeadshotMultiplier = 0
 SWEP.CanBuy = { ROLE_TRAITOR }
-SWEP.LimitedStock = false
+SWEP.LimitedStock = true
 
 //Sounds/Models\\
 SWEP.ViewModel          = Model("models/weapons/v_stunbaton.mdl")
@@ -71,7 +71,7 @@ end
 if SERVER then
 	
 	function SWEP:PrimaryAttack()
-		if !self.Owner.ExplodeProps or #self.Owner.ExplodeProps == 0 then
+		if !v.PEProp then
 			self:SetNextPrimaryFire( CurTime() + 1)
 			self:PropExplodeHandler()
 		end
@@ -79,9 +79,25 @@ if SERVER then
 	
 	function SWEP:SecondaryAttack()
 		local ply = self.Owner
-		if ply.ExplodeProps and #ply.ExplodeProps > 0 and IsValid(ply) then
-			self:PropExploder()
+		local prop = ply.PEProp
+		if IsValid(prop) and IsValid(ply) then
+			prop:EmitSound("weapons/gamefreak/wtf.mp3" ,400, 200)
+			timer.Create("PEPlanting" .. prop:EntIndex(), 0.5, 1, function()
+				if IsValid(prop) and IsValid(ply) then
+					local expl = ents.Create( "env_explosion" )
+					expl:SetPos( prop:GetPos() )
+					expl:Spawn()
+					expl:SetOwner(ply)
+					expl:SetKeyValue( "iMagnitude", "0" )
+					expl:Fire( "Explode", 0, 0 )
+					util.BlastDamage( prop, ply, prop:GetPos(), 400, 200 )
+					expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
+					prop:Remove()
+				end
+			end)
+			self:SendPEMessage("Exploded")
 		end
+		self:Remove()
 	end
 	
 	function SWEP:SendPEMessage(str)
@@ -101,44 +117,13 @@ if SERVER then
 		end
 		
 		self:SendPEMessage("Succes")
-		ply.ExplodeProps = ply.ExplodeProps or {}
-		table.insert( ply.ExplodeProps, ent)
-	end
-	
-	function SWEP:PropExploder()
-		local ply = self.Owner
-		for k,v in pairs(ply.ExplodeProps) do
-			if IsValid(v) then
-				v:EmitSound("weapons/gamefreak/wtf.mp3" ,400, 200)
-				timer.Create("PEPlanting" .. v:EntIndex(), 0.5, 1, function()
-					self:ExplodeProp(v)
-				end)
-			end
-		end
-		self:SendPEMessage("Exploded")
-	end
-	
-	function SWEP:ExplodeProp(ent)
-	local ply = self.Owner
-		if IsValid(v) and IsValid(ply) then
-			local expl = ents.Create( "env_explosion" )
-			expl:SetPos( v:GetPos() )
-			expl:Spawn()
-			expl:SetOwner(ply)
-			expl:SetKeyValue( "iMagnitude", "0" )
-			expl:Fire( "Explode", 0, 0 )
-			util.BlastDamage( v, ply, v:GetPos(), 400, 200 )
-			expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
-			v:Remove()
-			table.remove(ply.ExplodeProps,k)
-		end
-		self:Remove()
+		ply.PEProp = ent
 	end
 	
 	hook.Add("EntityRemoved","EnablePEAgain", function(ent)
 		for k,v in pairs(player.GetAll()) do
-			if v.ExplodeProps and table.HasValue(v.ExplodeProps, ent) and v:HasWeapon("weapon_ttt_propexploder") then
-				table.Empty(v.ExplodeProps)
+			if v.PEProp and v.PEProp = ent and v:HasWeapon("weapon_ttt_propexploder") then
+				v.PEProp = nil
 				v:GetWeapon("weapon_ttt_propexploder"):SendPEMessage("Ready")
 			end
 		end
@@ -167,7 +152,7 @@ end
 local function ResettinPropExploder()
 	for k,v in pairs(player.GetAll()) do
 		timer.Remove("PEPlanting" .. v:EntIndex())
-		v.ExplodeProps = {}
+		v.PEProp = nil
 	end
 end
 
