@@ -43,13 +43,13 @@ if CLIENT then
       SWEP.Icon = "VGUI/ttt/icon_propexploder"
       SWEP.EquipMenuData = {
       type = "weapon",
-      desc = "The PE will explode every Prop that you want! \nIt looks like an Magnet-O-Stick! \nJust left click a prop and then click rightclick."
+      desc = "The PE will explode every Prop that you want! \nIt looks like an Magnet-O-Stick! \nJust left click a prop and then click rightclick to explode!."
    };
    	net.Receive("ColoredMessage",function(len)
 		local msg = net.ReadTable()
 		chat.AddText(unpack(msg))
 		chat.PlaySound()
-		end)
+	end)
 end
 
 //Damage\\
@@ -86,106 +86,107 @@ function SWEP:OnRemove()
 		RunConsoleCommand("lastinv")
 	end
 end
-if CLIENT then
-function SWEP:PrimaryAttack() end
-function SWEP:SecondaryAttack() end
-function SWEP:Reload() end
-end
-if SERVER then
-local PropExploderUsed = false
-local ExplodeProps = {}
-function SWEP:PrimaryAttack()
-	if not PropExploderUsed then
-	self:SetNextPrimaryFire( CurTime() + 1)
-	self:PropExplodeHandler()
-	end
-end
-function SWEP:SecondaryAttack()
-	local ply = self.Owner
-	if ply.ExplodeProp and IsValid(ply) then
-		PropExploder(ply)
-		PropExploderUsed = false
-		self:Remove()
-	end
-end
-local seen
-function SWEP:PropExplodeHandler()
-	local ply = self.Owner
-	local tr = ply:GetEyeTrace()
-	local ent = tr.Entity
 
-		if ent:IsPlayer() or ent:IsNPC() or ent:GetClass() == "prop_ragdoll" or tr.HitWorld or ent:IsWeapon() then -- A bit of Code from Exho
-			ply:PlayerMsg("Prop Exploder: ", Color(255,255,255), "This is not a valid Prop!")
+if SERVER then
+	
+	function SWEP:PrimaryAttack()
+		if !self.Owner.ExplodeProps or #self.Owner.ExplodeProps == 0 then
+			self:SetNextPrimaryFire( CurTime() + 1)
+			self:PropExplodeHandler()
+		end
+	end
+	
+	function SWEP:SecondaryAttack()
+		local ply = self.Owner
+		if ply.ExplodeProps and #ply.ExplodeProps > 0 and IsValid(ply) then
+			self:PropExploder()
+			self:Remove()
+		end
+	end
+	
+	function SWEP:SendPEMessage(str)
+		net.Start("TTTPEMessage")
+		net.WriteString(str)
+		net.Send(self.Owner)
+	end
+
+	function SWEP:PropExplodeHandler()
+		local ply = self.Owner
+		local tr = ply:GetEyeTrace()
+		local ent = tr.Entity
+
+		if ent:IsPlayer() or ent:IsNPC() or ent:GetClass() == "prop_ragdoll" or tr.HitWorld or ent:IsWeapon() then -- A bit of Code from Exho, sorry
+			self:SendPEMessage("Fail")
 			return
-		elseif IsValid(ent) then
-			if string.sub( ent:GetClass(), 1, 5 ) ~= "prop_" then -- The last check
-				ply:PlayerMsg( "Prop Exploder: ", Color(255,255,255), "This is not a valid Prop!")
-				return
+		end
+		
+		self:SendPEMessage("Succes")
+		ply.ExplodeProps = ply.ExplodeProps or {}
+		table.insert( ply.ExplodeProps, ent)
+	end
+	
+	function SWEP:PropExploder()
+		local ply = self.Owner
+		for k,v in pairs(ply.ExplodeProps) do
+			if IsValid(v) then
+				v:EmitSound("weapons/gamefreak/wtf.mp3" ,400, 200)
+				timer.Create("PEPlanting" .. v:EntIndex(), 0.5, 1, function()
+					self:ExplodeProp(v)
+				end)
 			end
 		end
-			ply:PlayerMsg("Prop Exploder: ", Color(255,255,255), "PropExploder activated")
-			PropExploderUsed = true
-			timer.Create("ExplodePropReady" .. ply:EntIndex(),0.51, 1, function()
-				ply.ExplodeProp = true
-				table.insert( ExplodeProps, ent)
-				SendWarnPE(true, ent, ply)
-			end )
-	timer.Create("PropExplodeFixError" .. ply:EntIndex(), 0.1, 0, function()
-		for k,ent in pairs(ExplodeProps) do
-			if not IsValid(ent) then
-				SendWarnPE(false, ent, v)
+		self:SendPEMessage("Exploded")
+	end
+	
+	function SWEP:ExplodeProp(ent)
+		if IsValid(v) and IsValid(ply) then
+			local expl = ents.Create( "env_explosion" )
+			expl:SetPos( v:GetPos() )
+			expl:Spawn()
+			expl:SetOwner(ply)
+			expl:SetKeyValue( "iMagnitude", "0" )
+			expl:Fire( "Explode", 0, 0 )
+			util.BlastDamage( v, ply, v:GetPos(), 400, 200 )
+			expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
+			v:Remove()
+			table.remove(ply.ExplodeProps,k)
+		end
+	end
+	
+	hook.Add("EntityRemoved","EnablePEAgain", function(ent)
+		for k,v in pairs(player.GetAll()) do
+			if v.ExplodeProps and table.HasValue(v.ExplodeProps, ent) and v:HasWeapon("weapon_ttt_propexploder") then
+				table.Empty(v.ExplodeProps)
+				v:GetWeapon("weapon_ttt_propexploder"):SendPEMessage("Ready")
 			end
 		end
 	end)
-	function SendWarnPE(armed ,ent, owner)
-		if (IsValid(owner) and owner:IsRole(ROLE_TRAITOR)) and IsValid(ent) then
-			net.Start("TTT_PEWarning")
-			net.WriteUInt(ent:EntIndex(), 16)
-			net.WriteBool(armed)
-			net.WriteVector(ent:GetPos())
-			net.Send(GetTraitorFilter(true))
+	
+elseif CLIENT then
+
+	net.Receive("TTTPEMessage", function()
+	local str = net.ReadString()
+		if str == "Fail" then
+			chat.AddText("Prop Exploder: ", Color(255,255,255), "Are you serious? You can't explode this!")
+		elseif str == "Succes" then
+			chat.AddText("Prop Exploder: ", Color(255,255,255), "Propexploder planted!")
+		elseif str == "Exploded" then
+			chat.AddText("Prop Exploder: ", Color(255,255,255), "The selected prop has been exploded!")
+		elseif str == "Ready" then
+			chat.AddText("Prop Exploder: ", Color(255,255,255), "Your Prop got destroyed, go and search a new prop!")
 		end
-	end
-	end
-function PropExploder(ply)
-			ply.ExplodeProp = false
-			ply:PlayerMsg("Prop Exploder: ", Color(255,255,255), "Prop has been exploded!")
-			for k,v in pairs(ExplodeProps) do
-				if IsValid(v) then
-					v:EmitSound("weapons/gamefreak/wtf.mp3" ,400, 200)
-					SendWarnPE(false, v, ply)
-					timer.Create("Explodewaiting" .. v:EntIndex(), 0.5, 1, function()
-						if IsValid(v) and IsValid(ply) then
-							local expl = ents.Create( "env_explosion" )
-							expl:SetPos( v:GetPos() )
-							expl:Spawn()
-							expl:SetOwner(ply)
-							expl:SetKeyValue( "iMagnitude", "0" )
-							expl:Fire( "Explode", 0, 0 )
-							util.BlastDamage( v, ply, v:GetPos(), 400, 200 )
-							expl:EmitSound( "siege/big_explosion.wav", 400, 200 )
-						end
-						timer.Create("PropRemove" .. v:EntIndex() , 0, 1, function()
-							if IsValid(v) then
-								v:Remove()
-							end
-					end)
-				end )
-			end
-		end
-		ExplodeProps = {}
-	end
+		chat.PlaySound()
+	end)
+	
+	function SWEP:PrimaryAttack() end
+	
 end
 
 local function ResettinPropExploder()
 	for k,v in pairs(player.GetAll()) do
-		v.ExplodeProp = false
-		timer.Remove("ExplodePropReady" .. v:EntIndex())
-		timer.Remove("PropExplodeFixError" .. v:EntIndex())
-		timer.Remove("Explodewaiting" .. v:EntIndex())
-		timer.Remove("PropRemove" .. v:EntIndex())
+		timer.Remove("PEPlanting" .. v:EntIndex())
+		v.ExplodeProps = {}
 	end
-	ExplodeProps = {}
 end
 
-hook.Add( "TTTPrepareRound", "ASCRESET", ResettinPropExploder )
+hook.Add( "TTTPrepareRound", "PEReset", ResettinPropExploder )
