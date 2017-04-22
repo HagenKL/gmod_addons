@@ -38,9 +38,7 @@ function TTTVote.OpenVoteMenu()
   ListView:AddColumn("SteamID"):SetFixedWidth(10)
   ListView:SetMultiSelect(false)
   for k,v in pairs(player.GetAll()) do
-    if !v:IsBot()
-    --and v != LocalPlayer()
-    and !v:GetDetective() then
+    if !v:IsBot() and v != LocalPlayer() and !v:GetDetective() then
       ListView:AddLine(v:Nick(),v:SteamID())
     end
   end
@@ -75,12 +73,12 @@ function TTTVote.LookUpVoteMenu(ply, cmd, args, argStr)
   if votemenu and IsValid(votemenu) then votemenu:Close() return end
   if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
     if LocalPlayer():GetNWInt("PlayerVotes") - LocalPlayer():GetNWInt("UsedVotes") >= 1 then
-      --if LocalPlayer():GetNWInt("UsedVotes",0) <= 0 then
+      if LocalPlayer():GetNWInt("UsedVotes",0) <= 0 then
         TTTVote.OpenVoteMenu()
-      --else
-      --  chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast diese Runde schon gevotet!")
-      --  chat.PlaySound()
-      --end
+      else
+        chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast diese Runde schon gevotet!")
+        chat.PlaySound()
+      end
     else
       chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast keine Votes mehr!")
       chat.PlaySound()

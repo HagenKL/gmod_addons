@@ -45,6 +45,7 @@ if not TTTVote then
 	util.AddNetworkString("TTTVotePlaceTotem")
 	util.AddNetworkString("TTTVoteMenu")
 	util.AddNetworkString("TTTVoteCurse")
+	util.AddNetworkString("TTTVoteFailure")
 
 	print("TTT Vote has been succesfully loaded!")
 end

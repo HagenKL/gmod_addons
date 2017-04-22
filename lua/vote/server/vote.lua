@@ -4,8 +4,14 @@ local startvotes = GetConVar("ttt_startvotes")
 
 function TTTVote.ReceiveVotes(len, sender)
   local target = net.ReadEntity()
-  target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
-  TTTVote.CalculateVotes(sender, target, sender)
+  if target:GetNWInt("VoteCounter") < 3 then
+	  target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
+	  TTTVote.CalculateVotes(sender, target, sender)
+  else
+	net.Start("TTTVoteFailure")
+	net.WriteEntity(target)
+	net.Send(sender)
+  end
 end
 
 function TTTVote.SendVoteNotify(sender, target, totalvotes)

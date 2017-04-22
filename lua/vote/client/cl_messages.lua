@@ -77,6 +77,13 @@ function TTTVote.TotemMessage()
   chat.PlaySound()
 end
 
+function TTTVote.VoteFailure()
+	local ply = net.ReadEntity()
+	chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+    chat.PlaySound()
+end
+
+net.Receive("TTTVoteFailure", TTTVote.VoteFailure)
 net.Receive("TTTTotem",TTTVote.TotemMessage)
 net.Receive("TTTVoteMenu",TTTVote.LookUpVoteMenu)
 net.Receive("TTTVoteCurse",TTTVote.Curse)
