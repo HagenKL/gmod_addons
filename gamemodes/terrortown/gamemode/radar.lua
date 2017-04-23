@@ -46,7 +46,7 @@ local function RadarScan(ply, cmd, args)
 				   if not ply:IsTraitor() and not ply:IsHunter() then
 					  role = ROLE_INNOCENT
 				   end
-				elseif role != ROLE_INNOCENT and (role != ply:GetRole() or (ply:IsTraitor() and !p:IsHunter() and !p:IsTraitor())) then
+				elseif role != ROLE_INNOCENT and ((ply:IsTraitor() and !p:IsHunter() and !p:IsTraitor()) or (ply:IsDetective() and !p:IsDetective())) then
 				   -- Detectives/Traitors can see who has their role, but not who
 				   -- has the opposite role.
 				   role = ROLE_INNOCENT
