@@ -18,11 +18,11 @@ if SERVER then
 				local Totem = ply:GetNWEntity("Totem", NULL)
 				if IsValid(Totem) then
 					local distance = Totem:GetPos():Distance(ply:GetPos())
-					if distance >= 2000 then
-						return math.Round(math.Clamp(math.Remap(distance,2000,5000,1,0),0.5,1),2)
+					if distance >= 2500 then
+						return math.Round(math.Remap(distance,2500,5000,1,0.75),2)
 					elseif distance <= 1000 then
 						return 1.25
-					elseif distance > 1000 and distance < 2000 then
+					elseif distance > 1000 and distance < 2500 then
 						return 1
 					end
 				else
