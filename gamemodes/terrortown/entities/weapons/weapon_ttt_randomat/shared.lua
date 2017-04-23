@@ -306,11 +306,12 @@ if SERVER then
   function RandomatSpeedLiveJump()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "50% More Speed, Jump Power and Life for everyone!")
     for k,v in pairs(player.GetAll()) do
-      v:SetHealth(v:Health() * 1.5)
-      v:SetMaxHealth(v:Health() * 1.5)
+		local nexthealth = v:Health() * 1.5
+      v:SetHealth( nexthealth )
+      v:SetMaxHealth( nexthealth )
       v:SetJumpPower( v:GetJumpPower() + 80)
       v.RandomatSpeed = true
-      if v:Health() < 50 then
+      if v:Health() <= 30 then
         v:SetHealth(50)
       end
     end

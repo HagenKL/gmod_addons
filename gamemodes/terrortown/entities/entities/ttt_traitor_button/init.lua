@@ -79,7 +79,7 @@ function GAMEMODE:TTTCanUseTraitorButton(ent, ply)
 end
 
 function ENT:TraitorUse(ply)
-   if not (IsValid(ply) and ply:IsActiveTraitor()) or not (IsValid(ply) and ply:IsActiveHunter()) then return false end
+   if not (IsValid(ply) and ply:IsActiveTraitor() and ply:IsActiveHunter()) then return false end
    if not self:IsUsable() then return false end
 
    if self:GetPos():Distance(ply:GetPos()) > self:GetUsableRange() then return false end
