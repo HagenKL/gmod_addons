@@ -119,7 +119,7 @@ if CLIENT then
    function SWEP:DrawHUD()
       local tr = self.Owner:GetEyeTrace(MASK_SHOT)
 
-      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:GetClass() == "ttt_totem" and !tr.Entity:GetOwner() == LocalPlayer() then
+      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:GetClass() == "ttt_totem" and !tr.Entity:GetOwner():IsTraitor() and !tr.Entity:GetOwner():IsHunter() then
 
          local x = ScrW() / 2.0
          local y = ScrH() / 2.0
