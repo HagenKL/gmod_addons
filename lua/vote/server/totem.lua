@@ -144,6 +144,17 @@ function TTTVote.DestroyTotem(ply)
   end
 end
 
+function TTTVote.TotemInit(ply)
+	ply:SetNWBool("CanSpawnTotem", true)
+    ply:SetNWBool("PlacedTotem", false)
+    ply:SetNWEntity("Totem", NULL)
+    ply.TotemSuffer = 0
+    ply.DamageNotified = false
+    ply.totemuses = 0
+end
+
+
+hook.Add("PlayerInitialSpawn", "TTTTotemInit", TTTVote.TotemInit)
 net.Receive("TTTVotePlaceTotem", TTTVote.PlaceTotem)
 hook.Add("TTTPrepareRound", "ResetValues", TTTVote.ResetTotems)
 hook.Add("PlayerDeath", "TTTDestroyTotem", TTTVote.DestroyTotem)
