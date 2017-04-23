@@ -79,7 +79,7 @@ local SlowMotion = {
 	hud = true
 }
 
-local detectiveCanUse = CreateConVar("ttt_slowmotion_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the SlowMotion .")
+local detectiveCanUse = CreateConVar("ttt_slowmotion_det", 0, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the SlowMotion .")
 local traitorCanUse = CreateConVar("ttt_slowmotion_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the SlowMotion.")
 local smduration = CreateConVar("ttt_slowmotion_duration", 1.5, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long should the slowmotion last?")
 
