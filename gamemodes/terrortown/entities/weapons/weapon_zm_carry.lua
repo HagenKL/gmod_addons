@@ -480,7 +480,7 @@ end
 
 function SWEP:PinRagdoll()
    if not pin_rag:GetBool() then return end
-   if (not self.Owner:IsTraitor()) and (not pin_rag_inno:GetBool()) then return end
+   if (not self.Owner:IsTraitor() and not self.Owner:IsHunter()) and (not pin_rag_inno:GetBool()) then return end
 
    local rag = self.EntHolding
    local ply = self.Owner
@@ -579,7 +579,7 @@ if CLIENT then
    function SWEP:DrawHUD()
       self.BaseClass.DrawHUD(self)
 
-      if self.dt.can_rag_pin and IsValid(self.dt.carried_rag) and LocalPlayer():IsTraitor() then
+      if self.dt.can_rag_pin and IsValid(self.dt.carried_rag) and (LocalPlayer():IsTraitor() or LocalPlayer():IsHunter()) then
          local client = LocalPlayer()
 
          local tr = util.TraceLine({start  = client:EyePos(),

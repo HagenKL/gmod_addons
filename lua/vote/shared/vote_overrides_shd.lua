@@ -66,21 +66,12 @@ else
 	--local totem = GetGlobalBool("ttt_totem", true)
 	function TTTVote.VoteMakeCounter(pnl)
 		pnl:AddColumn("Votes", function(ply)
-				if ply:GetNWInt("VoteCounter",0) < 3 then
-					return ply:GetNWInt("VoteCounter",0)
-				elseif ply:GetNWInt("VoteCounter",0) >= 3 then
-					return 3
-				end
-			end)
-		--if totem then
-			pnl:AddColumn("Totem", function(ply)
-				if ply:GetNWEntity("Totem",NULL) != NULL then
-					return "Ja"
-				else
-					return "Nein"
-				end
-			end)
-		--end
+			if ply:GetNWInt("VoteCounter",0) < 3 then
+				return ply:GetNWInt("VoteCounter",0)
+			elseif ply:GetNWInt("VoteCounter",0) >= 3 then
+				return 3
+			end
+		end)
 	end
 
 	function TTTVote.MakeVoteScoreBoardColor(ply)
