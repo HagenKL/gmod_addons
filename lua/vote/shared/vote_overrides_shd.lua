@@ -2,12 +2,10 @@ if SERVER then
 	--local totem = GetGlobalBool("ttt_totem", true)
 	function TTTVote.GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
 		local msg = string.lower(text)
-		if string.sub(msg,1,8) == "!prozent" and GetRoundState() == ROUND_ACTIVE and sender:IsTerror() then
-			if sender:GetNWInt("UsedVotes",0) <= 0 and sender:GetNWInt("PlayerVotes") - sender:GetNWInt("UsedVotes") >= 1 then
-				net.Start("TTTVoteMenu")
-				net.Send(sender)
-				return false
-			end
+		if string.sub(msg,1,8) == "!prozent" then
+			net.Start("TTTVoteMenu")
+			net.Send(sender)
+			return false
 		elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
 			TTTVote.PlaceTotem(nil, sender)
 			return false

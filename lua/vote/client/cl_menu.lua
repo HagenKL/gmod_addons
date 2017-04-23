@@ -105,3 +105,4 @@ end*/
 concommand.Add("votemenu", TTTVote.LookUpVoteMenu,nil,"Opens / Closes the vote menu", { FCVAR_DONTRECORD })
 concommand.Add("placebeacon", TTTVote.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD }) -- for backwards compatibility reasons
 concommand.Add("placetotem", TTTVote.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD })
+net.Receive("TTTVoteMenu",TTTVote.LookUpVoteMenu)
