@@ -46,7 +46,7 @@ local function RadarScan(ply, cmd, args)
 				   if not ply:IsTraitor() and not ply:IsHunter() then
 					  role = ROLE_INNOCENT
 				   end
-				elseif role != ROLE_INNOCENT and (role != ply:GetRole() or ply:IsTraitor() and p:IsHunter()) then
+				elseif role != ROLE_INNOCENT and (role != ply:GetRole() or (ply:IsTraitor() and !p:IsHunter() and !p:IsTraitor())) then
 				   -- Detectives/Traitors can see who has their role, but not who
 				   -- has the opposite role.
 				   role = ROLE_INNOCENT
@@ -66,7 +66,7 @@ local function RadarScan(ply, cmd, args)
 
 				local owner = t:GetOwner()
 				if owner != ply and !owner:IsTraitor() and !owner:IsHunter() then
-					table.insert(targets, {role= 3, pos=pos, totem=true})
+					table.insert(targets, {role= 4, pos=pos, totem=true})
 				end
 			end
 		 end
