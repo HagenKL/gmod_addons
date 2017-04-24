@@ -153,7 +153,7 @@ end
 hook.Add("Think", "DRThink", DRThink)
 
 if SERVER then
-  function DROwnerGetsDamage(ent,dmginfo)
+  local function DROwnerGetsDamage(ent,dmginfo)
     if ent:IsPlayer() then
       local ply = ent
       if !ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 1 and ply:HasWeapon("weapon_ttt_dead_ringer") then
@@ -166,7 +166,7 @@ if SERVER then
     end
   end
 
-  function ResetDR(ply, attacker)
+  local function ResetDR(ply, attacker)
     if ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
       ply:DRuncloak()
     elseif ply:IsValid() and ply:HasWeapon("weapon_ttt_dead_ringer") then
@@ -175,9 +175,10 @@ if SERVER then
     end
   end
 
-  function DRRoundreset()
+  local function DRRoundreset()
     for k,v in pairs(player.GetAll()) do
       if v:IsTerror() and v:IsFakeDead() then
+		v:SetNoDraw(false)
         --v:SetColor(255,255,255,255)
         net.Start("DRChangeMaterial")
         net.WriteBool(false)
@@ -189,7 +190,7 @@ if SERVER then
     end
   end
 
-  function DRSpawnReset( ply )
+  local function DRSpawnReset( ply )
       --ply:SetColor(255,255,255,255)
       ply:SetNWInt("DRStatus",0)
       ply:SetNWBool("DRDead",false)
