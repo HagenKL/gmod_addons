@@ -72,17 +72,21 @@ if SERVER then
   end
 
   local function MFHeartAttack(victim, killer)
+    local fate = ents.Create("weapon_ttt_mirrorfate")
     local dmginfo = DamageInfo()
     dmginfo:SetDamage(10000)
     dmginfo:SetAttacker(victim)
+    dmginfo:SetInflictor(fate)
     dmginfo:SetDamageType(DMG_GENERIC)
     killer:TakeDamageInfo(dmginfo)
   end
 
   local function MFBurn(victim, killer)
+    local fate = ents.Create("weapon_ttt_mirrorfate")
     local dmg = DamageInfo()
     dmg:SetDamage(5)
     dmg:SetAttacker(victim)
+    dmg:SetInflictor(fate)
     dmg:SetDamageType(DMG_BURN)
     killer:EmitSound("gamefreak/evillaugh.mp3")
     timer.Create("BurnInHellMirrorfate" .. killer:EntIndex(), 0.25, 0, function()
@@ -96,9 +100,17 @@ if SERVER then
   end
 
   local function MFExplode(victim, killer)
+    local fate = ents.Create("weapon_ttt_mirrorfate")
+    
+    local dmginfo = DamageInfo()
+    dmginfo:SetDamage(10000)
+    dmginfo:SetAttacker(victim)
+    dmginfo:SetDamageType(DMG_BLAST)
+    dmginfo:SetInflictor(fate)
+
     local effectdata = EffectData()
     killer:EmitSound( Sound ("ambient/explosions/explode_4.wav") )
-    util.BlastDamage( victim, victim, killer:GetPos() , 200 , 1000 )
+    util.BlastDamageInfo(dmginfo, killer:GetPos(), 200)
     effectdata:SetStart( killer:GetPos() + Vector(0,0,10) )
     effectdata:SetOrigin( killer:GetPos() + Vector(0,0,10) )
     effectdata:SetScale( 1 )
