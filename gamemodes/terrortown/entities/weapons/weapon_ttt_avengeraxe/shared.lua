@@ -91,10 +91,10 @@ function SWEP:Reload()
   self:SetIronsights( false )
   self:SetZoom(false)
   if CLIENT then
-    timer.Simple(0.35,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_avengeraxe" then self:EmitSound("weapons/gamefreak/m249/m249_bolt.wav") end end)
-    timer.Simple(1.9,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_avengeraxe" then self:EmitSound("weapons/gamefreak/m249/m4para_charger.wav") end end)
-    timer.Simple(3.3,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_avengeraxe" then self:EmitSound("weapons/gamefreak/m249/m249_boltpull.wav") end end)
-    timer.Simple(4.6,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon():GetClass() == "weapon_ttt_avengeraxe" then self:EmitSound("weapons/gamefreak/m249/m249_coverdown.wav") end end)
+    timer.Simple(0.35,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/m249/m249_bolt.wav") end end)
+    timer.Simple(1.9,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/m249/m4para_charger.wav") end end)
+    timer.Simple(3.3,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/m249/m249_boltpull.wav") end end)
+    timer.Simple(4.6,function() if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() and IsValid(self.Owner:GetActiveWeapon()) and self.Owner:GetActiveWeapon() == self then self:EmitSound("weapons/gamefreak/m249/m249_coverdown.wav") end end)
   end
 end
 
