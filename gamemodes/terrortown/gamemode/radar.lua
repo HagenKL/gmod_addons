@@ -19,7 +19,7 @@ local function RadarScan(ply, cmd, args)
 		
          local scan_ents
 		 local targets
-		 if !ply:IsHunter() then
+		 if !ply:IsHunter() or (!TTTVote.AnyTotems and ply:IsHunter()) then
 			 scan_ents = player.GetAll()
 			 table.Add(scan_ents, ents.FindByClass("ttt_decoy"))
 
@@ -46,7 +46,7 @@ local function RadarScan(ply, cmd, args)
 				   if not ply:IsTraitor() and not ply:IsHunter() then
 					  role = ROLE_INNOCENT
 				   end
-				elseif role != ROLE_INNOCENT and ((ply:IsTraitor() and !p:IsHunter() and !p:IsTraitor()) or (ply:IsDetective() and !p:IsDetective())) then
+				elseif role != ROLE_INNOCENT and ((ply:IsTraitor() and !p:IsHunter() and !p:IsTraitor()) or (ply:IsDetective() and !p:IsDetective()) or (ply:IsHunter() and !p:IsHunter() and !p:IsTraitor())) then
 				   -- Detectives/Traitors can see who has their role, but not who
 				   -- has the opposite role.
 				   role = ROLE_INNOCENT
@@ -54,7 +54,7 @@ local function RadarScan(ply, cmd, args)
 				
 				table.insert(targets, {role=role, pos=pos})
 			 end
-		 else
+		 elseif ply:IsHunter() and TTTVote.AnyTotems then
 			scan_ents = ents.FindByClass("ttt_totem")
 			targets = {}
 			for k,t in pairs(scan_ents) do

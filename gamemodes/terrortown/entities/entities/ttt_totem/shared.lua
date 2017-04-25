@@ -21,7 +21,7 @@ function ENT:Initialize()
 
   self:SetMoveType(MOVETYPE_NONE)
   self:SetSolid(SOLID_VPHYSICS)
-  self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
+  self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
 
   if SERVER then
     self:SetMaxHealth(100)
@@ -121,9 +121,11 @@ end)
 
 if CLIENT then
   hook.Add("HUDDrawTargetID", "DrawTotem", function()
-    local e = LocalPlayer():GetEyeTrace().Entity
+    local client = LocalPlayer()
+    local e = client:GetEyeTrace().Entity
 
-    if IsValid(e) and e:GetClass() == "ttt_totem" and IsValid(e:GetOwner()) then
+
+    if (e:GetOwner() == client or client:IsHunter()) and IsValid(e) and e:GetClass() == "ttt_totem" and IsValid(e:GetOwner()) then
       local owner = e:GetOwner():Nick()
 
       if string.EndsWith(owner, "s") or string.EndsWith(owner, "x") or string.EndsWith(owner, "z") or string.EndsWith(owner, "ß") then
