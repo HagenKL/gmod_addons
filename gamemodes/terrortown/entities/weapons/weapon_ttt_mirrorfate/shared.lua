@@ -48,8 +48,8 @@ end
 if SERVER then
   function SWEP:WasBought(buyer)
     if IsValid(buyer) then
-      buyer.fatemode = 0
-      buyer.fatetimemode = 0
+      buyer.fatemode = 1
+      buyer.fatetimemode = 30
     end
   end
   function SWEP:PrimaryAttack()
@@ -64,11 +64,9 @@ if SERVER then
   end
 
   function SWEP:SecondaryAttack()
-    local mode = self.Owner.fatetimemode
-	  local ply = self.Owner
-    if mode == 0 then
-      ply.fatetimemode = 30
-    elseif mode == 30 then
+   local ply = self.Owner
+    local mode = ply.fatetimemode
+	if mode == 30 then
       ply.fatetimemode = 40
     elseif mode == 40 then
       ply.fatetimemode = 50
@@ -76,7 +74,7 @@ if SERVER then
   	  ply.fatetimemode = 60
   	elseif mode == 60 then
       ply.fatetimemode = 30
-	  end
+	end
   	net.Start("MFMessage")
     net.WriteInt(12, 8)
   	net.WriteInt(ply.fatetimemode, 8)
@@ -312,11 +310,11 @@ elseif CLIENT then
   local function MFMessage()
     local mode = net.ReadInt(8)
     if mode == 1 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die on a heart-attack, standart 30 seconds!")
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die on a heart-attack!")
     elseif mode == 2 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will burn in Hell, but due to more style the fate takes 40 seconds!")
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will burn in Hell!")
     elseif mode == 3 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode, but due to more damage the fate takes 50 seconds!")
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode!")
 	elseif mode == 4 then
 	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will get one hit by any damage!")
 	elseif mode == 5 then

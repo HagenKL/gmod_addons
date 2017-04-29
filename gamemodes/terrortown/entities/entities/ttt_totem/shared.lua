@@ -125,7 +125,7 @@ if CLIENT then
     local e = client:GetEyeTrace().Entity
 
 
-    if (e:GetOwner() == client or client:IsHunter()) and IsValid(e) and e:GetClass() == "ttt_totem" and IsValid(e:GetOwner()) then
+    if IsValid(e) and IsValid(e:GetOwner()) and (e:GetOwner() == client or client:IsHunter()) and e:GetClass() == "ttt_totem" then
       local owner = e:GetOwner():Nick()
 
       if string.EndsWith(owner, "s") or string.EndsWith(owner, "x") or string.EndsWith(owner, "z") or string.EndsWith(owner, "ß") then
