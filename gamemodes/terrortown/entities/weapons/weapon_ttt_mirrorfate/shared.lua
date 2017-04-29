@@ -279,7 +279,9 @@ if SERVER then
   		dmg:SetInflictor(fate)
   		dmg:SetDamageType(DMG_BULLET)
   		ent:TakeDamageInfo(dmg)
-  		SendMFMessages(killer.MFEnt, ent)
+		if !ent:IsTerror() then
+			SendMFMessages(ent.MFEnt, ent)
+		end
   		return false
   	end
   end
