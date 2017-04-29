@@ -55,7 +55,7 @@ if SERVER then
   function SWEP:PrimaryAttack()
     local ply = self.Owner
     ply.fatemode = ply.fatemode + 1
-    if ply.fatemode > 7 then
+    if ply.fatemode >= 8 then
       ply.fatemode = 1
     end
     net.Start("MFMessage")
@@ -66,15 +66,10 @@ if SERVER then
   function SWEP:SecondaryAttack()
    local ply = self.Owner
     local mode = ply.fatetimemode
-	if mode == 30 then
-      ply.fatetimemode = 40
-    elseif mode == 40 then
-      ply.fatetimemode = 50
-    elseif mode == 50 then
-  	  ply.fatetimemode = 60
-  	elseif mode == 60 then
+	ply.fatetimemode = ply.fatetimemode + 10
+    if ply.fatetimemode >= 70 then
       ply.fatetimemode = 30
-	end
+    end
   	net.Start("MFMessage")
     net.WriteInt(12, 8)
   	net.WriteInt(ply.fatetimemode, 8)
@@ -110,21 +105,21 @@ if SERVER then
   local function MFHoly(victim, killer)
 	killer:EmitSound("gamefreak/holy.wav")
     timer.Create("MFHoly" .. killer:EntIndex(), 1, 5, function()
-      killer:SetGravity(0.01)
-    	killer:SetVelocity(Vector(0,0, 250))
-    	if timer.RepsLeft("MFHoly" .. killer:EntIndex()) == 0 then
-    		local fate = ents.Create("weapon_ttt_mirrorfate")
-    		local dmginfo = DamageInfo()
-    		dmginfo:SetDamage(10000)
-    		dmginfo:SetAttacker(victim)
-    		dmginfo:SetInflictor(fate)
-    		dmginfo:SetDamageType(DMG_FALL)
-    		killer:TakeDamageInfo(dmginfo)
-    		SendMFMessages(victim, killer)
-    		killer:SetGravity(1)
-    		killer:SetNWBool("body_found", true)
-        local corpse = ConfirmBody(killer)
-        corpse:Remove()
+		killer:SetGravity(0.01)
+		killer:SetVelocity(Vector(0,0, 250))
+		if timer.RepsLeft("MFHoly" .. killer:EntIndex()) == 0 then
+			local fate = ents.Create("weapon_ttt_mirrorfate")
+			local dmginfo = DamageInfo()
+			dmginfo:SetDamage(10000)
+			dmginfo:SetAttacker(victim)
+			dmginfo:SetInflictor(fate)
+			dmginfo:SetDamageType(DMG_FALL)
+			killer:TakeDamageInfo(dmginfo)
+			SendMFMessages(victim, killer)
+			killer:SetGravity(1)
+			killer:SetNWBool("body_found", true)
+			local corpse = ConfirmBody(killer)
+			corpse:Remove()
     	end
     end)
 
@@ -134,25 +129,25 @@ if SERVER then
   	killer:EmitSound("gamefreak/thrilcut.wav")
   	killer:GodEnable()
   	killer:Freeze(true)
-    	timer.Create( "MFThriller" .. killer:EntIndex(), 1, 14, function()
-    	  local danceChange = math.random(1, 2)
-    	  if danceChange == 1 then
-    		  killer:DoAnimationEvent( ACT_GMOD_GESTURE_TAUNT_ZOMBIE, 1641 )
-    	  else
-    		  killer:DoAnimationEvent( ACT_GMOD_TAUNT_DANCE, 1642 )
-    	  end
-    	  if !killer:IsFrozen() then killer:Freeze(true) end
-    	  if timer.RepsLeft("MFThriller" .. killer:EntIndex()) == 0 then
-      		if killer:IsTerror() then
-      			killer:GodDisable()
-      			killer:Freeze(false)
-      			local totalHealth = killer:Health()
-      			local inflictWep = ents.Create('weapon_ttt_thriller')
-      			killer:TakeDamage( totalHealth, victim, inflictWep )
-      			SendMFMessages(victim, killer)
-      		end
-    	  end
-    	end)
+	timer.Create( "MFThriller" .. killer:EntIndex(), 1, 14, function()
+	  local danceChange = math.random(1, 2)
+	  if danceChange == 1 then
+		  killer:DoAnimationEvent( ACT_GMOD_GESTURE_TAUNT_ZOMBIE, 1641 )
+	  else
+		  killer:DoAnimationEvent( ACT_GMOD_TAUNT_DANCE, 1642 )
+	  end
+	  if !killer:IsFrozen() then killer:Freeze(true) end
+	  if timer.RepsLeft("MFThriller" .. killer:EntIndex()) == 0 then
+		if killer:IsTerror() then
+			killer:GodDisable()
+			killer:Freeze(false)
+			local totalHealth = killer:Health()
+			local fate = ents.Create("weapon_ttt_mirrorfate")
+			killer:TakeDamage( totalHealth, victim, fate )
+			SendMFMessages(victim, killer)
+		end
+	  end
+	end)
   end
 
   local function MFOneHit(victim, killer)
@@ -173,7 +168,7 @@ if SERVER then
     dmginfo:SetInflictor(fate)
     dmginfo:SetDamageType(DMG_GENERIC)
     killer:TakeDamageInfo(dmginfo)
-	  SendMFMessages(victim, killer)
+	SendMFMessages(victim, killer)
   end
 
   local function MFBurn(victim, killer)
@@ -218,21 +213,21 @@ if SERVER then
 
   function plymeta:TTTMirrorfate(victim)
     if victim.fatemode == 1 then
-		  MFHeartAttack(victim, self)
+		MFHeartAttack(victim, self)
     elseif victim.fatemode == 2 then
-		  MFBurn(victim, self)
+		MFBurn(victim, self)
     elseif victim.fatemode == 3 then
-		  MFExplode(victim, self)
+		MFExplode(victim, self)
   	elseif victim.fatemode == 4 then
   		MFOneHit(victim, self)
   	elseif victim.fatemode == 5 then
   		MFBulletSelfDamage(victim, self)
   	elseif victim.fatemode == 6 then
-		  MFThriller(victim, self)
+		MFThriller(victim, self)
     elseif victim.fatemode == 7 then
-      MFHoly(victim, self)
+		MFHoly(victim, self)
     else
-		  MFHeartAttack(victim, self)
+		MFHeartAttack(victim, self)
     end
   end
 
