@@ -48,27 +48,123 @@ end
 if SERVER then
   function SWEP:WasBought(buyer)
     if IsValid(buyer) then
-      buyer.fatemode = 1
-      buyer.fatetimemode = 30
+      buyer.fatemode = 0
+      buyer.fatetimemode = 0
     end
   end
   function SWEP:PrimaryAttack()
     local ply = self.Owner
     ply.fatemode = ply.fatemode + 1
-    if ply.fatemode >= 4 then
+    if ply.fatemode > 7 then
       ply.fatemode = 1
-    end
-    local mode = ply.fatemode
-    if mode == 1 then
-      ply.fatetimemode = 30
-    elseif mode == 2 then
-      ply.fatetimemode = 40
-    elseif mode == 3 then
-      ply.fatetimemode = 50
     end
     net.Start("MFMessage")
     net.WriteInt(ply.fatemode, 8)
     net.Send(ply)
+  end
+
+  function SWEP:SecondaryAttack()
+    local mode = self.Owner.fatetimemode
+	  local ply = self.Owner
+    if mode == 0 then
+      ply.fatetimemode = 30
+    elseif mode == 30 then
+      ply.fatetimemode = 40
+    elseif mode == 40 then
+      ply.fatetimemode = 50
+    elseif mode == 50 then
+  	  ply.fatetimemode = 60
+  	elseif mode == 60 then
+      ply.fatetimemode = 30
+	  end
+  	net.Start("MFMessage")
+    net.WriteInt(12, 8)
+  	net.WriteInt(ply.fatetimemode, 8)
+    net.Send(ply)
+  end
+
+  local function SendMFMessages(victim, killer)
+  	if IsValid(killer) then
+  		net.Start("MFMessage")
+  		net.WriteInt(11,8)
+  		net.Send(killer)
+  	end
+  	if IsValid(victim) then
+  		net.Start("MFMessage")
+  		net.WriteInt(10,8)
+  		net.Send(victim)
+  	end
+  end
+  
+  local function ConfirmBody(ply)
+  	local corpse
+  	for _, ent in pairs( ents.FindByClass( "prop_ragdoll" )) do
+  		if ent.sid == ply:SteamID() and IsValid(ent) then
+  			corpse = ent
+  		end
+  	end
+  	if corpse then
+  		CORPSE.SetFound(corpse, true)
+  	end
+  	return corpse
+  end
+
+  local function MFHoly(victim, killer)
+	killer:EmitSound("gamefreak/holy.wav")
+    timer.Create("MFHoly" .. killer:EntIndex(), 1, 5, function()
+      killer:SetGravity(0.01)
+    	killer:SetVelocity(Vector(0,0, 250))
+    	if timer.RepsLeft("MFHoly" .. killer:EntIndex()) == 0 then
+    		local fate = ents.Create("weapon_ttt_mirrorfate")
+    		local dmginfo = DamageInfo()
+    		dmginfo:SetDamage(10000)
+    		dmginfo:SetAttacker(victim)
+    		dmginfo:SetInflictor(fate)
+    		dmginfo:SetDamageType(DMG_FALL)
+    		killer:TakeDamageInfo(dmginfo)
+    		SendMFMessages(victim, killer)
+    		killer:SetGravity(1)
+    		killer:SetNWBool("body_found", true)
+        local corpse = ConfirmBody(killer)
+        corpse:Remove()
+    	end
+    end)
+
+  end
+
+  local function MFThriller(victm, killer)
+  	killer:EmitSound("gamefreak/thrilcut.wav")
+  	killer:GodEnable()
+  	killer:Freeze(true)
+    	timer.Create( "MFThriller" .. killer:EntIndex(), 1, 14, function()
+    	  local danceChange = math.random(1, 2)
+    	  if danceChange == 1 then
+    		  killer:DoAnimationEvent( ACT_GMOD_GESTURE_TAUNT_ZOMBIE, 1641 )
+    	  else
+    		  killer:DoAnimationEvent( ACT_GMOD_TAUNT_DANCE, 1642 )
+    	  end
+    	  if !killer:IsFrozen() then killer:Freeze(true) end
+    	  if timer.RepsLeft("MFThriller" .. killer:EntIndex()) == 0 then
+      		if killer:IsTerror() then
+      			killer:GodDisable()
+      			killer:Freeze(false)
+      			local totalHealth = killer:Health()
+      			local inflictWep = ents.Create('weapon_ttt_thriller')
+      			killer:TakeDamage( totalHealth, victim, inflictWep )
+      			SendMFMessages(victim, killer)
+      		end
+    	  end
+    	end)
+  end
+
+  local function MFOneHit(victim, killer)
+  	killer.MFOneHit = true
+  	killer.MFEnt = victim
+  end
+
+  local function MFBulletSelfDamage(victim, killer)
+  	killer.MFBullet = true
+  	killer.MFEnt = victim
   end
 
   local function MFHeartAttack(victim, killer)
@@ -79,6 +175,7 @@ if SERVER then
     dmginfo:SetInflictor(fate)
     dmginfo:SetDamageType(DMG_GENERIC)
     killer:TakeDamageInfo(dmginfo)
+	  SendMFMessages(victim, killer)
   end
 
   local function MFBurn(victim, killer)
@@ -94,6 +191,7 @@ if SERVER then
           killer:TakeDamageInfo(dmg)
           killer:Ignite(0.2)
         elseif IsValid(killer) and !killer:IsTerror() then
+		      SendMFMessages(victim, killer)
           timer.Remove("BurnInHellMirrorfate" .. killer:EntIndex())
         end
       end )
@@ -101,7 +199,7 @@ if SERVER then
 
   local function MFExplode(victim, killer)
     local fate = ents.Create("weapon_ttt_mirrorfate")
-    
+
     local dmginfo = DamageInfo()
     dmginfo:SetDamage(10000)
     dmginfo:SetAttacker(victim)
@@ -115,28 +213,31 @@ if SERVER then
     effectdata:SetOrigin( killer:GetPos() + Vector(0,0,10) )
     effectdata:SetScale( 1 )
     util.Effect( "HelicopterMegaBomb", effectdata )
+	  SendMFMessages(victim, killer)
   end
 
   local plymeta = FindMetaTable("Player")
 
   function plymeta:TTTMirrorfate(victim)
     if victim.fatemode == 1 then
-      MFHeartAttack(victim, self)
+		  MFHeartAttack(victim, self)
     elseif victim.fatemode == 2 then
-      MFBurn(victim, self)
+		  MFBurn(victim, self)
     elseif victim.fatemode == 3 then
-      MFExplode(victim, self)
+		  MFExplode(victim, self)
+  	elseif victim.fatemode == 4 then
+  		MFOneHit(victim, self)
+  	elseif victim.fatemode == 5 then
+  		MFBulletSelfDamage(victim, self)
+  	elseif victim.fatemode == 6 then
+		  MFThriller(victim, self)
+    elseif victim.fatemode == 7 then
+      MFHoly(victim, self)
     else
-      MFHeartAttack(victim, self)
+		  MFHeartAttack(victim, self)
     end
-    net.Start("MFMessage")
-    net.WriteInt(5,8)
-    net.Send(self)
-    net.Start("MFMessage")
-    net.WriteInt(10,8)
-    net.Send(victim)
   end
-  
+
   local function KillTheKillerMirrorfate(victim, killer)
     timer.Create( "MirrorFatekill" .. killer:EntIndex(), victim.fatetimemode or 30 , 1, function()
       if IsValid(victim) and IsValid(killer) and killer:IsTerror() then
@@ -159,17 +260,54 @@ if SERVER then
   local function ResetMirrorFate(ply)
     timer.Remove("MirrorFatekill" .. ply:EntIndex())
     timer.Remove("BurnInHellMirrorfate" .. ply:EntIndex())
+  	timer.Remove("MFThriller" .. ply:EntIndex())
+  	timer.Remove("MFHoly" .. ply:EntIndex())
     ply.fatemode = 1
     ply.fatetimemode = 30
+  	ply.MFBullet = false
+  	ply.MFOneHit = false
+  	ply.MFEnt = nil
   end
-  
-  hook.Add( "DoPlayerDeath" , "MirrorfateKillhim" , Mirrorfate )
+
+  hook.Add("DoPlayerDeath" , "MirrorfateKillhim" , Mirrorfate )
   hook.Add("PlayerSpawn", "ResetMirrorFate", ResetMirrorFate)
   hook.Add("TTTPrepareRound","ResetMirrorFate", function()
       for key,ply in pairs(player.GetAll()) do
         ResetMirrorFate(ply)
       end
   end)
+
+  local function MFBulletHook( ent, bullet)
+  	if ent.MFBullet then
+  		local dmg = DamageInfo()
+  		local fate = ents.Create("weapon_ttt_mirrorfate")
+  		dmg:SetDamage(bullet.Damage)
+  		dmg:SetAttacker(ent)
+  		dmg:SetInflictor(fate)
+  		dmg:SetDamageType(DMG_BULLET)
+  		ent:TakeDamageInfo(dmg)
+  		SendMFMessages(killer.MFEnt, ent)
+  		return false
+  	end
+  end
+
+  local function MFOneHitHook(ent, dmg)
+  	if ent.MFOneHit then
+  		ent.MFOneHit = false
+  		local dmg = DamageInfo()
+  		local fate = ents.Create("weapon_ttt_mirrorfate")
+  		dmg:SetDamage(10000)
+  		dmg:SetAttacker(ent)
+  		dmg:SetInflictor(fate)
+  		dmg:SetDamageType(DMG_BULLET)
+  		ent:TakeDamageInfo(dmg)
+  		SendMFMessages(ent.MFEnt, ent)
+  		return true
+  	end
+  end
+
+  hook.Add("EntityFireBullets", "MFBullets", MFBulletHook)
+  hook.Add("EntityTakeDamage", "MFDamage", MFOneHitHook)
 elseif CLIENT then
   local function MFMessage()
     local mode = net.ReadInt(8)
@@ -179,10 +317,20 @@ elseif CLIENT then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will burn in Hell, but due to more style the fate takes 40 seconds!")
     elseif mode == 3 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode, but due to more damage the fate takes 50 seconds!")
-    elseif mode == 5 then
+	elseif mode == 4 then
+	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will get one hit by any damage!")
+	elseif mode == 5 then
+	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will damage himself every time he shoots!")
+	elseif mode == 6 then
+	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will dance the thriller!")
+	elseif mode == 7 then
+	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die a holy death!")
+    elseif mode == 11 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"You have experienced the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim chose." )
     elseif mode == 10 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer has shared your " ,Color(255,0,0), "fate." )
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer has experienced your choosed " ,Color(255,0,0), "fate." )
+	elseif mode == 12 then
+	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"It will now take " .. net.ReadInt(8) .. " second until your killer will experience your choosed " ,Color(255,0,0), "fate." )
     end
     chat.PlaySound()
   end
