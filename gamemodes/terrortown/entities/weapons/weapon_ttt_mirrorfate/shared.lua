@@ -102,6 +102,7 @@ if SERVER then
   	return corpse
   end
 
+  
   local function MFHoly(victim, killer)
 	killer:EmitSound("gamefreak/holy.wav")
     timer.Create("MFHoly" .. killer:EntIndex(), 1, 5, function()
@@ -122,7 +123,6 @@ if SERVER then
 			corpse:Remove()
     	end
     end)
-
   end
 
   local function MFThriller(victm, killer)
@@ -212,33 +212,34 @@ if SERVER then
   local plymeta = FindMetaTable("Player")
 
   function plymeta:TTTMirrorfate(victim)
-    if victim.fatemode == 1 then
-		MFHeartAttack(victim, self)
-    elseif victim.fatemode == 2 then
-		MFBurn(victim, self)
-    elseif victim.fatemode == 3 then
-		MFExplode(victim, self)
-  	elseif victim.fatemode == 4 then
-  		MFOneHit(victim, self)
-  	elseif victim.fatemode == 5 then
-  		MFBulletSelfDamage(victim, self)
-  	elseif victim.fatemode == 6 then
-		MFThriller(victim, self)
-    elseif victim.fatemode == 7 then
-		MFHoly(victim, self)
-    else
-		MFHeartAttack(victim, self)
-    end
+  local mode = victim.fatemode or 1
+	timer.Create( "MirrorFatekill" .. self:EntIndex(), victim.fatetimemode or 30 , 1, function()
+		if mode == 1 then
+			MFHeartAttack(victim, self)
+		elseif mode == 2 then
+			MFBurn(victim, self)
+		elseif mode == 3 then
+			MFExplode(victim, self)
+		elseif mode == 4 then
+			MFOneHit(victim, self)
+		elseif mode == 5 then
+			MFBulletSelfDamage(victim, self)
+		elseif mode == 6 then
+			MFThriller(victim, self)
+		elseif mode == 7 then
+			MFHoly(victim, self)
+		else
+			MFHeartAttack(victim, self)
+		end
+	end)
   end
 
   local function KillTheKillerMirrorfate(victim, killer)
-    timer.Create( "MirrorFatekill" .. killer:EntIndex(), victim.fatetimemode or 30 , 1, function()
       if IsValid(victim) and IsValid(killer) and killer:IsTerror() then
         killer:TTTMirrorfate(victim)
       elseif IsValid(victim) and (!IsValid(killer) or !killer:IsTerror()) then
         victim:PlayerMsg("Mirror Fate: ", Color(250,250,250) ,"Your killer is already dead!")
       end
-    end)
   end
 
   local function Mirrorfate( victim, killer, damageinfo )
@@ -286,15 +287,15 @@ if SERVER then
   	end
   end
 
-  local function MFOneHitHook(ent, dmg)
-  	if ent.MFOneHit then
+  local function MFOneHitHook(ent, dmginfo)
+  	if ent.MFOneHit and dmginfo:GetDamage() > 0 then
   		ent.MFOneHit = false
   		local dmg = DamageInfo()
   		local fate = ents.Create("weapon_ttt_mirrorfate")
   		dmg:SetDamage(10000)
   		dmg:SetAttacker(ent)
   		dmg:SetInflictor(fate)
-  		dmg:SetDamageType(DMG_BULLET)
+  		dmg:SetDamageType(dmginfo:GetDamageType())
   		ent:TakeDamageInfo(dmg)
   		SendMFMessages(ent.MFEnt, ent)
   		return true

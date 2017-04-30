@@ -140,6 +140,7 @@ end
 function TTTVote.DestroyTotem(ply)
   if GetRoundState() == ROUND_ACTIVE then
     ply:SetNWBool("CanSpawnTotem", false)
+    ply.TotemSuffer = 0
     TTTVote.TotemUpdate()
   end
 end

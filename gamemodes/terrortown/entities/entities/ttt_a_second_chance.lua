@@ -191,6 +191,8 @@ if SERVER then
       end
       self.shouldasc = false
       self.NOWINASC = false
+	  self:SetNWBool("ASCCanRespawn", false)
+      self:SetNWInt("ASCthetimeleft", 10)
       return
     end
 
