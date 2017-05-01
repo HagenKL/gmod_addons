@@ -55,7 +55,7 @@ if SERVER then
   function SWEP:PrimaryAttack()
     local ply = self.Owner
     ply.fatemode = ply.fatemode + 1
-    if ply.fatemode >= 8 then
+    if ply.fatemode >= 7 then
       ply.fatemode = 1
     end
     net.Start("MFMessage")
@@ -123,31 +123,6 @@ if SERVER then
 			corpse:Remove()
     	end
     end)
-  end
-
-  local function MFThriller(victm, killer)
-  	killer:EmitSound("gamefreak/thrilcut.wav")
-  	killer:GodEnable()
-  	killer:Freeze(true)
-	timer.Create( "MFThriller" .. killer:EntIndex(), 1, 14, function()
-	  local danceChange = math.random(1, 2)
-	  if danceChange == 1 then
-		  killer:DoAnimationEvent( ACT_GMOD_GESTURE_TAUNT_ZOMBIE, 1641 )
-	  else
-		  killer:DoAnimationEvent( ACT_GMOD_TAUNT_DANCE, 1642 )
-	  end
-	  if !killer:IsFrozen() then killer:Freeze(true) end
-	  if timer.RepsLeft("MFThriller" .. killer:EntIndex()) == 0 then
-		if killer:IsTerror() then
-			killer:GodDisable()
-			killer:Freeze(false)
-			local totalHealth = killer:Health()
-			local fate = ents.Create("weapon_ttt_mirrorfate")
-			killer:TakeDamage( totalHealth, victim, fate )
-			SendMFMessages(victim, killer)
-		end
-	  end
-	end)
   end
 
   local function MFOneHit(victim, killer)
@@ -225,8 +200,6 @@ if SERVER then
 		elseif mode == 5 then
 			MFBulletSelfDamage(victim, self)
 		elseif mode == 6 then
-			MFThriller(victim, self)
-		elseif mode == 7 then
 			MFHoly(victim, self)
 		else
 			MFHeartAttack(victim, self)
@@ -318,8 +291,6 @@ elseif CLIENT then
 	elseif mode == 5 then
 	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will damage himself every time he shoots!")
 	elseif mode == 6 then
-	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will dance the thriller!")
-	elseif mode == 7 then
 	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die a holy death!")
     elseif mode == 11 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"You have experienced the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim chose." )
