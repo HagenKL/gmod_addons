@@ -34,7 +34,7 @@ local function GetLoadoutWeapons(r)
       local tbl = {
          [ROLE_INNOCENT] = {},
          [ROLE_TRAITOR]  = {},
-		   [ROLE_HUNTER]  = {},
+		 [ROLE_HUNTER]  = {},
          [ROLE_DETECTIVE]= {}
       };
 
@@ -42,10 +42,12 @@ local function GetLoadoutWeapons(r)
          if w and type(w.InLoadoutFor) == "table" then
             for _, wrole in pairs(w.InLoadoutFor) do
                table.insert(tbl[wrole], WEPS.GetClass(w))
+			   if wrole == ROLE_TRAITOR then
+				table.insert(tbl[ROLE_HUNTER], WEPS.GetClass(w))
+			   end
             end
          end
       end
-
       loadout_weapons = tbl
    end
 
