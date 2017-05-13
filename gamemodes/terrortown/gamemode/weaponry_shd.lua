@@ -21,7 +21,7 @@ function WEPS.GetClass(wep)
 end
 
 function WEPS.DisguiseToggle(ply)
-   if IsValid(ply) and (ply:IsActiveTraitor() or ply:IsActiveHunter()) then
+   if IsValid(ply) and ply:IsActiveEvil() then
       if not ply:GetNWBool("disguised", false) then
          RunConsoleCommand("ttt_set_disguise", "1")
       else

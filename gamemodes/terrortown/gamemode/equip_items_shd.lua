@@ -107,7 +107,12 @@ EquipmentItems = {
 -- Search if an item is in the equipment table of a given role, and return it if
 -- it exists, else return nil.
 function GetEquipmentItem(role, id)
-   local tbl = EquipmentItems[role]
+   local tbl
+   if GetRoleTableByID(role).IsDefault then
+      tbl = EquipmentItems[role]
+   elseif GetRoleTableByID(role).ShopFallBack then
+      tbl = EquipmentItems[ROLE_TRAITOR]
+   end
    if not tbl then return end
 
    for k, v in pairs(tbl) do

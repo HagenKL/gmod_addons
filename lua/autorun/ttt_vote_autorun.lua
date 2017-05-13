@@ -4,3 +4,4 @@ if SERVER then
 else
 	include( "vote/cl_init.lua" )
 end
+include("vote/shared.lua")

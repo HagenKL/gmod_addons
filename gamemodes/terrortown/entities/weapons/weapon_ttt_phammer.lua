@@ -357,7 +357,7 @@ if CLIENT then
 
          surface.DrawOutlinedRect(x - w/2, y - h, w, h)
 
-         if LocalPlayer():IsTraitor() or LocalPlayer():IsHunter() then
+         if LocalPlayer():IsEvil() then
             surface.SetDrawColor(255, 0, 0, 155)
          else
             surface.SetDrawColor(0, 255, 0, 155)

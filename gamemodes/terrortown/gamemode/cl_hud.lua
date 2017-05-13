@@ -27,10 +27,13 @@ local bg_colors = {
 
    noround = Color(100,100,100,200),
    traitor = Color(200, 25, 25, 200),
-   hunter = Color(200, 140, 25, 200),
    innocent = Color(25, 200, 25, 200),
    detective = Color(25, 25, 200, 200)
 };
+
+function AddRoleHUDColors(Role)
+  bg_colors[Role.String] = Role.HUDColor
+end
 
 local health_colors = {
    border = COLOR_WHITE,
@@ -120,12 +123,13 @@ local function DrawBg(x, y, width, height, client)
    local col = bg_colors.innocent
    if GAMEMODE.round_state != ROUND_ACTIVE then
       col = bg_colors.noround
-   elseif client:GetTraitor() then
-      col = bg_colors.traitor
-   elseif client:GetHunter() then
-      col = bg_colors.hunter
-   elseif client:GetDetective() then
-      col = bg_colors.detective
+  else
+      for k,v in pairs(TTTRoles) do
+        if client:GetRole() == v.ID then
+          col = bg_colors[v.String]
+          break
+        end
+      end
    end
 
    draw.RoundedBox(8, x, y, tw, th, col)
@@ -267,7 +271,7 @@ local function InfoPaint(client)
 
    -- Draw round time
    local is_haste = HasteMode() and round_state == ROUND_ACTIVE
-   local is_traitor = client:IsActiveTraitor() or client:IsActiveHunter()
+   local is_traitor = client:IsActiveEvil()
 
    local endtime = GetGlobalFloat("ttt_round_end", 0) - CurTime()
 
@@ -324,7 +328,7 @@ function GM:HUDPaint()
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTTargetID" ) then
        hook.Call( "HUDDrawTargetID", GAMEMODE )
    end
-   
+
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTMStack" ) then
        MSTACK:Draw(client)
    end
@@ -340,11 +344,11 @@ function GM:HUDPaint()
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTRadar" ) then
        RADAR:Draw(client)
    end
-   
+
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTTButton" ) then
        TBHUD:Draw(client)
    end
-   
+
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTWSwitch" ) then
        WSWITCH:Draw(client)
    end
@@ -352,7 +356,7 @@ function GM:HUDPaint()
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTVoice" ) then
        VOICE.Draw(client)
    end
-   
+
    if hook.Call( "HUDShouldDraw", GAMEMODE, "TTTDisguise" ) then
        DISGUISE.Draw(client)
    end
@@ -374,4 +378,3 @@ function GM:HUDShouldDraw(name)
 
    return self.BaseClass.HUDShouldDraw(self, name)
 end
-

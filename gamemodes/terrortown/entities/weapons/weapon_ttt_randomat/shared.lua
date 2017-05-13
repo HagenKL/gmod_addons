@@ -507,7 +507,7 @@ if SERVER then
             ply.Modelchanged = true
             if ply:GetRole() == ROLE_INNOCENT then
               ply:SetModel("models/player/mossman.mdl")
-            elseif ply:GetTraitor() or (ply.GetHunter and ply.GetHunter()) then
+            elseif ply:GetTraitor() or (ply.GetEvil and ply:GetEvil()) then
               ply:SetModel("models/player/skeleton.mdl")
             end
           end
@@ -657,6 +657,16 @@ if SERVER then
     RandomatBroadcast("Randomat: ", Color(255,255,255), "ROLE SHUFFLE!")
     SelectRoles()
     SendFullStateUpdate()
+    for k,ply in pairs(player.GetAll()) do
+      for l,wep in pairs(ply:GetWeapons()) do
+        if wep.Kind == WEAPON_ROLE then
+          ply:StripWeapon(wep:GetClass())
+        end
+      end
+      if ply:IsTerror() then
+        hook.Call("PlayerLoadout", GAMEMODE, ply)
+      end
+    end
   end
 
   function RandomatScreenFlip()

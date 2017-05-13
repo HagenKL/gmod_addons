@@ -7,6 +7,7 @@ if not TTTVote then
 	AddCSLuaFile("vote/client/cl_menu.lua")
 	AddCSLuaFile("vote/client/cl_messages.lua")
 	AddCSLuaFile("vote/cl_init.lua")
+	AddCSLuaFile("vote/shared.lua")
 	AddCSLuaFile("autorun/ttt_vote_autorun.lua")
 
 	--All Files via Workshop
@@ -47,5 +48,5 @@ if not TTTVote then
 	util.AddNetworkString("TTTVoteCurse")
 	util.AddNetworkString("TTTVoteFailure")
 
-	print("TTT Vote has been succesfully loaded!")
+	print("TTT Vote has been successfully loaded!")
 end

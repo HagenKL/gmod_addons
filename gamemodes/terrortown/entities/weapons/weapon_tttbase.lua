@@ -155,7 +155,7 @@ if CLIENT then
 
       -- somehow it seems this can be called before my player metatable
       -- additions have loaded
-      if (client.IsTraitor and client:IsTraitor()) or (client.IsHunter and client:IsHunter()) then
+      if (client.IsEvil and client:IsEvil()) then
          surface.SetDrawColor(255 * bright,
                               50 * bright,
                               50 * bright,

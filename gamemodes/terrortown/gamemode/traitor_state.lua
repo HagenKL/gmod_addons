@@ -1,7 +1,7 @@
 function GetTraitors()
    local trs = {}
    for k,v in ipairs(player.GetAll()) do
-      if v:GetTraitor() or v:GetHunter() then table.insert(trs, v) end
+      if v:GetEvil() then table.insert(trs, v) end
    end
 
    return trs
@@ -50,7 +50,7 @@ end
 
 -- Tell traitors about other traitors
 
-function SendHunterList(ply_or_rf, pred) SendRoleList(ROLE_HUNTER, ply_or_rf, pred) end
+function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if !v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendTraitorList(ply_or_rf, pred) SendRoleList(ROLE_TRAITOR, ply_or_rf, pred) end
 function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) end
 
@@ -64,15 +64,14 @@ function SendInnocentList(ply_or_rf)
    for k, v in pairs(player.GetAll()) do
       if v:IsRole(ROLE_INNOCENT) then
          table.insert(inno_ids, v:EntIndex())
-      elseif v:IsRole(ROLE_TRAITOR) or v:IsRole(ROLE_HUNTER) then
+      elseif v:IsEvil() then
          table.insert(traitor_ids, v:EntIndex())
       end
    end
 
    -- traitors get actual innocent, so they do not reset their traitor mates to
    -- innocence
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetTraitorFilter())
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetHunterFilter())
+   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetEvilFilter())
 
    -- detectives and innocents get an expanded version of the truth so that they
    -- reset everyone who is not detective
@@ -82,15 +81,13 @@ function SendInnocentList(ply_or_rf)
 end
 
 function SendConfirmedTraitors(ply_or_rf)
-   SendTraitorList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
-   SendHunterList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
+   SendEvilList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
 end
 
 function SendFullStateUpdate()
    SendPlayerRoles()
    SendInnocentList()
-   SendTraitorList(GetHTFilter())
-   SendHunterList(GetHTFilter())
+   SendEvilList(GetEvilFilter())
    SendDetectiveList()
    -- not useful to sync confirmed traitors here
 end
@@ -120,9 +117,8 @@ local function request_rolelist(ply)
       SendRoleReset(ply)
       SendDetectiveList(ply)
 
-      if ply:IsTraitor() or ply:IsHunter() then
-         SendTraitorList(ply)
-         SendHunterList(ply)
+      if ply:IsEvil() then
+         SendEvilList(ply)
       else
          SendConfirmedTraitors(ply)
       end
@@ -188,4 +184,3 @@ concommand.Add("ttt_spectate", force_spectate)
 net.Receive("TTT_Spectate", function(l, pl)
    force_spectate(pl, nil, { net.ReadBool() and 1 or 0 })
 end)
-

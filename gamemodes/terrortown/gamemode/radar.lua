@@ -16,7 +16,7 @@ local function RadarScan(ply, cmd, args)
          end
 
          ply.radar_charge =  CurTime() + chargetime
-		
+
          local scan_ents
 		 local targets
 		 if !ply:IsHunter() or (!TTTVote.AnyTotems and ply:IsHunter()) then
@@ -29,7 +29,7 @@ local function RadarScan(ply, cmd, args)
 
 				if p:IsPlayer() then
 				   if not p:IsTerror() then continue end
-				   if p:GetNWBool("disguised", false) and (not ply:IsTraitor() and not ply:IsHunter()) then continue end
+				   if p:GetNWBool("disguised", false) and (not ply:IsEvil()) then continue end
 				end
 
 				local pos = p:LocalToWorld(p:OBBCenter())
@@ -43,15 +43,15 @@ local function RadarScan(ply, cmd, args)
 
 				if not p:IsPlayer() then
 				   -- Decoys appear as innocents for non-traitors
-				   if not ply:IsTraitor() and not ply:IsHunter() then
+				   if not ply:IsEvil() then
 					  role = ROLE_INNOCENT
 				   end
-				elseif role != ROLE_INNOCENT and ((ply:IsTraitor() and !p:IsHunter() and !p:IsTraitor()) or (ply:IsDetective() and !p:IsDetective()) or (ply:IsHunter() and !p:IsHunter() and !p:IsTraitor())) then
+				elseif role != ROLE_INNOCENT and ((ply:IsEvil() and !p:IsEvil()) or (ply:IsGood() and !p:IsGood())) then
 				   -- Detectives/Traitors can see who has their role, but not who
 				   -- has the opposite role.
 				   role = ROLE_INNOCENT
 				end
-				
+
 				table.insert(targets, {role=role, pos=pos})
 			 end
 		 elseif ply:IsHunter() and TTTVote.AnyTotems then
@@ -59,14 +59,14 @@ local function RadarScan(ply, cmd, args)
 			targets = {}
 			for k,t in pairs(scan_ents) do
 				local pos = t:LocalToWorld(t:OBBCenter())
-				
+
 				pos.x = math.Round(pos.x)
 				pos.y = math.Round(pos.y)
-				pos.z = math.Round(pos.z)
+				pos.z = math.Round(pos.z) - 100
 
 				local owner = t:GetOwner()
-				if owner != ply and !owner:IsTraitor() and !owner:IsHunter() then
-					table.insert(targets, {role= 4, pos=pos, totem=true})
+				if owner != ply and !owner:IsEvil() then
+					table.insert(targets, {role= 16, pos=pos})
 				end
 			end
 		 end
@@ -74,15 +74,11 @@ local function RadarScan(ply, cmd, args)
          net.Start("TTT_Radar")
             net.WriteUInt(#targets, 8)
             for k, tgt in pairs(targets) do
-			   net.WriteUInt(tgt.role, 4)
+			   net.WriteUInt(tgt.role, 8)
 
                net.WriteInt(tgt.pos.x, 32)
                net.WriteInt(tgt.pos.y, 32)
-			   if tgt.totem then
-				net.WriteInt(tgt.pos.z - 100, 32)
-			   else
-			    net.WriteInt(tgt.pos.z, 32)
-			   end
+			   net.WriteInt(tgt.pos.z, 32)
             end
          net.Send(ply)
 
@@ -92,4 +88,3 @@ local function RadarScan(ply, cmd, args)
    end
 end
 concommand.Add("ttt_radar_scan", RadarScan)
-

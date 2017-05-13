@@ -45,7 +45,7 @@ function ENT:Initialize()
 end
 
 function ENT:UseOverride(activator)
-   if IsValid(activator) and activator:IsPlayer() and (activator:IsActiveTraitor() or activator:IsActiveHunter()) then
+   if IsValid(activator) and activator:IsPlayer() and activator:IsActiveEvil() then
       local prints = self.fingerprints or {}
       self:Remove()
 
@@ -267,7 +267,7 @@ if SERVER then
 
 
    local function RadioCmd(ply, cmd, args)
-      if not IsValid(ply) or not (ply:IsActiveTraitor() or ply:IsAtiveHunter()) then return end
+      if not IsValid(ply) or not ply:IsActiveEvil() then return end
       if not #args == 2 then return end
 
       local eidx = tonumber(args[1])
@@ -287,5 +287,3 @@ if SERVER then
    end
    concommand.Add("ttt_radio_play", RadioCmd)
 end
-
-

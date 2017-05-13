@@ -71,10 +71,6 @@ CreateConVar("ttt_spawn_wave_interval", "0")
 CreateConVar("ttt_traitor_pct", "0.25")
 CreateConVar("ttt_traitor_max", "32")
 
-CreateConVar("ttt_hunter_pct", "0.15")
-CreateConVar("ttt_hunter_max", "1")
-CreateConVar("ttt_hunter_min_players", "7")
-
 CreateConVar("ttt_detective_pct", "0.13", FCVAR_NOTIFY)
 CreateConVar("ttt_detective_max", "32")
 CreateConVar("ttt_detective_min_players", "8")
@@ -299,6 +295,12 @@ function WaitForPlayers()
    if not timer.Start("waitingforply") then
       timer.Create("waitingforply", 2, 0, WaitingForPlayersChecker)
    end
+end
+
+function AddRoleOnServer(Role)
+  CreateConVar("ttt_" .. Role.String .. "_pct", Role.DefaultPct)
+  CreateConVar("ttt_" .. Role.String .. "_max", Role.DefaultMax)
+  CreateConVar("ttt_" .. Role.String .. "_min_players", Role.DefaultMin)
 end
 
 -- When a player initially spawns after mapload, everything is a bit strange;
@@ -527,7 +529,7 @@ end
 function TellTraitorsAboutTraitors()
    local traitornicks = {}
    for k,v in pairs(player.GetAll()) do
-      if v:IsTraitor() or v:IsHunter() then
+      if v:IsEvil() then
          table.insert(traitornicks, v:Nick())
       end
    end
@@ -535,7 +537,7 @@ function TellTraitorsAboutTraitors()
    -- This is ugly as hell, but it's kinda nice to filter out the names of the
    -- traitors themselves in the messages to them
    for k,v in pairs(player.GetAll()) do
-      if v:IsTraitor() or v:IsHunter() then
+      if v:IsEvil() then
          if #traitornicks < 2 then
             LANG.Msg(v, "round_traitors_one")
             return
@@ -792,9 +794,9 @@ function GM:TTTCheckForWin()
    local innocent_alive = false
    for k,v in pairs(player.GetAll()) do
       if v:Alive() and v:IsTerror() then
-         if v:GetTraitor() or v:GetHunter() then
+         if GetRoleTableByID(v:GetRole()).winning_team == WIN_TRAITOR then
             traitor_alive = true
-         else
+         elseif GetRoleTableByID(v:GetRole()).winning_team == WIN_INNOCENT then
             innocent_alive = true
          end
       end
@@ -815,17 +817,6 @@ function GM:TTTCheckForWin()
 
    return WIN_NONE
 end
-
-local function GetHunterCount(ply_count)
-	if ply_count < GetConVar("ttt_hunter_min_players"):GetInt() then return 0 end
-
-   local hunter_count = math.floor(ply_count * GetConVar("ttt_hunter_pct"):GetFloat())
-   -- limit to a max
-   hunter_count = math.Clamp(hunter_count, 1, GetConVar("ttt_hunter_max"):GetInt())
-
-   return hunter_count
-end
-
 
 local function GetTraitorCount(ply_count)
    -- get number of traitors: pct of players rounded down
@@ -850,12 +841,11 @@ end
 
 function SelectRoles()
    local choices = {}
-   local prev_roles = {
-      [ROLE_INNOCENT] = {},
-      [ROLE_TRAITOR] = {},
-	    [ROLE_HUNTER] = {},
-      [ROLE_DETECTIVE] = {}
-   };
+   local prev_roles = {};
+
+   for k,v in pairs(TTTRoles) do
+     prev_roles[v.ID] = {}
+   end
 
    if not GAMEMODE.LastRole then GAMEMODE.LastRole = {} end
 
@@ -875,10 +865,22 @@ function SelectRoles()
    end
 
    -- determine how many of each role we want
+   local goodtbl = {}
+   local badtbl = {}
    local choice_count = #choices
-   local traitor_count = GetTraitorCount(choice_count) - GetHunterCount(choice_count)
-   local hunter_count = GetHunterCount(choice_count)
-   local det_count = GetDetectiveCount(choice_count)
+   for k,v in pairs(TTTRoles) do
+     if not v.IsDefault then
+       if v.IsGood and v.IsReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
+         table.insert(goodtbl,v)
+       elseif !v.IsGood and v.IsReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
+         table.insert(badtbl,v)
+       end
+     end
+   end
+
+   local traitor_count = GetTraitorCount(choice_count) - #badtbl
+
+   local det_count = GetDetectiveCount(choice_count) - #goodtbl
 
    if choice_count == 0 then return end
 
@@ -899,27 +901,11 @@ function SelectRoles()
       -- make this guy traitor if he was not a traitor last time, or if he makes
       -- a roll
       if IsValid(pply) and
-         (not table.HasValue(prev_roles[ROLE_TRAITOR], pply) and not table.HasValue(prev_roles[ROLE_HUNTER], pply)) or (math.random(1, 3) == 2) then
+         (not table.HasValue(prev_roles[ROLE_TRAITOR], pply)) or (math.random(1, 3) == 2) then
          pply:SetRole(ROLE_TRAITOR)
 
          table.remove(choices, pick)
          ts = ts + 1
-      end
-   end
-
-   local hs = 0
-   while hs < hunter_count do
-      local pick = math.random(1, #choices)
-
-      local pply = choices[pick]
-
-
-      if IsValid(pply) and
-         (not table.HasValue(prev_roles[ROLE_TRAITOR], pply) and not table.HasValue(prev_roles[ROLE_HUNTER], pply)) or (math.random(1, 3) == 2) then
-         pply:SetRole(ROLE_HUNTER)
-
-         table.remove(choices, pick)
-         hs = hs + 1
       end
    end
 
@@ -962,6 +948,31 @@ function SelectRoles()
 
          table.remove(choices, pick)
       end
+   end
+
+   for k,v in RandomPairs(TTTRoles) do
+     if !v.IsDefault then
+       if choice_count < GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then continue end
+       local sr = 0
+       local role_count = math.floor(choice_count * GetConVar("ttt_" .. v.String .. "_pct"):GetFloat())
+
+       role_count = math.Clamp(role_count, 1, GetConVar("ttt_" .. v.String .. "_max"):GetInt())
+
+       while sr < role_count do
+          local pick = math.random(1, #choices)
+
+          local pply = choices[pick]
+
+
+          if IsValid(pply) and
+             (not table.HasValue(prev_roles[v.ID], pply)) or (math.random(1, 3) == 2) then
+             pply:SetRole(v.ID)
+
+             table.remove(choices, pick)
+             sr = sr + 1
+          end
+       end
+     end
    end
 
    GAMEMODE.LastRole = {}

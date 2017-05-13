@@ -91,7 +91,7 @@ if CLIENT then
 		  end
 	   end
 	end
-	
+
 	local minimalist = GetConVar("ttt_minimal_targetid")
 	local ring_tex = surface.GetTextureID("effects/select_ring")
 	local GetLang = LANG.GetUnsafeLanguageTable
@@ -106,13 +106,13 @@ if CLIENT then
 	   local ent = trace.Entity
 	   if (ent:IsPlayer() and !ent:GetNWBool("AdvDisguiseInDisguise", false)) or !ent:IsPlayer() then return end
 	   if (not IsValid(ent)) or ent.NoTarget then return end
-      
+
       DrawPropSpecLabelsAdvDisguiser(client)
-	  
+
 	  local target_traitor = false
 	  local target_detective = false
 	  local target_corpse = false
-	  
+
       local text = nil
       local color = COLOR_WHITE
 
@@ -121,7 +121,7 @@ if CLIENT then
       if ent:GetNWBool("disguised", false) then
          client.last_id = nil
 
-         if client:IsTraitor() or client:IsHunter() or client:IsSpec() then
+         if client:IsTraitor() or (client.IsEvil and client:IsEvil()) or client:IsSpec() then
             text = ent:Nick() .. L.target_disg
          else
             -- Do not show anything
@@ -130,7 +130,7 @@ if CLIENT then
 
          color = COLOR_RED
 
-      elseif ((client:IsTraitor() or (ent.IsHunter and ent:IsHunter()))) and (ent:IsTraitor() or (ent.IsHunter and ent:IsHunter())) or client:IsSpec() then
+      elseif client:IsTraitor() or (ent.IsEvil and ent:IsEvil()) and (ent:IsTraitor() or (ent.IsEvil and ent:IsEvil())) or client:IsSpec() then
         text = ent:Nick() .. " (Disguised as " .. ent:GetNWString("AdvDisguiseName") .. ")"
         color = COLOR_RED
       else
@@ -144,7 +144,7 @@ if CLIENT then
         _, color = util.HealthToString(ent:Health(), ent:GetMaxHealth())
       end
 
-      if (client:IsTraitor() or (client.IsHunter and client:IsHunter())) and GetRoundState() == ROUND_ACTIVE then
+      if (client:IsTraitor() or (client.IsEvil and client:IsEvil())) and GetRoundState() == ROUND_ACTIVE then
         target_traitor = ent:GetNWEntity("AdvDisguiseIsTraitor")
       end
 
@@ -238,7 +238,7 @@ if CLIENT then
     end
 
   hook.Add( "HUDDrawTargetID", "AdvDisguiserInit", AdvDisguiserInit )
-  
+
   function RADIO:GetTargetType()
   	if not IsValid(LocalPlayer()) then return end
   	local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
@@ -305,7 +305,7 @@ elseif SERVER then
 
   if not IsValid(self.Owner) then return end
   self:SetNextSecondaryFire(CurTime() + 0.2)
-  
+
   local owner = self.Owner
   if owner:GetNWBool("AdvDisguiseInDisguise") then
     owner:SetNWBool("AdvDisguiseInDisguise",false)

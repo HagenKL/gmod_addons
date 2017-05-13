@@ -17,7 +17,7 @@ local function GetTextForRole(role)
    else
       local traitors = {}
       for _, ply in pairs(player.GetAll()) do
-         if ply:IsTraitor() or ply:IsHunter() then
+         if ply:IsEvil() then
             table.insert(traitors, ply)
          end
       end
@@ -128,6 +128,3 @@ local function IdlePopup()
 
 end
 concommand.Add("ttt_cl_idlepopup", IdlePopup)
-
-
-

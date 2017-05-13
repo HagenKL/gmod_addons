@@ -44,7 +44,7 @@ function ENT:AcceptInput(name, activator)
       elseif r == RECEIVE_DETECTIVE then
          recv = GetDetectiveFilter()
       elseif r == RECEIVE_TRAITOR then
-         recv = GetHTFilter()
+         recv = GetEvilFilter()
       elseif r == RECEIVE_INNOCENT then
          recv = GetInnocentFilter()
       elseif r == RECEIVE_ACTIVATOR then
@@ -59,4 +59,3 @@ function ENT:AcceptInput(name, activator)
       return true
    end
 end
-

@@ -115,7 +115,7 @@ function TTTVote.TotemSuffer()
 end
 
 function TTTVote.GiveTotemHunterCredits(ply,totem)
-  LANG.Msg(ply, "credit_ht_all", {num = 1})
+  LANG.Msg(ply, "credit_h_all", {num = 1})
   ply:AddCredits(1)
 end
 

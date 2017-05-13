@@ -72,12 +72,8 @@ local function GetPlayerFilter(pred)
    return filter
 end
 
-function GetHTFilter(alive_only)
-   return GetPlayerFilter(function(p) return (p:IsTraitor() or p:IsHunter()) and (not alive_only or p:IsTerror()) end)
-end
-
-function GetHunterFilter(alive_only)
-   return GetPlayerFilter(function(p) return p:IsHunter() and (not alive_only or p:IsTerror()) end)
+function GetEvilFilter(alive_only)
+   return GetPlayerFilter(function(p) return p:IsEvil() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetTraitorFilter(alive_only)
@@ -89,7 +85,7 @@ function GetDetectiveFilter(alive_only)
 end
 
 function GetInnocentFilter(alive_only)
-   return GetPlayerFilter(function(p) return (not p:IsTraitor()) and (not p:IsHunter()) and (not alive_only or p:IsTerror()) end)
+   return GetPlayerFilter(function(p) return p:IsGood() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetRoleFilter(role, alive_only)
@@ -204,10 +200,10 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
    end
 
    -- Traitors "team"chat by default, non-locationally
-   if speaker:IsActiveTraitor() or speaker:IsActiveHunter() then
+   if speaker:IsActiveEvil() then
       if speaker.traitor_gvoice then
          return true, loc_voice:GetBool()
-      elseif listener:IsActiveTraitor() or listener:IsActiveHunter() then
+      elseif listener:IsActiveEvil() then
          return true, false
       else
          -- unless traitor_gvoice is true, normal innos can't hear speaker
@@ -233,7 +229,7 @@ end
 
 
 local function TraitorGlobalVoice(ply, cmd, args)
-   if not IsValid(ply) or not ply:IsActiveTraitor() or not ply:IsActiveHunter() then return end
+   if not IsValid(ply) or not ply:IsActiveEvil() then return end
    if not #args == 1 then return end
    local state = tonumber(args[1])
 

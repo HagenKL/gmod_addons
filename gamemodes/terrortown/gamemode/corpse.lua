@@ -49,27 +49,24 @@ local function IdentifyBody(ply, rag)
       CORPSE.SetFound(rag, true)
       return
    end
-   
-   if not hook.Run("TTTCanIdentifyCorpse", ply, rag, (rag.was_role == ROLE_TRAITOR or rag.was_role == ROLE_HUNTER)) then
+
+   if not hook.Run("TTTCanIdentifyCorpse", ply, rag, IsRoleEvil(rag.was_role)) then
       return
    end
 
    local finder = ply:Nick()
    local nick = CORPSE.GetPlayerNick(rag, "")
-   local traitor = (rag.was_role == ROLE_TRAITOR or rag.was_role == ROLE_HUNTER)
-   
+   local traitor = IsRoleEvil(rag.was_role)
+
    -- Announce body
    if bodyfound:GetBool() and not CORPSE.GetFound(rag, false) then
       local roletext = nil
       local role = rag.was_role
-      if role == ROLE_TRAITOR then
-         roletext = "body_found_t"
-	  elseif role == ROLE_HUNTER then
-		 roletext = "body_found_h"
-      elseif role == ROLE_DETECTIVE then
-         roletext = "body_found_d"
-      else
-         roletext = "body_found_i"
+      for k,v in pairs(TTTRoles) do
+        if v.ID == role then
+          roletext = "body_found_" .. v.Short
+          break
+        end
       end
 
       LANG.Msg("body_found", {finder = finder,
@@ -77,7 +74,7 @@ local function IdentifyBody(ply, rag)
                               role = LANG.Param(roletext)})
    end
 
-   -- Register find      
+   -- Register find
    if not CORPSE.GetFound(rag, false) then
       -- will return either false or a valid ply
       local deadply = player.GetBySteamID(rag.sid)
@@ -194,7 +191,7 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
       LANG.Msg(ply, "body_burning")
       return
    end
-   
+
    if not hook.Run("TTTCanSearchCorpse", ply, rag, covert, long_range, (rag.was_role == ROLE_TRAITOR)) then
       return
    end
@@ -210,7 +207,7 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
    local words = rag.last_words or ""
    local hshot = rag.was_headshot or false
    local dtime = rag.time or 0
-   
+
    local owner = player.GetBySteamID(rag.sid)
    owner = IsValid(owner) and owner:EntIndex() or -1
 
@@ -460,7 +457,7 @@ function CORPSE.Create(ply, attacker, dmginfo)
       local efn = ply.effect_fn
       timer.Simple(0, function() efn(rag) end)
    end
-   
+
    hook.Run("TTTOnCorpseCreated", rag, ply)
 
    return rag -- we'll be speccing this

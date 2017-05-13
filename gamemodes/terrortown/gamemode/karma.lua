@@ -104,7 +104,7 @@ end
 -- Return true if a traitor could have easily avoided the damage/death
 local function WasAvoidable(attacker, victim, dmginfo)
    local infl = dmginfo:GetInflictor()
-   if (attacker:IsTraitor() or attacker:IsHunter()) and (victim:IsTraitor() or victim:IsHunter()) and IsValid(infl) and infl.Avoidable then
+   if attacker:IsEvil() and victim:IsEvil() and IsValid(infl) and infl.Avoidable then
       return true
    end
 
@@ -122,7 +122,7 @@ function KARMA.Hurt(attacker, victim, dmginfo)
    -- Ignore excess damage
    local hurt_amount = math.min(victim:Health(), dmginfo:GetDamage())
 
-   if attacker:GetTraitor() == victim:GetTraitor() or attacker:GetHunter() == victim:GetHunter() then
+   if attacker:GetEvil() == victim:GetEvil() then
       if WasAvoidable(attacker, victim, dmginfo) then return end
 
       local penalty = KARMA.GetHurtPenalty(victim:GetLiveKarma(), hurt_amount)
@@ -134,7 +134,7 @@ function KARMA.Hurt(attacker, victim, dmginfo)
       if IsDebug() then
          print(Format("%s (%f) attacked %s (%f) for %d and got penalised for %f", attacker:Nick(), attacker:GetLiveKarma(), victim:Nick(), victim:GetLiveKarma(), hurt_amount, penalty))
       end
-   elseif (not attacker:GetTraitor() and not attacker:GetHunter()) and (victim:GetTraitor() or victim:GetHunter()) then
+   elseif (not attacker:GetEvil()) and (victim:GetEvil()) then
       local reward = KARMA.GetHurtReward(hurt_amount)
       reward = KARMA.GiveReward(attacker, reward)
 
@@ -151,7 +151,7 @@ function KARMA.Killed(attacker, victim, dmginfo)
    if attacker == victim then return end
    if not attacker:IsPlayer() or not victim:IsPlayer() then return end
 
-   if attacker:GetTraitor() == victim:GetTraitor() or attacker:GetHunter() == victim:GetHunter() then
+   if attacker:GetEvil() == victim:GetEvil() then
       -- don't penalise attacker for stupid victims
       if WasAvoidable(attacker, victim, dmginfo) then return end
 
@@ -164,7 +164,7 @@ function KARMA.Killed(attacker, victim, dmginfo)
       if IsDebug() then
          print(Format("%s (%f) killed %s (%f) and gets penalised for %f", attacker:Nick(), attacker:GetLiveKarma(), victim:Nick(), victim:GetLiveKarma(), penalty))
       end
-   elseif (not attacker:GetTraitor() and not attacker:GetHunter()) and (victim:GetTraitor() or victim:GetHunter()) then
+   elseif (not attacker:GetEvil()) and victim:GetEvil() then
       local reward = KARMA.GetKillReward()
       reward = KARMA.GiveReward(attacker, reward)
 

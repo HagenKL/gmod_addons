@@ -434,7 +434,7 @@ if (CLIENT) then
         return GROUP_FOUND
       else
         local client = LocalPlayer()
-        if client:IsSpec() or client:IsActiveTraitor() or (client.IsActiveHunter and client:IsActiveHunter()) or ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
+        if client:IsSpec() or client:IsActiveTraitor() or (client.IsActiveEvil and client:IsActiveEvil()) or ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
           return GROUP_NOTFOUND
         else
           return GROUP_TERROR

@@ -13,11 +13,35 @@ AccessorFunc(plymeta, "role", "Role", FORCE_NUMBER)
 -- Role access
 function plymeta:GetTraitor() return self:GetRole() == ROLE_TRAITOR end
 function plymeta:GetDetective() return self:GetRole() == ROLE_DETECTIVE end
-function plymeta:GetHunter() return self:GetRole() == ROLE_HUNTER end
+
+-- Team access
+function plymeta:GetEvil()
+  for k,v in pairs(TTTRoles) do
+    if self:GetRole() == k and not v.IsGood then
+      return true
+    else
+      continue
+    end
+  end
+  return false
+end
+
+function plymeta:GetGood()
+  for k,v in pairs(TTTRoles) do
+    if self:GetRole() == k and v.IsGood then
+      return true
+    else
+      continue
+    end
+  end
+  return false
+end
 
 plymeta.IsTraitor = plymeta.GetTraitor
 plymeta.IsDetective = plymeta.GetDetective
-plymeta.IsHunter = plymeta.GetHunter
+
+plymeta.IsEvil = plymeta.GetEvil
+plymeta.IsGood = plymeta.GetGood
 
 function plymeta:IsSpecial() return self:GetRole() != ROLE_INNOCENT end
 
@@ -30,13 +54,15 @@ end
 function plymeta:IsRole(role) return self:GetRole() == role end
 function plymeta:IsActiveRole(role) return self:IsRole(role) and self:IsActive() end
 function plymeta:IsActiveTraitor() return self:IsActiveRole(ROLE_TRAITOR) end
-function plymeta:IsActiveHunter() return self:IsActiveRole(ROLE_HUNTER) end
 function plymeta:IsActiveDetective() return self:IsActiveRole(ROLE_DETECTIVE) end
+
 function plymeta:IsActiveSpecial() return self:IsSpecial() and self:IsActive() end
+
+function plymeta:IsActiveEvil() return self:GetEvil() and self:IsActive() end
+function plymeta:IsActiveGood() return self:GetGood() and self:IsActive() end
 
 local role_strings = {
    [ROLE_TRAITOR]   = "traitor",
-   [ROLE_HUNTER]    = "hunter",
    [ROLE_INNOCENT]  = "innocent",
    [ROLE_DETECTIVE] = "detective"
 };
@@ -52,6 +78,15 @@ end
 -- Returns role language string id, caller must translate if desired
 function plymeta:GetRoleStringRaw()
    return role_strings[self:GetRole()]
+end
+
+-- Function to Add New Roles
+function AddRoleFunctions(Role)
+  local funcname = string.Capitalize(Role.String)
+  plymeta["Get" .. funcname] = function(self) return self:GetRole() == Role.ID end
+  plymeta["Is" .. funcname] = plymeta["Get" .. funcname]
+  plymeta["IsActive" .. funcname] = function(self) return self:IsActiveRole(Role.ID) end
+  role_strings[Role.ID] = string.lower(funcname)
 end
 
 function plymeta:GetBaseKarma() return self:GetNWFloat("karma", 1000) end

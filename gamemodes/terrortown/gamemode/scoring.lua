@@ -66,12 +66,12 @@ function SCORE:HandleKill( victim, attacker, dmginfo )
 
    e.dmg.h = victim.was_headshot
 
-   e.vic.tr = victim:GetTraitor() or victim:GetHunter()
+   e.vic.tr = victim:GetEvil()
 
    if IsValid(attacker) and attacker:IsPlayer() then
       e.att.ni = attacker:Nick()
       e.att.sid = attacker:SteamID()
-      e.att.tr = attacker:GetTraitor() or attacker:GetHunter()
+      e.att.tr = attacker:GetEvil()
 
       -- If a traitor gets himself killed by another traitor's C4, it's his own
       -- damn fault for ignoring the indicator.
@@ -96,9 +96,9 @@ function SCORE:HandleSelection()
    local traitors = {}
    local detectives = {}
    for k, ply in pairs(player.GetAll()) do
-      if ply:GetTraitor() or ply:GetHunter() then
+      if ply:GetEvil() and GetRoleTableByID(ply:GetRole()).IsSpecial then
          table.insert(traitors, ply:SteamID())
-      elseif ply:GetDetective() then
+      elseif ply:GetGood() and GetRoleTableByID(ply:GetRole()).IsSpecial then
          table.insert(detectives, ply:SteamID())
       end
    end
@@ -148,7 +148,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for k, ply in pairs(player.GetAll()) do
       scores[ply:SteamID()] = {}
 
-      if ply:GetTraitor() or ply:GetHunter() then
+      if ply:GetEvil() then
          table.insert(traitors, ply:SteamID())
       elseif ply:GetDetective() then
          table.insert(detectives, ply:SteamID())
@@ -163,7 +163,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-         ply:AddFrags(KillsToPoints(s, ply:GetTraitor() or ply:GetHunter()))
+         ply:AddFrags(KillsToPoints(s, ply:GetEvil()))
       end
    end
 
@@ -173,7 +173,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-		 ply:AddFrags((ply:GetTraitor() or ply:GetHunter()) and bonus.traitors or bonus.innos)
+		 ply:AddFrags(ply:GetEvil() and bonus.traitors or bonus.innos)
       end
    end
 

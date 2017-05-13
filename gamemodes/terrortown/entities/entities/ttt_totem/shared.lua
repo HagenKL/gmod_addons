@@ -79,7 +79,7 @@ function ENT:OnTakeDamage(dmginfo)
   local owner, att, infl, dmg = self:GetOwner(), dmginfo:GetAttacker(), dmginfo:GetInflictor(), dmginfo:GetDamage()
 
   if !IsValid(owner) then return end
-  if infl == owner or att == owner or owner:IsHunter() or owner:IsTraitor() then return end
+  if infl == owner or att == owner or owner:IsEvil() then return end
 
   if ((infl:IsPlayer() and infl:IsHunter()) or (att:IsPlayer() and att:IsHunter())) and infl:GetClass() == "weapon_ttt_totemknife" then
 
@@ -113,7 +113,7 @@ function ENT:FakeDestroy()
   timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
 end
 
-hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply) 
+hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply)
   if TTTVote.HasTotem(ply) then
     ply:GetNWEntity("Totem", NULL):FakeDestroy()
   end

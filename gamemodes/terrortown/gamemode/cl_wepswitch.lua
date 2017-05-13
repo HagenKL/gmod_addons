@@ -31,7 +31,6 @@ local col_active = {
    tip = {
       [ROLE_INNOCENT]  = Color(55, 170, 50, 255),
       [ROLE_TRAITOR]   = Color(180, 50, 40, 255),
-	   [ROLE_HUNTER]    = Color(180, 140, 40, 255),
       [ROLE_DETECTIVE] = Color(50, 60, 180, 255)
    },
 
@@ -47,7 +46,6 @@ local col_dark = {
    tip = {
       [ROLE_INNOCENT]  = Color(60, 160, 50, 155),
       [ROLE_TRAITOR]   = Color(160, 50, 60, 155),
-	   [ROLE_HUNTER]    = Color(160, 140, 60, 155),
       [ROLE_DETECTIVE] = Color(50, 60, 160, 155),
    },
 
@@ -58,6 +56,11 @@ local col_dark = {
 
    shadow = 100
 };
+
+function AddRoleWepSwitchColors(Role)
+  col_active.tip[Role.ID] = Role.WepSwitchColorActive
+  col_dark.tip[Role.ID] = Role.WepSwitchColorDark
+end
 
 -- Draw a bar in the style of the the weapon pickup ones
 local round = math.Round
@@ -78,11 +81,11 @@ function WSWITCH:DrawBarBg(x, y, w, h, col)
    surface.SetTexture(barcorner)
 
    surface.SetDrawColor(c.r, c.g, c.b, c.a)
-   surface.DrawTexturedRectRotated( rx + bh , ry + bh, b, b, 0 ) 
-   surface.DrawTexturedRectRotated( rx + bh , ry + rh -bh, b, b, 90 ) 
+   surface.DrawTexturedRectRotated( rx + bh , ry + bh, b, b, 0 )
+   surface.DrawTexturedRectRotated( rx + bh , ry + rh -bh, b, b, 90 )
    surface.DrawRect( rx, ry+b, b, rh-b*2 )
    surface.DrawRect( rx+b, ry, h - 4, rh )
-   
+
    -- Draw the remainder
    -- Could just draw a full roundedrect bg and overdraw it with the tip, but
    -- I don't have to do the hard work here anymore anyway
@@ -90,8 +93,8 @@ function WSWITCH:DrawBarBg(x, y, w, h, col)
    surface.SetDrawColor(c.r, c.g, c.b, c.a)
 
    surface.DrawRect( rx+b+h-4, ry,  rw - (h - 4) - b*2,  rh )
-   surface.DrawTexturedRectRotated( rx + rw - bh , ry + rh - bh, b, b, 180 ) 
-   surface.DrawTexturedRectRotated( rx + rw - bh , ry + bh, b, b, 270 ) 
+   surface.DrawTexturedRectRotated( rx + rw - bh , ry + rh - bh, b, b, 180 )
+   surface.DrawTexturedRectRotated( rx + rw - bh , ry + bh, b, b, 270 )
    surface.DrawRect( rx+rw-b,  ry+b,  b,  rh-b*2 )
 
 end
@@ -156,7 +159,7 @@ function WSWITCH:Draw(client)
 
       self:DrawBarBg(x, y, width, height, col)
       if not self:DrawWeapon(x, y, col, wep) then
-         
+
          self:UpdateWeaponCache()
          return
       end
@@ -175,7 +178,7 @@ local function CopyVals(src, dest)
       if IsValid(v) then
          table.insert(dest, v)
       end
-   end   
+   end
 end
 
 function WSWITCH:UpdateWeaponCache()
@@ -229,7 +232,7 @@ function WSWITCH:DoSelect(idx)
    if self.cv.fast:GetBool() then
       -- immediately confirm if fastswitch is on
       self:ConfirmSelection(self.cv.display:GetBool())
-   end   
+   end
 end
 
 -- Numeric key access to direct slots
@@ -331,7 +334,7 @@ local function QuickSlot(ply, cmd, args)
       else
          WSWITCH:SelectAndConfirm(slot)
       end
-   end   
+   end
 end
 concommand.Add("ttt_quickslot", QuickSlot)
 

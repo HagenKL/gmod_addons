@@ -30,7 +30,9 @@ local function RoleChatRecv()
 
    local text = net.ReadString()
 
-   if role == ROLE_TRAITOR or role == ROLE_HUNTER then
+   local Roletbl = GetRoleTableByID(role)
+
+   if !Roletbl.IsGood and Roletbl.AllowTeamChat then
       chat.AddText(Color( 255, 30, 40 ),
                    Format("(%s) ", string.upper(GetTranslation("traitor"))),
                    Color( 255, 200, 20),
@@ -38,7 +40,7 @@ local function RoleChatRecv()
                    Color( 255, 255, 200),
                    ": " .. text)
 
-   elseif role == ROLE_DETECTIVE then
+   elseif Roletbl.IsGood and Roletbl.AllowTeamChat then
       chat.AddText(Color( 20, 100, 255 ),
                    Format("(%s) ", string.upper(GetTranslation("detective"))),
                    Color( 25, 200, 255),
@@ -73,19 +75,19 @@ local function AddDetectiveText(ply, text)
 end
 
 function GM:OnPlayerChat(ply, text, teamchat, dead)
-   if not IsValid(ply) then return BaseClass.OnPlayerChat(self, ply, text, teamchat, dead) end 
-   
+   if not IsValid(ply) then return BaseClass.OnPlayerChat(self, ply, text, teamchat, dead) end
+
    if ply:IsActiveDetective() then
       AddDetectiveText(ply, text)
       return true
    end
-   
+
    local team = ply:Team() == TEAM_SPEC
-   
+
    if team and not dead then
       dead = true
    end
-   
+
    if teamchat and ((not team and not ply:IsSpecial()) or team) then
       teamchat = false
    end
@@ -429,8 +431,8 @@ g_VoicePanelList = nil
 local function VoiceNotifyThink(pnl)
    if not (IsValid(pnl) and LocalPlayer() and IsValid(pnl.ply)) then return end
    if not (GetGlobalBool("ttt_locational_voice", false) and (not pnl.ply:IsSpec()) and (pnl.ply != LocalPlayer())) then return end
-   if LocalPlayer():IsActiveTraitor() && pnl.ply:IsActiveTraitor() && LocalPlayer():IsActiveHunter() && pnl.ply:IsActiveHunter() then return end
-   
+   if LocalPlayer():IsActiveEvil() && pnl.ply:IsActiveEvil() then return end
+
    local d = LocalPlayer():GetPos():Distance(pnl.ply:GetPos())
 
    pnl:SetAlpha(math.max(-0.1 * d + 255, 15))
@@ -449,7 +451,7 @@ function GM:PlayerStartVoice( ply )
 
    -- Tell server this is global
    if client == ply then
-      if client:IsActiveTraitor() or client:IsActiveHunter() then
+      if client:IsActiveEvil() then
          if (not client:KeyDown(IN_SPEED)) and (not client:KeyDownLast(IN_SPEED)) then
             client.traitor_gvoice = true
             RunConsoleCommand("tvog", "1")
@@ -465,7 +467,7 @@ function GM:PlayerStartVoice( ply )
    local pnl = g_VoicePanelList:Add("VoiceNotify")
    pnl:Setup(ply)
    pnl:Dock(TOP)
-   
+
    local oldThink = pnl.Think
    pnl.Think = function( self )
                   oldThink( self )
@@ -479,12 +481,12 @@ function GM:PlayerStartVoice( ply )
                   draw.RoundedBox(4, 1, 1, w-2, h-2, shade)
                end
 
-   if client:IsActiveTraitor() or client:IsActiveHunter() then
+   if client:IsActiveEvil() then
       if ply == client then
          if not client.traitor_gvoice then
             pnl.Color = Color(200, 20, 20, 255)
          end
-      elseif ply:IsActiveTraitor() or client:IsActiveHunter() then
+      elseif ply:IsActiveEvil() then
          if not ply.traitor_gvoice then
             pnl.Color = Color(200, 20, 20, 255)
          end
@@ -498,7 +500,7 @@ function GM:PlayerStartVoice( ply )
    PlayerVoicePanels[ply] = pnl
 
    -- run ear gesture
-   if not ((ply:IsActiveTraitor() or ply:IsActiveHunter()) and (not ply.traitor_gvoice)) then
+   if not (ply:IsActiveEvil() and (not ply.traitor_gvoice)) then
       ply:AnimPerformGesture(ACT_GMOD_IN_CHAT)
    end
 end
@@ -509,7 +511,7 @@ local function ReceiveVoiceState()
 
    -- prevent glitching due to chat starting/ending across round boundary
    if GAMEMODE.round_state != ROUND_ACTIVE then return end
-   if (not IsValid(LocalPlayer())) or (not LocalPlayer():IsActiveTraitor()) or (not LocalPlayer:IsActiveHunter()) then return end
+   if (not IsValid(LocalPlayer())) or (not LocalPlayer():IsActiveEvil()) then return end
 
    local ply = player.GetByID(idx)
    if IsValid(ply) then
@@ -621,7 +623,7 @@ local function GetDrainRate()
 end
 
 local function IsTraitorChatting(client)
-   return (client:IsActiveTraitor() or client:IsActiveHunter()) and (not client.traitor_gvoice)
+   return client:IsActiveEvil() and (not client.traitor_gvoice)
 end
 
 function VOICE.Tick()

@@ -74,9 +74,12 @@ local namecolor = {
 local rolecolor = {
    default = Color(0, 0, 0, 0),
    traitor = Color(255, 0, 0, 30),
-   hunter = Color(255, 255, 0, 30),
    detective = Color(0, 0, 255, 30)
 }
+
+function AddRoleRowColors(Role)
+  rolecolor[Role.String] = Role.RowColor
+end
 
 function GM:TTTScoreboardColorForPlayer(ply)
    if not IsValid(ply) then return namecolor.default end
@@ -92,12 +95,10 @@ end
 function GM:TTTScoreboardRowColorForPlayer(ply)
    if not IsValid(ply) then return rolecolor.default end
 
-   if ply:IsTraitor() then
-      return rolecolor.traitor
-   elseif ply:IsHunter() then
-     return rolecolor.hunter
-   elseif ply:IsDetective() then
-      return rolecolor.detective
+   for k,v in pairs(TTTRoles) do
+     if ply:GetRole() == v.ID and ply:GetRole() != ROLE_INNOCENT then
+       return rolecolor[v.String]
+     end
    end
 
    return rolecolor.default

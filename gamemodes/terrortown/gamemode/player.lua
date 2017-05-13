@@ -24,8 +24,7 @@ function GM:PlayerInitialSpawn( ply )
    local rstate = GetRoundState() or ROUND_WAIT
    -- We should update the traitor list, if we are not about to send it
    if rstate <= ROUND_PREP then
-	   SendTraitorList(GetHTFilter())
-      SendHunterList(GetHTFilter())
+      SendEvilList(GetEvilFilter())
       SendConfirmedTraitors(GetInnocentFilter())
       SendDetectiveList()
    end
@@ -440,8 +439,7 @@ function GM:PlayerDisconnected(ply)
 
    if GetRoundState() != ROUND_PREP then
       -- Keep traitor entindices in sync on traitor clients
-	   SendTraitorList(GetHTFilter(false), nil)
-      SendHunterList(GetHTFilter(false), nil)
+	    SendEvilList(GetEvilFilter(false), nil)
 
       -- Same for confirmed traitors on innocent clients
       SendConfirmedTraitors(GetInnocentFilter(false))
@@ -508,7 +506,7 @@ local function CheckCreditAward(victim, attacker)
    if not IsValid(victim) then return end
 
    -- DETECTIVE AWARD
-   if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActiveDetective() and (victim:IsTraitor() or victim:IsHunter()) then
+   if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActiveDetective() and (victim:IsEvil()) then
       local amt = GetConVarNumber("ttt_det_credits_traitordead") or 1
       for _, ply in pairs(player.GetAll()) do
          if ply:IsActiveDetective() then
@@ -521,13 +519,13 @@ local function CheckCreditAward(victim, attacker)
 
 
    -- TRAITOR AWARD
-   if (not victim:IsTraitor() and not victim:IsHunter()) and (not GAMEMODE.AwardedCredits or GetConVar("ttt_credits_award_repeat"):GetBool()) then
+   if (not victim:IsEvil()) and (not GAMEMODE.AwardedCredits or GetConVar("ttt_credits_award_repeat"):GetBool()) then
       local inno_alive = 0
       local inno_dead = 0
       local inno_total = 0
-      
+
       for _, ply in pairs(player.GetAll()) do
-         if not ply:GetTraitor() and not ply:GetHunter() then
+         if not ply:GetEvil() then
             if ply:IsTerror() then
                inno_alive = inno_alive + 1
             elseif ply:IsDeadTerror() then
@@ -645,9 +643,11 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
    -- Check for T killing D or vice versa
    if IsValid(attacker) and attacker:IsPlayer() then
       local reward = 0
-      if attacker:IsActiveTraitor() and ply:GetDetective() then
+      local atttbl = GetRoleTableByID(attacker:GetRole())
+      local plytbl = GetRoleTableByID(ply:GetRole())
+      if attacker:IsActiveEvil() and ply:GetGood() and plytbl.IsSpecial and atttbl.Creditsforkills  then
          reward = math.ceil(GetConVarNumber("ttt_credits_detectivekill"))
-      elseif attacker:IsActiveDetective() and (ply:GetTraitor() or ply:GetHunter()) then
+      elseif attacker:IsActiveGood() and ply:GetEvil() and plytbl.IsSpecial and atttbl.Creditsforkills then
          reward = math.ceil(GetConVarNumber("ttt_det_credits_traitorkill"))
       end
 
