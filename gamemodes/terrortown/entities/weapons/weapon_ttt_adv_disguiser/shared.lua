@@ -385,7 +385,7 @@ function SWEP:PrimaryAttack()
       if name != "" then
         self.Owner:SetNWString( "AdvDisguiseName", name )
         self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt.was_role == ROLE_DETECTIVE )
-		    self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt.was_role == ROLE_TRAITOR )
+		    self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt.was_role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(hitEnt.was_role)))
         self.Owner:SetNWString("AdvDisguiserModel",hitEnt:GetModel())
         local ply = player.GetBySteamID( hitEnt.sid )
         if IsValid(ply) then

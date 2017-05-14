@@ -188,7 +188,6 @@ function SWEP:DoSATMAnimation(bool)
 	timer.Simple(0.3, function()
 		if IsValid(self) then
 			self:SendWeaponAnim(ACT_VM_IDLE)
-			print(switchweapon && CLIENT && IsValid(self.Owner) && self.Owner == LocalPlayer() && self.Owner:Alive())
 			if switchweapon && CLIENT && IsValid(self.Owner) && self.Owner == LocalPlayer() && self.Owner:Alive() then
 				RunConsoleCommand("lastinv")
 			end

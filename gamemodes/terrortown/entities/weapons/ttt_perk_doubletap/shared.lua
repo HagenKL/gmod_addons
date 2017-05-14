@@ -76,7 +76,7 @@ function SWEP:DrinkTheBottle()
                     net.Start("DoubleTapBlurHUD")
                     net.Send(self.Owner)
                     timer.Create("TTTDoubleTap" .. self.Owner:EntIndex(),0.8, 1,function()
-                        if IsValid(self) and self.Owner:IsTerror() then
+                        if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("perks/burp.wav")
                           self.Owner:SetNWBool("DoubleTapActive",true)
                           self:Remove()
