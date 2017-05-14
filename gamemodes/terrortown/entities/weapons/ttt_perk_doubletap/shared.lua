@@ -223,6 +223,7 @@ function SWEP:Initialize()
       oldmat = vm:GetMaterial() or ""
       vm:SetMaterial(mat)
     end
+  end
   timer.Simple(0, function() self:DrinkTheBottle() end)
 end
 
