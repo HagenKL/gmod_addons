@@ -49,13 +49,22 @@ SWEP.DeploySpeed = 4
 SWEP.UseHands = true
 
 function SWEP:DrinkTheBottle()
-  net.Start("DrinkingtheJuggernog")
-  net.Send(self.Owner)
-  timer.Simple(0.5,function()
-      if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-        self:EmitSound("perks/open.wav")
-        self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
-        timer.Simple(0.8,function()
+  if !self.Owner:HasEquipmentItem(EQUIP_JUGGERNOG) then
+    if CLIENT then
+      hook.Run("TTTBoughtItem", EQUIP_JUGGERNOG, EQUIP_JUGGERNOG)
+    else
+      self.Owner:GiveEquipmentItem(EQUIP_JUGGERNOG)
+    end
+  end
+  if SERVER then
+    self.Owner:SelectWeapon(self:GetClass())
+    net.Start("DrinkingtheJuggernog")
+    net.Send(self.Owner)
+    timer.Simple(0.5,function()
+        if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
+          self:EmitSound("perks/open.wav")
+          self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
+          timer.Simple(0.8,function()
             if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
               self:EmitSound("perks/drink.wav")
               self.Owner:ViewPunch( Angle( -2.5, 0, 0 ) )
@@ -65,9 +74,8 @@ function SWEP:DrinkTheBottle()
                     net.Start("JuggerBlurHUD")
                     net.Send(self.Owner)
                     timer.Create("TTTJuggernog" .. self.Owner:EntIndex(),0.8, 1,function()
-                        if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
+                        if IsValid(self) and self.Owner:IsTerror() then
                           self:EmitSound("perks/burp.wav")
-                          self.Owner:SetHealth(self.Owner:GetMaxHealth())
                           self.Owner:SetNWBool("JuggernogActive",true)
                           self:Remove()
                         end
@@ -76,8 +84,9 @@ function SWEP:DrinkTheBottle()
                 end)
             end
           end )
-      end
+        end
     end)
+  end
 end
 
 hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
@@ -94,8 +103,8 @@ hook.Add("DoPlayerDeath","TTTPHDReset", function(pl)
   end)
 
 hook.Add("EntityTakeDamage", "TTTJuggernogReduction", function(target, dmginfo)
-  if target:IsPlayer() and target:GetNWBool("JuggernogActive",false) and target:HasEquipmentItem(EQUIP_JUGGERNOG) then
-    dmginfo:ScaleDamage(0.85)
+  if target:IsPlayer() and target:GetNWBool("JuggernogActive",false) and target:HasEquipmentItem(EQUIP_JUGGERNOG) and (dmginfo:IsBulletDamage() or dmginfo:IsExplosionDamage()) then
+    dmginfo:ScaleDamage(0.9)
   end
 end)
 
@@ -104,8 +113,8 @@ function SWEP:OnRemove()
     RunConsoleCommand("lastinv")
   end
 
-  if CLIENT then
-    if self.Owner == LocalPlayer() then
+if CLIENT then
+    if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
       local vm = LocalPlayer():GetViewModel()
       vm:SetMaterial(oldmat)
       oldmat = nil
@@ -147,13 +156,14 @@ end
 
 function SWEP:Initialize()
   if CLIENT then
-    if self.Owner == LocalPlayer() then
+    if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
       local vm = LocalPlayer():GetViewModel()
       local mat = "models/perk_bottle/c_perk_bottle_jugg" --perk_materials[self:GetPerk()]
       oldmat = vm:GetMaterial() or ""
       vm:SetMaterial(mat)
     end
   end
+  timer.Simple(0, function() self:DrinkTheBottle() end)
 end
 
 function SWEP:GetViewModelPosition( pos, ang )

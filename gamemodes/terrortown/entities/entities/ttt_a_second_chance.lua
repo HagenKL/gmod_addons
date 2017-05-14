@@ -95,12 +95,10 @@ if SERVER then
   hook.Add("TTTOrderedEquipment", "TTTASC", function(ply, id, is_item)
       if id == EQUIP_ASC then
         ply.shouldasc = true
-        if ply:GetTraitor() then
-          ply.SecondChanceChance = 25
+        if ply:GetTraitor() or (ply.IsEvil and ply:IsEvil()) then
+          ply.SecondChanceChance = math.random(15,25)
         elseif ply:GetRole() == ROLE_DETECTIVE then
-          ply.SecondChanceChance = 50
-        elseif ply.IsEvil and ply:IsEvil() then
-          ply.SecondChanceChance = 25
+          ply.SecondChanceChance = math.random(30,50)
         end
         net.Start("ASCBuyed")
         net.WriteInt(ply.SecondChanceChance, 8)
@@ -263,9 +261,9 @@ if SERVER then
   function CheckifAsc(ply, attacker, dmg)
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
       if (attacker:GetTraitor() or (attacker.IsEvil and attacker:IsEvil())) and ((ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) or (ply.GetGood and ply:GetGood())) then
-        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 15, 0, 99)
+        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(10,15), 0, 99)
       elseif (attacker:GetRole() == ROLE_DETECTIVE or (attacker.GetGood and attacker:GetGood())) and (ply:GetTraitor() or (ply.IsEvil and ply:IsEvil())) then
-        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 25, 0, 99)
+        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(20,30), 0, 99)
       end
       net.Start("ASCKill")
       net.WriteInt(attacker.SecondChanceChance,8)

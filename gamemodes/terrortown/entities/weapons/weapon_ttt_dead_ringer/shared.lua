@@ -113,7 +113,7 @@ end
 -----------------------------------
 function SWEP:Deploy()
   self:SendWeaponAnim( ACT_VM_DRAW )
-  return true
+  return self.BaseClass.Deploy(self)
 end
 -----------------------------------
 function DRThink()
@@ -287,7 +287,7 @@ local deathsounds = {
   Sound("hostage/hpain/hpain6.wav")
 };
 
--- Mostly code from TTT itself, to keep the bodys similar.
+-- Mostly code from TTT itself, to keep the bodies similar.
 if SERVER then
   function plymeta:DRfakedeath(dmginfo)
     net.Start("DRChangeMaterial")

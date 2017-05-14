@@ -28,16 +28,16 @@ if CLIENT then
 end
 
 //Damage\\
-SWEP.Primary.Delay = 0.6
-SWEP.Primary.Recoil = 1.2
+SWEP.Primary.Delay = 0.7
+SWEP.Primary.Recoil = 2
 SWEP.Primary.Automatic = true
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Damage = 32
 SWEP.Primary.Cone = 0.01
 SWEP.Primary.Ammo = "Alyxgun"
-SWEP.Primary.ClipSize = 12
-SWEP.Primary.ClipMax = 36
-SWEP.Primary.DefaultClip = 12
+SWEP.Primary.ClipSize = 6
+SWEP.Primary.ClipMax = 18
+SWEP.Primary.DefaultClip = 6
 SWEP.AmmoEnt = "item_ammo_revolver_ttt"
 
 //Verschiedenes\\

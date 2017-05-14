@@ -12,19 +12,21 @@ local BirdSounds = {
 
 
 function ENT:Initialize()
-	self.Entity:SetModel( self.Model )
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
-	
+	self:SetModel( self.Model )
+	self:PhysicsInit( SOLID_VPHYSICS )
+	self:SetSolid( SOLID_VPHYSICS )
+	self:SetMoveType( MOVETYPE_VPHYSICS )
+	self:SetModelScale(2,0.01)
 
 	if( SERVER ) then
-		self.Entity:GetPhysicsObject():SetMass( 1 )
-		self.Entity:GetPhysicsObject():ApplyForceCenter( ( self.Target:GetShootPos() - self.Entity:GetPos() ) * Vector( 3, 3, 3 ) )
+		self:SetHealth(5)
+		self:SetMaxHealth(5)
+		self:GetPhysicsObject():SetMass( 1 )
+		self:GetPhysicsObject():ApplyForceCenter( ( self.Target:GetShootPos() - self:GetPos() ) * Vector( 3, 3, 3 ) )
 	end
 	
 	if( CLIENT ) then
-      self.Entity:EmitSound( Sound( BirdSounds[ math.random( 1, #BirdSounds ) ], 100 ) )
+      self:EmitSound( Sound( BirdSounds[ math.random( 1, #BirdSounds ) ], 100 ) )
 	end
 end
 
@@ -32,10 +34,10 @@ end
 function ENT:Think()
 	if( SERVER ) then
 		if( IsValid( self.Target ) ) then
-			local Mul = 3
-			if( self.Entity:GetPos():Distance( self.Target:GetPos() ) < 200 ) then Mul = 20 end
-			self.Entity:GetPhysicsObject():ApplyForceCenter( ( self.Target:GetShootPos() - self.Entity:GetPos() ) * Vector( Mul, Mul, Mul ) )
-			self.Entity:SetAngles( ( ( self.Target:GetShootPos() - self.Entity:GetPos() ) * Vector( Mul, Mul, Mul ) ):Angle() )
+			local Mul = 2
+			if( self:GetPos():Distance( self.Target:GetPos() ) < 200 ) then Mul = 10 end
+			self:GetPhysicsObject():ApplyForceCenter( ( self.Target:GetShootPos() - self:GetPos() ) * Vector( Mul, Mul, Mul ) )
+			self:SetAngles( ( ( self.Target:GetShootPos() - self:GetPos() ) * Vector( Mul, Mul, Mul ) ):Angle() )
 			
 			if( !self.Target:Alive() ) then
 				self:Remove()

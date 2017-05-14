@@ -13,7 +13,7 @@ else
   SWEP.Icon="VGUI/ttt/icon_homebat"
   SWEP.EquipMenuData={
     type="Melee Weapon",
-    desc="Left click to hit a homerun!\nHas 4 uses.\nYou will run 50% faster with it in your Hands."
+    desc="Left click to hit a home run!\nHas 3 uses.\nYou will run 25% faster with it in your Hands."
   }
 
   sound.Add{
@@ -51,20 +51,20 @@ SWEP.WorldModel=Model("models/weapons/gamefreak/w_nessbat.mdl")
 
 SWEP.HoldType="melee"
 
-SWEP.Primary.Damage=30
+SWEP.Primary.Damage=35
 SWEP.Primary.Delay=.5
-SWEP.Primary.ClipSize=4
-SWEP.Primary.DefaultClip=4
+SWEP.Primary.ClipSize=3
+SWEP.Primary.DefaultClip=3
 SWEP.Primary.Automatic=true
 SWEP.Primary.Ammo="none"
 
 SWEP.AutoSpawnable=false
 SWEP.Kind=WEAPON_EQUIP2
 SWEP.CanBuy={ROLE_TRAITOR,ROLE_DETECTIVE}
-SWEP.LimitedStock=false
+SWEP.LimitedStock=true
 
-SWEP.DeployDelay=.7
-SWEP.Range=150
+SWEP.DeployDelay=0.9
+SWEP.Range=100
 SWEP.VelocityBoostAmount=500
 SWEP.DeploySpeed = 10
 
@@ -91,8 +91,8 @@ function SWEP:PrimaryAttack()
 
   local av,spos,tr=ply:GetAimVector(),ply:GetShootPos()
   local epos=spos+av*self.Range
-  local kmins = Vector(1,1,1) * -10
-  local kmaxs = Vector(1,1,1) * 10
+  local kmins = Vector(1,1,1) * 7
+  local kmaxs = Vector(1,1,1) * 7
 
   self.Owner:LagCompensation( true )
 
@@ -126,7 +126,7 @@ function SWEP:PrimaryAttack()
   if isply then
     self:TakePrimaryAmmo(1)
 
-    wep:SetNextPrimaryFire(CurTime()+wep.Primary.Delay*3)
+    wep:SetNextPrimaryFire(CurTime()+wep.Primary.Delay*4)
 
     if ent:GetMoveType()==MOVETYPE_LADDER then ent:SetMoveType(MOVETYPE_WALK) end
 
@@ -193,6 +193,6 @@ end
 hook.Add("TTTPlayerSpeed", "HomebatSpeed" , function(ply)
     local wep=ply:GetActiveWeapon()
     if wep and IsValid(wep) and wep:GetClass()=="weapon_ttt_homebat" and !ply.RandomatSuperSpeed then
-      return 1.5
+      return 1.25
     end
   end )

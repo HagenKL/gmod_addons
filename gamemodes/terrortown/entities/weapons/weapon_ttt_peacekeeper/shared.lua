@@ -122,11 +122,11 @@ function SWEP:Think()
 			v:SetNWBool("highnoonpositionscreen", IsInFOV(owner, pos))
 
 			if v:IsTerror() and #highnoontargets < 6 and owner:IsLineOfSightClear(v) and v != owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and ((isfunction(v.IsFakeDead) and !v:IsFakeDead()) or !isfunction(v.IsFakeDead)) then
-				if owner:IsTraitor() and !v:IsTraitor() and ((v.IsHunter and !v:IsHunter()) or !v.IsHunter) then
+				if owner:IsTraitor() and !v:IsTraitor() and ((v.IsEvil and !v:IsEvil()) or !v.IsEvil) then
 					table.insert(highnoontargets, v)
-				elseif owner.IsHunter and owner:IsHunter() and !v:IsHunter() and !v:IsTraitor() then
+				elseif owner.IsEvil and owner:IsEvil() and !v:IsEvil() then
 					table.insert(highnoontargets, v)
-				elseif owner:GetRole() == ROLE_DETECTIVE or owner:GetRole() == ROLE_INNOCENT then
+				elseif owner:GetRole() == ROLE_DETECTIVE or owner:GetRole() == ROLE_INNOCENT or (owner.GetGood and owner:GetGood()) then
 					table.insert(highnoontargets, v)
 				end
 			end
@@ -158,14 +158,14 @@ function SWEP:Deploy()
 	timer.Create("dontusehighnoontooearly" .. self.Owner:EntIndex(), 0.75, 1, function()
 			self.canusehighnoon = true
 		end)
+	return self.BaseClass.Deploy(self)
 end
 
 function SWEP:Holster()
 	if self.highnoonactive or self.highnoonshooting then
 		return false
-	else
-		return true
 	end
+	return self.BaseClass.Holster(self)
 end
 
 function SWEP:PreDrop()
@@ -184,6 +184,7 @@ function SWEP:OnDrop()
 	self.highnoonactive = false
 	self.highnoonshooting = false
 	self:SetHoldType("pistol")
+	return self.BaseClass.OnDrop(self)
 end
 
 function SWEP:PrimaryAttack()
@@ -254,13 +255,13 @@ function SWEP:PrimaryAttack()
 							for k, v in pairs(highnoontargets) do
 								if v:IsTerror() and self.Owner:IsLineOfSightClear(v) and v != self.Owner and !v:GetNWBool("highnoonhit") then
 									if v:GetNWFloat("HighnoonRadius") > 10 then
-										v:SetNWFloat("HighnoonRadius", v:GetNWFloat("HighnoonRadius") - 1.5)
+										v:SetNWFloat("HighnoonRadius", v:GetNWFloat("HighnoonRadius") - 1.25)
 									elseif v:GetNWFloat("HighnoonRadius") <= 10 then
 										v:SetNWFloat("HighnoonRadius", 7)
 										v:SetNWBool("IsHighnoonfinished", true)
 									end
 
-									v:SetNWFloat("HighnoonDamage", v:GetNWFloat("HighnoonDamage") + 1.5)
+									v:SetNWFloat("HighnoonDamage", v:GetNWFloat("HighnoonDamage") + 1.25)
 								end
 							end
 						end)

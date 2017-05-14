@@ -45,16 +45,6 @@ EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 2048
 
 if SERVER then
 
-  local plymeta = FindMetaTable("Player")
-
-  function plymeta:GivetheDoubleTap()
-    self:Give("ttt_perk_doubletap")
-    self:SelectWeapon("ttt_perk_doubletap")
-    if self:HasWeapon("ttt_perk_doubletap") then
-      self:GetWeapon("ttt_perk_doubletap"):DrinkTheBottle()
-    end
-  end
-
   hook.Add("TTTCanOrderEquipment", "TTTDoubleTap", function(ply, id, is_item)
     if tonumber(id) == EQUIP_DOUBLETAP and ply:IsDrinking() then
       return false
@@ -63,7 +53,7 @@ if SERVER then
  
   hook.Add("TTTOrderedEquipment", "TTTDoubleTap", function(ply, id, is_item)
       if id == EQUIP_DOUBLETAP then
-        ply:GivetheDoubleTap()
+        ply:Give("ttt_perk_doubletap")
       end
     end)
 

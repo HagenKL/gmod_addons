@@ -8,21 +8,6 @@ if (SERVER) then
 	SWEP.Weight				= 5
 	SWEP.AutoSwitchTo		= false
 	SWEP.AutoSwitchFrom		= false		
-	local PLAYER = FindMetaTable("Player")
-	util.AddNetworkString( "ColoredMessage" )	
-	function BroadcastMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Broadcast()
-	end
-
-	function PLAYER:PlayerMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Send(self)
-	end	
 end
 
 if ( CLIENT ) then
@@ -40,14 +25,8 @@ if ( CLIENT ) then
    SWEP.Icon = "VGUI/ttt/icon_doorbust"
    SWEP.EquipMenuData = {
    type = "Weapon",
-   desc = "Placeable on doors. \nRight-Click to Explode the Door \nexplode and kill everyone on its way."
+   desc = "Placeable on doors. \nThe Door will explode when opened \nand kill everyone on its way."
 };
-
-	net.Receive("ColoredMessage",function(len) 
-		local msg = net.ReadTable()
-		chat.AddText(unpack(msg))
-		chat.PlaySound()
-	end)
 end
 SWEP.ValidDoors = {"func_door","func_door_rotating","prop_door_rotating"}
 
@@ -78,8 +57,8 @@ SWEP.Primary.Damage			= -1
 SWEP.Primary.NumShots		= 1
 SWEP.Primary.Cone			= 0
 SWEP.Primary.Delay			= 1
-SWEP.Primary.ClipSize		= 2
-SWEP.Primary.DefaultClip	= 2
+SWEP.Primary.ClipSize		= 1
+SWEP.Primary.DefaultClip	= 1
 SWEP.Primary.Automatic		= false
 SWEP.Primary.Ammo			= "slam"
 SWEP.CanBuy = {}
@@ -104,6 +83,12 @@ function SWEP:Initialize()
 	self:SetMaterial("c4_green/w/c4_green")
 end
 
+function SWEP:OnRemove()
+  if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+    RunConsoleCommand("lastinv")
+  end
+end
+
 /*function SWEP:Deploy()
 	if SERVER then self:CallOnClient("Deploy","") end
 	self.Owner:GetViewModel():SetSubMaterial(1,"c4_green/v/c4_green")
@@ -121,19 +106,16 @@ function SWEP:Plant()
 	local tr = self.Owner:GetEyeTrace()
 	local angle = tr.HitNormal:Angle()
     local bomb = ents.Create("entity_doorbuster")
+    tr.Entity.DoorBusterEnt = bomb
     bomb:SetPos(tr.HitPos)
 	bomb:SetAngles(angle+Angle(-90,0,180))
     bomb:Spawn()
 	bomb:EmitSound("weapons/c4/c4_plant.wav")
-	bomb:EmitSound("weapons/gamefreak/beep.wav")
-	bomb.Owner = self.Owner
+	--bomb:EmitSound("weapons/gamefreak/beep.wav")
+	bomb:SetOwner(self.Owner)
 	bomb:SetParent(tr.Entity)
-	bomb:SetCollisionGroup(1)
-	self.DoorBombs = self.DoorBombs or {}
-	table.insert(self.DoorBombs,bomb)
-	self:TakePrimaryAmmo(1)
-	local ply = self.Owner
-	
+	bomb:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+	self:Remove()
 end
 
 
@@ -153,27 +135,20 @@ function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
 	if (self.Weapon:Clip1() <= 0) then return end
 	self.Weapon:Plant()
-	if SERVER then
-		self.Owner:PlayerMsg("Door Buster: ", COLOR_WHITE, "Door Buster placed.")
-	end
 end
 
-
-
-function SWEP:SecondaryAttack()
-	self:SetNextSecondaryFire(CurTime()+self.Secondary.Delay)
-	if not self.DoorBombs then self.DoorBombs = {} end
-	if table.Count(self.DoorBombs) > 0 then
-		for k, v in pairs(self.DoorBombs) do
-			if v:IsValid() then
-				v:BlowDoor()
+hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
+	if (ent:GetClass() == "prop_door_rotating" || ent:GetClass() == "func_door_rotating" || ent:GetClass() == "func_door") then
+		if ent.DoorBusterEnt and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) and ply != ent.DoorBusterEnt:GetOwner() then
+			ent.DoorBusterEnt:BlowDoor()
+			return false
+		elseif !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) then
+			for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
+				if v:GetClass() == "entity_doorbuster" and ply != v:GetOwner() then
+					v:BlowDoor()
+					return false
+				end
 			end
 		end
-		if SERVER then
-			self.Owner:PlayerMsg("Door Buster: ", COLOR_WHITE, "Door(s) exploded.")
-		end
-		if (self.Weapon:Clip1() <= 0) then
-			self:Remove()
-		end
 	end
-end
+end)

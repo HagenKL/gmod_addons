@@ -28,8 +28,6 @@ SWEP.AutoSpawnable = false
 
 SWEP.AmmoEnt = "nil"
 
-SWEP.InLoadoutFor = { nil }
-
 function SWEP:OnDrop()
   self:Remove()
 end
@@ -88,7 +86,7 @@ if SERVER then
   		net.Send(victim)
   	end
   end
-  
+
   local function ConfirmBody(ply)
   	local corpse
   	for _, ent in pairs( ents.FindByClass( "prop_ragdoll" )) do
@@ -102,7 +100,7 @@ if SERVER then
   	return corpse
   end
 
-  
+
   local function MFHoly(victim, killer)
 	killer:EmitSound("gamefreak/holy.wav")
     timer.Create("MFHoly" .. killer:EntIndex(), 1, 5, function()
@@ -239,9 +237,9 @@ if SERVER then
   hook.Add("DoPlayerDeath" , "MirrorfateKillhim" , Mirrorfate )
   hook.Add("PlayerSpawn", "ResetMirrorFate", ResetMirrorFate)
   hook.Add("TTTPrepareRound","ResetMirrorFate", function()
-      for key,ply in pairs(player.GetAll()) do
-        ResetMirrorFate(ply)
-      end
+    for key,ply in pairs(player.GetAll()) do
+      ResetMirrorFate(ply)
+    end
   end)
 
   local function MFBulletHook( ent, bullet)
@@ -286,18 +284,18 @@ elseif CLIENT then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will burn in Hell!")
     elseif mode == 3 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode!")
-	elseif mode == 4 then
-	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will get one hit by any damage!")
-	elseif mode == 5 then
-	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will damage himself every time he shoots!")
-	elseif mode == 6 then
+  	elseif mode == 4 then
+  	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will get one hit by any damage!")
+  	elseif mode == 5 then
+  	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will damage himself every time he shoots!")
+  	elseif mode == 6 then
 	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die a holy death!")
     elseif mode == 11 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"You have experienced the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim chose." )
     elseif mode == 10 then
-      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer has experienced your choosed " ,Color(255,0,0), "fate." )
-	elseif mode == 12 then
-	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"It will now take " .. net.ReadInt(8) .. " second until your killer will experience your choosed " ,Color(255,0,0), "fate." )
+      chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer has experienced your chosen " ,Color(255,0,0), "fate." )
+  	elseif mode == 12 then
+  	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"It will now take " .. net.ReadInt(8) .. " second until your killer will experience your chosen " ,Color(255,0,0), "fate." )
     end
     chat.PlaySound()
   end

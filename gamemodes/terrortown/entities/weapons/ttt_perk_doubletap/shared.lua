@@ -51,13 +51,22 @@ SWEP.DeploySpeed = 4
 SWEP.UseHands = true
 
 function SWEP:DrinkTheBottle()
-  net.Start("DrinkingtheDoubleTap")
-  net.Send(self.Owner)
-  timer.Simple(0.5,function()
-      if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-        self:EmitSound("perks/open.wav")
-        self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
-        timer.Simple(0.8,function()
+  if !self.Owner:HasEquipmentItem(EQUIP_DOUBLETAP) then
+    if CLIENT then
+      hook.Run("TTTBoughtItem", EQUIP_DOUBLETAP, EQUIP_DOUBLETAP)
+    else
+      self.Owner:GiveEquipmentItem(EQUIP_DOUBLETAP)
+    end
+  end
+  if SERVER then
+    self.Owner:SelectWeapon(self:GetClass())
+    net.Start("DrinkingtheDoubleTap")
+    net.Send(self.Owner)
+    timer.Simple(0.5,function()
+        if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
+          self:EmitSound("perks/open.wav")
+          self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
+          timer.Simple(0.8,function()
             if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
               self:EmitSound("perks/drink.wav")
               self.Owner:ViewPunch( Angle( -2.5, 0, 0 ) )
@@ -77,8 +86,9 @@ function SWEP:DrinkTheBottle()
                 end)
             end
           end )
-      end
+        end
     end)
+  end
 end
 
 function ApplyDoubleTap(wep)
@@ -172,7 +182,7 @@ function SWEP:OnRemove()
   end
 
   if CLIENT then
-    if self.Owner == LocalPlayer() then
+    if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
       local vm = LocalPlayer():GetViewModel()
       vm:SetMaterial(oldmat)
       oldmat = nil
@@ -207,13 +217,13 @@ end
 
 function SWEP:Initialize()
   if CLIENT then
-    if self.Owner == LocalPlayer() then
+    if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
       local vm = LocalPlayer():GetViewModel()
       local mat = "models/perk_bottle/c_perk_bottle_doubletap" --perk_materials[self:GetPerk()]
       oldmat = vm:GetMaterial() or ""
       vm:SetMaterial(mat)
     end
-  end
+  timer.Simple(0, function() self:DrinkTheBottle() end)
 end
 
 function SWEP:GetViewModelPosition( pos, ang )

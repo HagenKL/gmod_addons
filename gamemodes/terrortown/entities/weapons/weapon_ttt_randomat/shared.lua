@@ -90,34 +90,9 @@ end
 
 function SWEP:Initialize()
   util.PrecacheSound("weapons/c4_initiate.wav")
-  self.RandomEvents = {
-      RandomatRoles,
-      RandomatFalldamage,
-      RandomatJump,
-      RandomatHuge,
-      RandomatSuddenDeath,
-      RandomatFreeforAll,
-      RandomatMoonGravity,
-      RandomatDeathmatch,
-      RandomatRandomHealth,
-      RandomatRotate,
-      RandomatSuperBlitz,
-      --RandomatBurn,
-      RandomatFlash,
-      RandomatModels,
-      RandomatTitans,
-      RandomatDisguise,
-      RandomatSpeedLiveJump,
-      RandomatExplode,
-      RandomatExplosion,
-      RandomatTime,
-      RandomatRandomWeapons,
-      --RandomatBullet,
-      RandomatSideWays,
-      RandomatScreenFlip,
-      RandomatInvert
-  }
 end
+
+if SERVER then
 
 local NofalldamageRandomat = false
 --local NodamageJackpot2 = false
@@ -126,19 +101,7 @@ local NoexplosiondamageRandomat = false
 --local OnlyHeadshots = false
 local NoBulletdamageRandomat = false
 
-if SERVER then
-
-
-  function SWEP:PrimaryAttack()
-    table.Shuffle(self.RandomEvents)
-    local Event = self.RandomEvents[math.random(1,#self.RandomEvents)]
-    Event()
-    DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat" )
-    self:SetNextPrimaryFire(CurTime() + 10)
-    self:Remove()
-  end
-
-  /*function RandomatJackpot()
+  /*local function RandomatJackpot()
   NodamageJackpot = true
   NodamageJackpot2 = true
   RandomatBroadcast(Color(255,255,255), "Jackpot!(You should be happy now :D ) No more Explosion and Falldamage, 200 HP, higher Jumping more Speed and Low Gravity! And Tiny People and Knifes! What could be better?")
@@ -184,14 +147,14 @@ if SERVER then
   end
   end*/
 
-  /*function RandomatTinyRats()
+  /*local function RandomatTinyRats()
   RandomatBroadcast(Color(255,255,255), "You wanne be tiny like rats? Now you are!")
   for k,v in pairs(player.GetAll()) do
     v:SetModelScale( 0.5, 1 )
   end
   end*/
 
-  /* function RandomatFreeWeapons()
+  /* local function RandomatFreeWeapons()
   RandomatBroadcast(Color(255,255,255), "Free Weapons! You are not able to drop these weapons!")
   for key,ply in pairs(player.GetAll()) do
     for k,v in pairs(ply:GetWeapons()) do
@@ -220,7 +183,7 @@ if SERVER then
     end )
   end */
 
-  /*function RandomatSecretWeapons()
+  /*local function RandomatSecretWeapons()
   RandomatBroadcast(Color(255,255,255), "Show me your Secret Weapons my FRIEND 8) !")
   for key,ply in pairs(player.GetAll()) do
     for k,v in pairs(ply:GetWeapons()) do
@@ -236,7 +199,7 @@ if SERVER then
   end
   end*/
 
-  /*function RandomatAmmo()
+  /*local function RandomatAmmo()
   RandomatBroadcast(Color(255,255,255), "WITH WHAT YOU WANT TO SHOOT NOW?")
   for key,ply in pairs(player.GetAll()) do
     for i, weapon in pairs(ply:GetWeapons()) do
@@ -254,7 +217,7 @@ if SERVER then
   end
   end*/
 
-  /*function RandomatWeapons()
+  /*local function RandomatWeapons()
   RandomatBroadcast(Color(255,255,255), "Oh NO! Where are my Weapons D:!")
   for key,ply in pairs(player.GetAll()) do
     for k,v in pairs(ply:GetWeapons()) do
@@ -266,7 +229,7 @@ if SERVER then
   end
   end*/
 
-  /* function RandomatCamping()
+  /* local function RandomatCamping()
   RandomatBroadcast(Color(255,255,255), "ONLY CAMPING 8) You are not able to drop these weapons!")
   for key,ply in pairs(player.GetAll()) do
     for k,v in pairs(ply:GetWeapons()) do
@@ -295,7 +258,7 @@ if SERVER then
     end )
   end */
 
-  /*function RandomatRelaxed()
+  /*local function RandomatRelaxed()
   RandomatBroadcast(Color(255,255,255), "Take it relaxed!")
   game.SetTimeScale(0.75)
   hook.Add("TTTPrepareRound", "RandomatSetTimescaleRelaxed", function()
@@ -303,7 +266,7 @@ if SERVER then
     end )
   end*/
 
-  function RandomatSpeedLiveJump()
+  local function RandomatSpeedLiveJump()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "50% More Speed, Jump Power and Life for everyone!")
     for k,v in pairs(player.GetAll()) do
 		local nexthealth = v:Health() * 1.5
@@ -323,7 +286,7 @@ if SERVER then
       end )
   end
 
-  function RandomatDeathmatch()
+  local function RandomatDeathmatch()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Random Team Deathmatch!")
     local Players = {}
     for k,v in RandomPairs(player.GetAll()) do
@@ -351,7 +314,7 @@ if SERVER then
     SendFullStateUpdate()
   end
 
-  function RandomatJump()
+  local function RandomatJump()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Jumping is fun, so a few people can now jump higher! Sadly its the other way around for the rest.")
     for k,v in pairs(player.GetAll()) do
       v.randomatjump = math.random(1,2)
@@ -363,7 +326,7 @@ if SERVER then
     end
   end
 
-  function RandomatHuge()
+  local function RandomatHuge()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Let it SPRAY! You are not able to drop this weapon and you get Infinite Ammo!")
     for key,ply in pairs(player.GetAll()) do
       for k,v in pairs(ply:GetWeapons()) do
@@ -390,7 +353,7 @@ if SERVER then
       end )
   end
 
-  function RandomatSuddenDeath()
+  local function RandomatSuddenDeath()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Sudden DEATH!! AND NOBODY CAN HEAL!(Except Detectives)")
     for key,ply in pairs(player.GetAll()) do
       if !ply:GetDetective() then
@@ -410,7 +373,7 @@ if SERVER then
       end)
   end
 
-  function RandomatFreeforAll()
+  local function RandomatFreeforAll()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Free for all!")
     for key,ply in pairs(player.GetAll()) do
       if ply:GetRole() == ROLE_TRAITOR then
@@ -436,7 +399,7 @@ if SERVER then
     end
   end
 
-  function RandomatMoonGravity()
+  local function RandomatMoonGravity()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "What? Moon Gravity on Earth?")
     for key,ply in pairs(player.GetAll()) do
       ply:SetGravity(0.1)
@@ -450,7 +413,7 @@ if SERVER then
       end )
   end
 
-  function RandomatRotate()
+  local function RandomatRotate()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Rotate in another way!")
     timer.Create( "RandomatRotate" , 5, 1000 , function ()
         for key,ply in pairs(player.GetAll()) do
@@ -462,7 +425,7 @@ if SERVER then
     hook.Add("TTTPrepareRound", "RandomatHookRotate", function() timer.Remove("RandomatRotate") end)
   end
 
-  /*function RandomatBurn()
+  /*local function RandomatBurn()
   RandomatBroadcast("Randomat: ", Color(255,255,255), "Burn for the detectives my little friends, BURN FOR OUR LIFE!!")
   for key,ply in pairs(player.GetAll()) do
     if ply:GetRole() == ROLE_INNOCENT then
@@ -477,7 +440,7 @@ if SERVER then
   end
   end*/
 
-  function RandomatFlash()
+  local function RandomatFlash()
     game.SetTimeScale(1.5)
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Everything is as fast as Flash now!(50% faster)")
     hook.Add("TTTPrepareRound", "RandomatSetTimescale", function() game.SetTimeScale(1) end )
@@ -499,9 +462,7 @@ if SERVER then
         local PlayerNum = #Players
         local ModelNum = PlayerNum / 3
 
-        for i = 1, PlayerNum do
-          local Num = math.random(1, #Players)
-          local ply = Players[Num]
+        for k, ply in RandomPairs(Players) do
           if ModelNum > 0 then
             ModelNum = ModelNum - 1
             ply.Modelchanged = true
@@ -515,17 +476,19 @@ if SERVER then
         end
       end )
     hook.Add("PlayerSpawn", "RandomatModelFix", function(ply)
-        if ply.Modelchanged then
-          if ply:GetRole() == ROLE_INNOCENT then
-            ply:SetModel("models/player/mossman.mdl")
-          elseif ply:GetTraitor() then
-            ply:SetModel("models/player/skeleton.mdl")
+        timer.Simple(0.1, function()
+          if IsValid(ply) and ply.Modelchanged then
+            if ply:GetRole() == ROLE_INNOCENT then
+              ply:SetModel("models/player/mossman.mdl")
+            elseif ply:GetTraitor() then
+              ply:SetModel("models/player/skeleton.mdl")
+            end
           end
-        end
-      end)
+        end)
+    end)
   end
 
-  function RandomatTitans()
+  local function RandomatTitans()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "The fight of the Titans!")
     for key,ply in pairs(player.GetAll()) do
       ply:SetHealth(ply:Health() + 200)
@@ -533,7 +496,7 @@ if SERVER then
     end
   end
 
-  function RandomatDisguise()
+  local function RandomatDisguise()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "WHO IS WHO? I cant seem to remember...")
     for k,v in pairs(player.GetAll()) do
       v:SetNWBool("RandomatDisguise", true)
@@ -541,7 +504,7 @@ if SERVER then
     net.Start("RandomatOverrideTargetID")
     net.Broadcast()
   end
-  function RandomatExplode()
+  local function RandomatExplode()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "A Random Person will explode in 30 seconds! Watch out! (EXCEPT DETECTIVES)")
     local effectdata = EffectData()
     timer.Create("RandomatExplode", 30, 1, function()
@@ -566,7 +529,7 @@ if SERVER then
     hook.Add("TTTEndRound", "TTTRandomatExplode", function() timer.Remove("RandomatExplode") end)
   end
 
-  function RandomatTime()
+  local function RandomatTime()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Healing for you!")
     timer.Create("RandomatLive",1,0, function()
         for k,v in pairs(player.GetAll()) do
@@ -580,7 +543,7 @@ if SERVER then
     hook.Add("TTTEndRound", "RandomatHookLive", function() timer.Remove("RandomatLive") end)
   end
 
-  function RandomatRandomWeapons()
+  local function RandomatRandomWeapons()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Random Weapons for everyone!")
     for key,v in pairs(player.GetAll()) do
       for k, weapon in pairs(v:GetWeapons()) do
@@ -599,7 +562,7 @@ if SERVER then
       end )
   end
 
-  function RandomatBullet()
+  local function RandomatBullet()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Only Weapons allowed!")
     NoBulletdamageRandomat = true
     hook.Add("EntityTakeDamage", "TTTRandomatBullet", function(ent, dmginfo)
@@ -609,7 +572,7 @@ if SERVER then
       end)
   end
 
-  function RandomatSuperBlitz()
+  local function RandomatSuperBlitz()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "TTT-SuperVote, 400% More Speed!")
     for k,v in pairs(player.GetAll()) do
       v.RandomatSuperSpeed = true
@@ -622,7 +585,7 @@ if SERVER then
       end )
   end
 
-  function RandomatFalldamage()
+  local function RandomatFalldamage()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "No more Falldamage!")
     NofalldamageRandomat = true
     hook.Add("EntityTakeDamage", "TTTRandomatFall", function(ent, dmginfo)
@@ -632,7 +595,7 @@ if SERVER then
       end)
   end
 
-  function RandomatExplosion()
+  local function RandomatExplosion()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "No more Explosion Damage!")
     NoexplosiondamageRandomat = true
     hook.Add("EntityTakeDamage", "TTTRandomatExplode2", function(ent, dmginfo)
@@ -642,18 +605,18 @@ if SERVER then
       end)
   end
 
-  function RandomatRandomHealth()
+  local function RandomatRandomHealth()
     RandomatBroadcast("Randomat: ", Color(255,255,255),"Random Health for everyone!")
     for k,v in pairs(player.GetAll()) do
       local randomhealth = math.random(1,200)
-      v:SetHealth( randomhealth )
+        v:SetHealth( randomhealth )
       if randomhealth > v:GetMaxHealth() then
-		v:SetMaxHealth(randomhealth)
+		    v:SetMaxHealth(randomhealth)
       end
     end
   end
 
-  function RandomatRoles()
+  local function RandomatRoles()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "ROLE SHUFFLE!")
     SelectRoles()
     SendFullStateUpdate()
@@ -669,7 +632,7 @@ if SERVER then
     end
   end
 
-  function RandomatScreenFlip()
+  local function RandomatScreenFlip()
     RandomatBroadcast("Randomat: ", COLOR_WHITE, "Flipping your Screen UPSIDE DOWN!")
     for k,ply in pairs(player.GetAll()) do
       local Ang = ply:EyeAngles()
@@ -686,15 +649,22 @@ if SERVER then
       end
     end)
     hook.Add("TTTEndRound", "UndoRandomatFlipScreen", function()
-        for k,ply in pairs(player.GetAll()) do
-          local Ang = ply:EyeAngles()
-          ply:SetEyeAngles( Angle( Ang.x, Ang.y, 0 ) )
-        end
-        timer.Remove("RandomatFlipScreen")
-      end)
+      for k,ply in pairs(player.GetAll()) do
+        local Ang = ply:EyeAngles()
+        ply:SetEyeAngles( Angle( Ang.x, Ang.y, 0 ) )
+      end
+      timer.Remove("RandomatFlipScreen")
+    end)
+    hook.Add("TTTPrepareRound", "UndoRandomatFlipScreen", function()
+      for k,ply in pairs(player.GetAll()) do
+        local Ang = ply:EyeAngles()
+        ply:SetEyeAngles( Angle( Ang.x, Ang.y, 0 ) )
+      end
+      timer.Remove("RandomatFlipScreen")
+    end)
   end
 
-  function RandomatInvert()
+  local function RandomatInvert()
     RandomatBroadcast("Randomat: ", COLOR_WHITE, "Maybe you should look at your controls.")
 
     hook.Add("SetupMove", "RandomatInvertEverything", function(ply, mv, cmd)
@@ -709,7 +679,7 @@ if SERVER then
     net.Broadcast()
   end
 
-  function RandomatSideWays()
+  local function RandomatSideWays()
     RandomatBroadcast("Randomat: ", COLOR_WHITE, "Only Sideways allowed!.")
     hook.Add("SetupMove", "RandomatSideWays", function(ply, mv, cmd)
         if ply:IsTerror() then
@@ -719,9 +689,75 @@ if SERVER then
     net.Start("RandomatHooks2")
     net.Broadcast()
   end
+
+    -- global for a reason
+    RandomatRandomEvents = {
+        RandomatRoles,
+        RandomatFalldamage,
+        RandomatJump,
+        RandomatHuge,
+        RandomatSuddenDeath,
+        RandomatFreeforAll,
+        RandomatMoonGravity,
+        RandomatDeathmatch,
+        RandomatRandomHealth,
+        RandomatRotate,
+        RandomatSuperBlitz,
+        RandomatFlash,
+        RandomatModels,
+        RandomatTitans,
+        RandomatDisguise,
+        RandomatSpeedLiveJump,
+        RandomatExplode,
+        RandomatExplosion,
+        RandomatTime,
+        RandomatRandomWeapons,
+        RandomatSideWays,
+        RandomatScreenFlip,
+        RandomatInvert
+    }
+
+  function SWEP:PrimaryAttack()
+    table.Shuffle(RandomatRandomEvents)
+    local position = math.random(1,#RandomatRandomEvents)
+    local Event = RandomatRandomEvents[position]
+    Event()
+    table.remove(RandomatRandomEvents, position)
+    if #RandomatRandomEvents == 0 then
+        RandomatRandomEvents = {
+          RandomatRoles,
+          RandomatFalldamage,
+          RandomatJump,
+          RandomatHuge,
+          RandomatSuddenDeath,
+          RandomatFreeforAll,
+          RandomatMoonGravity,
+          RandomatDeathmatch,
+          RandomatRandomHealth,
+          RandomatRotate,
+          RandomatSuperBlitz,
+          RandomatFlash,
+          RandomatModels,
+          RandomatTitans,
+          RandomatDisguise,
+          RandomatSpeedLiveJump,
+          RandomatExplode,
+          RandomatExplosion,
+          RandomatTime,
+          RandomatRandomWeapons,
+          RandomatSideWays,
+          RandomatScreenFlip,
+          RandomatInvert
+      }
+    end
+    DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat" )
+    self:SetNextPrimaryFire(CurTime() + 10)
+    self:Remove()
+  end
+
 end
 
-function ResettinRandomat()
+local function ResettinRandomat()
   NoexplosiondamageRandomat = false
   NofalldamageRandomat = false
   OnlyRandomatHeadshots = false

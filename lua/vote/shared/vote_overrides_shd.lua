@@ -13,37 +13,35 @@ if SERVER then
 	end
 
 	function TTTVote.AdjustSpeed(ply)
-		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) then
-			if TTTVote.AnyTotems then
-				local Totem = ply:GetNWEntity("Totem", NULL)
-				if IsValid(Totem) then
-					local distance = Totem:GetPos():Distance(ply:GetPos())
-					if distance >= 2500 then
-						return math.Round(math.Remap(distance,2500,5000,1,0.75),2)
-					elseif distance <= 1000 then
-						return 1.25
-					elseif distance > 1000 and distance < 2500 then
-						return 1
-					end
-				else
-					return 0.75
+		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
+			local Totem = ply:GetNWEntity("Totem", NULL)
+			if IsValid(Totem) then
+				local distance = Totem:GetPos():Distance(ply:GetPos())
+				if distance >= 2500 then
+					return math.Round(math.Remap(distance,2500,5000,1,0.75),2)
+				elseif distance <= 1000 then
+					return 1.25
+				elseif distance > 1000 and distance < 2500 then
+					return 1
 				end
 			else
-				return 1
+				return 0.75
 			end
 		end
+		return 1
 	end
 
 	function TTTVote.Overrides() --Overriding functions that dont have hooks to modify
 
 		local plymeta = FindMetaTable("Player")
 		function plymeta:SetSpeed(slowed)
-			local mul = TTTVote.AdjustSpeed(self) or 1
-			if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-				mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
-			elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
-				mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
-			end
+			local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or TTTVote.AdjustSpeed(self)
+
+			-- if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+			-- 	mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
+			-- elseif mul < 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
+			-- 	mul = math.min(mul, hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed),100)
+			-- end
 
 			if slowed then
 				self:SetWalkSpeed(120 * mul)

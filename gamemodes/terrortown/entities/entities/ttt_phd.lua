@@ -46,25 +46,15 @@ EQUIP_PHD = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 128
 
 if SERVER then
 
-  local plymeta = FindMetaTable("Player")
-
   hook.Add("TTTCanOrderEquipment", "TTTPHD", function(ply, id, is_item)
     if tonumber(id) == EQUIP_PHD and ply:IsDrinking() then
       return false
     end
   end)
 
-  function plymeta:GivethePHD()
-    self:Give("ttt_perk_phd")
-    self:SelectWeapon("ttt_perk_phd")
-    if self:HasWeapon("ttt_perk_phd") then
-      self:GetWeapon("ttt_perk_phd"):DrinkTheBottle()
-    end
-  end
-
   hook.Add("TTTOrderedEquipment", "TTTPHD", function(ply, id, is_item)
       if id == EQUIP_PHD then
-        ply:GivethePHD()
+        ply:Give("ttt_perk_phd")
       end
     end)
     hook.Add("TTTPrepareRound", "TTTPHDResettin", function()
