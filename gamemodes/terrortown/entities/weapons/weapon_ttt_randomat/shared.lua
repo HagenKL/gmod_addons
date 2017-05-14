@@ -448,7 +448,7 @@ local NoBulletdamageRandomat = false
     timer.Create("RandomatTimescale", 1, 0, function() if GetRoundState() == ROUND_ACTIVE then game.SetTimeScale(1.5) else timer.Remove("RandomatTimescale") end end )
   end
 
-  function RandomatModels()
+  local function RandomatModels()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Watch the models of choosen ones whisly, they say the truth!(In 20 Seconds)")
     timer.Create("TTTRandomatModels", 10, 1, function()
         RandomatBroadcast("Randomat: ", Color(255,255,255), "The Models of the choosen ones have been revealed!")
