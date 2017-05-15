@@ -150,6 +150,7 @@ hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
 		else
 			for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
 				local own = v.GetOwner and v:GetOwner()
+				if v:GetClass() == "entity_doorbuster" and own and (own:IsTraitor() or (own.IsEvil and own:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) or own:GetDetective() or own:GetRole() == ROLE_INNOCENT or (own.IsGood and own:IsGood())) and ply != own then
 					v:BlowDoor()
 					return false
 				end
