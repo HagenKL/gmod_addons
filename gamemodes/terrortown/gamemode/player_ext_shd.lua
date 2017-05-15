@@ -17,10 +17,8 @@ function plymeta:GetDetective() return self:GetRole() == ROLE_DETECTIVE end
 -- Team access
 function plymeta:GetEvil()
   for k,v in pairs(TTTRoles) do
-    if self:GetRole() == k and not v.IsGood then
+    if self:GetRole() == v.ID and not v.IsGood then
       return true
-    else
-      continue
     end
   end
   return false
@@ -28,10 +26,8 @@ end
 
 function plymeta:GetGood()
   for k,v in pairs(TTTRoles) do
-    if self:GetRole() == k and v.IsGood then
+    if self:GetRole() == v.ID and v.IsGood then
       return true
-    else
-      continue
     end
   end
   return false

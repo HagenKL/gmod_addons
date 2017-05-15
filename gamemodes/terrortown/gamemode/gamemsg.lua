@@ -49,7 +49,11 @@ local function RoleChatMsg(sender, role, msg)
       net.WriteUInt(role, 4)
       net.WriteEntity(sender)
       net.WriteString(msg)
-   net.Send(GetRoleFilter(role))
+   if IsRoleEvil(role) then
+      net.Send(GetEvilFilter())
+   elseif IsRoleGood(role) and sender:IsSpecial() then
+      net.Send(GetGoodFilter())
+   end
 end
 
 
@@ -74,6 +78,10 @@ end
 
 function GetEvilFilter(alive_only)
    return GetPlayerFilter(function(p) return p:IsEvil() and (not alive_only or p:IsTerror()) end)
+end
+
+function GetGoodFilter(alive_only)
+   return GetPlayerFilter(function(p) return p:IsGood() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetTraitorFilter(alive_only)
@@ -113,7 +121,7 @@ function GM:PlayerCanSeePlayersChat(text, team_only, listener, speaker)
 	(not GetConVar("ttt_limit_spectator_chat"):GetBool()) or   -- Spectators can chat freely
 	(not DetectiveMode()) or   -- Mumbling
 	(not sTeam and ((team_only and not speaker:IsSpecial()) or (not team_only))) or   -- If someone alive talks (and not a special role in teamchat's case)
-	(not sTeam and team_only and speaker:GetRole() == listener:GetRole()) or
+	(not sTeam and team_only and (speaker:GetRole() == listener:GetRole() or speaker:IsEvil() == listener:IsEvil() or (speaker:IsGood() == listener:IsGood() and speaker:IsSpecial() == listener:IsSpecial()))) and 
 	(sTeam and lTeam) then   -- If the speaker and listener are spectators
 	   return true
 	end

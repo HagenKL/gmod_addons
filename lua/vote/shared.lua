@@ -25,7 +25,8 @@ local function AddRoles()
 		winning_team = WIN_TRAITOR, -- the team it wins with, available are "traitors" and "innocent"
 		drawtargetidcircle = true, -- should draw circle
 		targetidcirclecolor = Color(255, 230, 0, 200), -- circle color
-		targetidcolor = Color(255, 230, 0) -- target id color
+		targetidcolor = Color(255, 230, 0), -- target id color
+		AllowTeamChat = true -- team chat
 	}
 	AddNewRole("HUNTER", Hunter)
 	print("TTT Vote Roles have been initialized!")

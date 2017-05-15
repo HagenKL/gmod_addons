@@ -98,7 +98,8 @@ TTTRoles = TTTRoles or {
     IsDefault = true,
     RadarColor = Color(0, 255, 0),
     winning_team = WIN_INNOCENT,
-    drawtargetidcircle = false
+    drawtargetidcircle = false,
+    AllowTeamChat = false
   },
   [ROLE_TRAITOR] = {
     ID = ROLE_TRAITOR,
@@ -114,7 +115,8 @@ TTTRoles = TTTRoles or {
     winning_team = WIN_TRAITOR,
     drawtargetidcircle = true,
     targetidcirclecolor = Color(255, 0, 0, 200),
-    targetidcolor = COLOR_RED
+    targetidcolor = COLOR_RED,
+    AllowTeamChat = true
   },
   [ROLE_DETECTIVE] = {
     ID = ROLE_DETECTIVE,
@@ -129,7 +131,8 @@ TTTRoles = TTTRoles or {
     winning_team = WIN_INNOCENT,
     drawtargetidcircle = true,
     targetidcirclecolor = Color(0, 0, 255, 220),
-    targetidcolor = COLOR_BLUE
+    targetidcolor = COLOR_BLUE,
+    AllowTeamChat = true
   }
 }
 
