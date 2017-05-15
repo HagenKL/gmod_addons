@@ -139,13 +139,17 @@ end
 
 hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
 	if (ent:GetClass() == "prop_door_rotating" || ent:GetClass() == "func_door_rotating" || ent:GetClass() == "func_door") then
-		local buster = ent.DoorBusterEnt
-		if buster and (((buster:GetOwner():IsTraitor() or (buster:GetOwner().IsEvil and buster:GetOwner():IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()))) or buster:GetOwner():GetDetective()) and ply != buster:GetOwner() then
+		local buster = ent.DoorBusterEnt or nil
+		local owner
+		if buster then
+			owner = buster.GetOwner and buster:GetOwner()
+		end
+		if buster and ((owner:IsTraitor() or (owner.IsEvil and owner:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil())) or (owner:GetDetective() or owner:GetRole() == ROLE_INNOCENT or (owner.IsGood and owner:IsGood()))) and ply != owner then
 			buster:BlowDoor()
 			return false
-		elseif ((buster:GetOwner():IsTraitor() or (buster:GetOwner().IsEvil and buster:GetOwner():IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()))) or buster:GetOwner():GetDetective() then
+		else
 			for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
-				if v:GetClass() == "entity_doorbuster" and ply != v:GetOwner() then
+				local own = v.GetOwner and v:GetOwner()
 					v:BlowDoor()
 					return false
 				end
