@@ -9,7 +9,7 @@ if SERVER then
   end
 
   function TTTVote.AddHalos(ply)
-    if ply:GetNWInt("VoteCounter",0) >= 3 then
+    if ply:GetNWInt("VoteCounter",0) >= 3 and ply:IsTerror() then
       net.Start("TTTVoteAddHalos")
       net.WriteBool(true)
       net.WriteEntity(ply)
