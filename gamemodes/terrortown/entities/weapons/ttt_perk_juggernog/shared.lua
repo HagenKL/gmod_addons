@@ -76,6 +76,7 @@ function SWEP:DrinkTheBottle()
                     timer.Create("TTTJuggernog" .. self.Owner:EntIndex(),0.8, 1,function()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("perks/burp.wav")
+                          self.Owner:SetHealth(self.Owner:GetMaxHealth())
                           self.Owner:SetNWBool("JuggernogActive",true)
                           self:Remove()
                         end
@@ -96,7 +97,7 @@ hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
   end
 end)
 
-hook.Add("DoPlayerDeath","TTTPHDReset", function(pl)
+hook.Add("DoPlayerDeath","TTTJuggernogReset", function(pl)
     if pl:HasEquipmentItem(EQUIP_JUGGERNOG) then
       pl:SetNWBool("JuggernogActive",false)
     end

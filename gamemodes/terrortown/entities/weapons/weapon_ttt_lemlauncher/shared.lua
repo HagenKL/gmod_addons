@@ -154,7 +154,7 @@ function SWEP:PrimaryAttack(data)
 	self:MuzzleFlash()
 	local rnda = self.Primary.Recoil * -1
 	local rndb = self.Primary.Recoil * math.random(-1, 1)
-	self:ViewPunch( Angle( rnda,rndb,rnda ) )
+	self.Owner:ViewPunch( Angle( rnda,rndb,rnda ) )
 	local effectdata = EffectData()
 	effectdata:SetOrigin( self.Owner:GetPos() )
 	util.Effect( "Dlemlight", effectdata )

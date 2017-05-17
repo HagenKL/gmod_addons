@@ -8,7 +8,7 @@ ENT.Type = "anim"
 ENT.Base = "ttt_basegrenade_proj"
 ENT.Model = Model("models/houseburning/houseburning.mdl")
 
-  
+
 function ENT:Initialize()
 	self:SetModel( "models/houseburning/houseburning.mdl" )
 	self:PhysicsInit( SOLID_VPHYSICS )
