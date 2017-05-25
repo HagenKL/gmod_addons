@@ -251,11 +251,11 @@ Event(EVENT_KILL,
                      return smile_icon, "Suicide"
                   end
 
-                  if (e.att.tr and e.vic.tr) or (e.att.sv and e.vic.sv) or (!e.att.sv and !e.vic.sv and !e.att.tr and !e.vic.tr) then
+                  if (e.att.tr and e.vic.tr) or (e.att.jk and e.vic.jk) or (!e.att.jk and !e.vic.jk and !e.att.tr and !e.vic.tr) then
                      return wrong_icon, "Teamkill"
-                  elseif e.att.tr or e.att.sv then
+                  elseif e.att.tr or e.att.jk then
                      return right_icon, "Traitor killed innocent"
-                  elseif !e.att.tr and !e.att.sv then
+                  elseif !e.att.tr and !e.att.jk then
                      return shield_icon, "Innocent killed traitor"
                   end
                end

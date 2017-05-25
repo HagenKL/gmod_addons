@@ -237,7 +237,8 @@ function GM:HUDDrawTargetID()
          for l,p in pairs(TTTRoles) do
             if v and p.ID == ent:GetRole() and p.drawtargetidcircle then
                surface.SetTexture(ring_tex)
-               surface.SetDrawColor(p.targetidcirclecolor)
+               local col = p.DefaultColor
+               surface.SetDrawColor(Color(col.r,col.g,col.b,200))
                surface.DrawTexturedRect(x-32, y-32, 64, 64)
             end
          end
@@ -333,7 +334,7 @@ function GM:HUDDrawTargetID()
          for l,p in pairs(TTTRoles) do
             if v and ent:GetRole() == p.ID and k != "corpse" then
                text = L["target_" .. p.String]
-               clr = p.targetidcolor
+               clr = p.DefaultColor
             end
          end
       end

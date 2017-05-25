@@ -166,8 +166,8 @@ function CLSCORE:BuildScorePanel(dpanel)
    for id, s in pairs(scores) do
       if id != -1 then
          local was_traitor = s.was_traitor
-         local was_survivor = s.was_survivor
-         local role = (was_traitor and T("traitor")) or (was_survivor and T("survivor")) or (s.was_detective and T("detective")) or ""
+         local was_jackal = s.was_jackal
+         local role = (was_traitor and T("traitor")) or (was_jackal and T("jackal")) or (s.was_detective and T("detective")) or ""
 
          local surv = ""
          if s.deaths > 0 then
@@ -183,11 +183,11 @@ function CLSCORE:BuildScorePanel(dpanel)
             skull:SetSize(18,18)
          end
 
-         local points_own   = KillsToPoints(s, was_traitor, was_survivor)
-         local points_team  = ((was_traitor and bonus.traitors) or (was_survivor and bonus.survivors) or bonus.innos)
+         local points_own   = KillsToPoints(s, was_traitor, was_jackal)
+         local points_team  = ((was_traitor and bonus.traitors) or (was_jackal and bonus.jackals) or bonus.innos)
          local points_total = points_own + points_team
 
-         local l = dlist:AddLine(surv, nicks[id], role, s.innos, s.traitors, s.survivors, points_own, points_team, points_total)
+         local l = dlist:AddLine(surv, nicks[id], role, s.innos, s.traitors, s.jackals, points_own, points_team, points_total)
 
          -- center align
          for k, col in pairs(l.Columns) do
@@ -254,7 +254,7 @@ local wintitle = {
 
 function AddWinStuff(Role)
   if Role.newteam then
-    wintitle[Role.winning_team] = {txt = "hilite_win_" .. Role.String .. "s", c = Role.wincolor}
+    wintitle[Role.winning_team] = {txt = "hilite_win_" .. Role.String .. "s", c = Role.DefaultColor}
   end
 end
 
@@ -361,8 +361,8 @@ function CLSCORE:ShowPanel()
    local margin = 15
 
    local dpanel = vgui.Create("DFrame")
-   local w, h = 750, 500
-   dpanel:SetSize(750, 500)
+   local w, h = 700, 500
+   dpanel:SetSize(700, 500)
    dpanel:Center()
    dpanel:SetTitle(T("report_title"))
    dpanel:SetVisible(true)
@@ -485,14 +485,14 @@ function CLSCORE:Init(events)
    -- Get start time and traitors
    local starttime = nil
    local traitors = nil
-   local survivors = nil
+   local jackals = nil
    local detectives = nil
    for k, e in pairs(events) do
       if e.id == EVENT_GAME and e.state == ROUND_ACTIVE then
          starttime = e.t
       elseif e.id == EVENT_SELECTED then
          traitors = e.traitor_ids
-         survivors = e.survivor_ids
+         jackals = e.jackal_ids
          detectives = e.detective_ids
       end
 
@@ -511,12 +511,12 @@ function CLSCORE:Init(events)
       end
    end
 
-   scores = ScoreEventLog(events, scores, traitors, detectives, survivors)
+   scores = ScoreEventLog(events, scores, traitors, detectives, jackals)
 
    self.Players = nicks
    self.Scores = scores
    self.TraitorIDs = traitors
-   self.SurvivorIDs = survivors
+   self.JackalIDs = jackals
    self.DetectiveIDs = detectives
    self.StartTime = starttime
    self.Events = events

@@ -58,8 +58,9 @@ local col_dark = {
 };
 
 function AddRoleWepSwitchColors(Role)
-  col_active.tip[Role.ID] = Role.WepSwitchColorActive
-  col_dark.tip[Role.ID] = Role.WepSwitchColorDark
+  local col = Role.DefaultColor
+  col_active.tip[Role.ID] = col
+  col_dark.tip[Role.ID] = Color(util.ClampColor(col.r - 20), col.g, util.ClampColor(col.b + 20),155)
 end
 
 -- Draw a bar in the style of the the weapon pickup ones

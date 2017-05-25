@@ -154,7 +154,7 @@ local color_slot = {
 };
 
 function AddRoleEquipColors(Role)
-  color_slot[Role.ID] = Role.EquipColor
+  color_slot[Role.ID] = Role.DefaultColor
 end
 
 local eqframe = nil

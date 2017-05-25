@@ -181,8 +181,8 @@ function RADAR:Draw(client)
 
       for k,v in pairs(TTTRoles) do
         if role == v.ID then
-          surface.SetDrawColor(v.RadarColor, alpha)
-          surface.SetTextColor(v.RadarColor, alpha)
+          surface.SetDrawColor(v.DefaultColor, alpha)
+          surface.SetTextColor(v.DefaultColor, alpha)
           break
         end
       end

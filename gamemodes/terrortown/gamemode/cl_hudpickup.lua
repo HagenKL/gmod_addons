@@ -13,7 +13,7 @@ local pickupclr = {
 }
 
 function AddRoleHUDPickupColors(Role)
-  pickupclr[Role.ID] = Role.HUDPickupColor
+  pickupclr[Role.ID] = Role.DefaultColor
 end
 
 function GM:HUDWeaponPickedUp( wep )

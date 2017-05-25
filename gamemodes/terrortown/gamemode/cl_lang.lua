@@ -207,7 +207,8 @@ local bgcolor = {
 };
 
 function AddRoleLangColors(Role)
-  bgcolor[Role.ID] = Role.LangColor
+  local col = Role.DefaultColor
+  bgcolor[Role.ID] = Color(util.ClampColor(col.r - 50), util.ClampColor(col.g - 50), util.ClampColor(col.b - 50), 200)
 end
 
 

@@ -134,7 +134,7 @@ function KARMA.Hurt(attacker, victim, dmginfo)
       if IsDebug() then
          print(Format("%s (%f) attacked %s (%f) for %d and got penalised for %f", attacker:Nick(), attacker:GetLiveKarma(), victim:Nick(), victim:GetLiveKarma(), hurt_amount, penalty))
       end
-   elseif (not attacker:GetEvil()) and (victim:GetEvil() or victim:GetSurvivor()) then
+   elseif (not attacker:GetEvil()) and attacker:GetTeam() ~= victim:GetTeam() then
       local reward = KARMA.GetHurtReward(hurt_amount)
       reward = KARMA.GiveReward(attacker, reward)
 
@@ -164,7 +164,7 @@ function KARMA.Killed(attacker, victim, dmginfo)
       if IsDebug() then
          print(Format("%s (%f) killed %s (%f) and gets penalised for %f", attacker:Nick(), attacker:GetLiveKarma(), victim:Nick(), victim:GetLiveKarma(), penalty))
       end
-   elseif (not attacker:GetEvil()) and (victim:GetEvil() or victim:GetSurvivor()) then
+   elseif (not attacker:GetEvil()) and attacker:GetTeam() ~= victim:GetTeam() then
       local reward = KARMA.GetKillReward()
       reward = KARMA.GiveReward(attacker, reward)
 

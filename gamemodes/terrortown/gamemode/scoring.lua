@@ -199,12 +199,12 @@ function SCORE:ApplyEventLogScores(wintype)
        dead[v.String .. "s"] = 0
      end
    end
-   local scored_log = ScoreEventLog(self.Events, scores, tbl.traitors, tbl.detectives, tbl.survivors)
+   local scored_log = ScoreEventLog(self.Events, scores, tbl.traitors, tbl.detectives, tbl.jackals)
    local ply = nil
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-         ply:AddFrags(KillsToPoints(s, ply:GetEvil(), ply:GetSurvivor()))
+         ply:AddFrags(KillsToPoints(s, ply:GetEvil(), ply:GetJackal()))
       end
    end
 
@@ -214,7 +214,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-		   ply:AddFrags(ply:GetEvil() and bonus.traitors or (ply:GetSurvivor() and bonus.survivors) or bonus.innos)
+		   ply:AddFrags(ply:GetEvil() and bonus.traitors or (ply:GetJackal() and bonus.jackals) or bonus.innos)
       end
    end
 

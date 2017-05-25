@@ -35,7 +35,7 @@ function PrintTraitors(ply)
 
       for _, p in pairs(ps) do
          if IsValid(p) then
-            pr(p:GetEvil() and "TRAITOR" or p:GetSurvivor() and "Survivor" or "Innocent", ":", p:Nick())
+            pr(p:GetEvil() and "TRAITOR" or p:GetJackal() and "Jackal" or "Innocent", ":", p:Nick())
          end
       end
    end

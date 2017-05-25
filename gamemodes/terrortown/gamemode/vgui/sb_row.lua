@@ -78,7 +78,8 @@ local rolecolor = {
 }
 
 function AddRoleRowColors(Role)
-  rolecolor[Role.String] = Role.RowColor
+  local col = Role.DefaultColor
+  rolecolor[Role.String] = Color(col.r, col.g, col.b, 70)
 end
 
 function GM:TTTScoreboardColorForPlayer(ply)

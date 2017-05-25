@@ -32,7 +32,8 @@ local bg_colors = {
 };
 
 function AddRoleHUDColors(Role)
-  bg_colors[Role.String] = Role.HUDColor
+  local col = Role.DefaultColor
+  bg_colors[Role.String] = Color(util.ClampColor(col.r + 20), col.g, util.ClampColor(col.b - 15), 200)
 end
 
 local health_colors = {

@@ -908,20 +908,30 @@ function SelectRoles()
    -- determine how many of each role we want
    local goodtbl = {}
    local badtbl = {}
+   local roles = {}
    local choice_count = #choices
+
+   local traitor_count = GetTraitorCount(choice_count)
+
+   local det_count = GetDetectiveCount(choice_count)
+
    for k,v in pairs(TTTRoles) do
      if not v.IsDefault then
-       if v.IsGoodReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
+       if v.Chanceperround and v.Chanceperround > math.random(0,1) then
+          continue
+       end
+       if v.IsGoodReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() and #goodtbl < det_count then
          table.insert(goodtbl,v)
-       elseif v.IsEvilReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
+       elseif v.IsEvilReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() and #badtbl < traitor_count then
          table.insert(badtbl,v)
        end
+       table.insert(roles,v)
      end
    end
 
-   local traitor_count = GetTraitorCount(choice_count) - #badtbl
+   traitor_count = traitor_count - #badtbl
 
-   local det_count = GetDetectiveCount(choice_count) - #goodtbl
+   det_count = det_count - #goodtbl
 
    if choice_count == 0 then return end
 
@@ -991,33 +1001,26 @@ function SelectRoles()
       end
    end
 
-   for k,v in RandomPairs(TTTRoles) do
-     if v.Chanceperround then
-       if v.Chanceperround > math.random(0,1) then
-         continue
-       end
-     end
-     if !v.IsDefault then
-       if choice_count < GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then continue end
-       local sr = 0
-       local role_count = math.floor(choice_count * GetConVar("ttt_" .. v.String .. "_pct"):GetFloat())
+   for k,v in RandomPairs(roles) do
+     if choice_count < GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then continue end
+     local sr = 0
+     local role_count = math.floor(choice_count * GetConVar("ttt_" .. v.String .. "_pct"):GetFloat())
 
-       role_count = math.Clamp(role_count, 1, GetConVar("ttt_" .. v.String .. "_max"):GetInt())
+     role_count = math.Clamp(role_count, 1, GetConVar("ttt_" .. v.String .. "_max"):GetInt())
 
-       while sr < role_count do
-          local pick = math.random(1, #choices)
+     while sr < role_count do
+        local pick = math.random(1, #choices)
 
-          local pply = choices[pick]
+        local pply = choices[pick]
 
 
-          if IsValid(pply) and
-             (not table.HasValue(prev_roles[v.ID], pply)) or (math.random(1, 3) == 2) then
-             pply:SetRole(v.ID)
+        if IsValid(pply) and
+           (not table.HasValue(prev_roles[v.ID], pply)) or (math.random(1, 3) == 2) then
+           pply:SetRole(v.ID)
 
-             table.remove(choices, pick)
-             sr = sr + 1
-          end
-       end
+           table.remove(choices, pick)
+           sr = sr + 1
+        end
      end
    end
 
