@@ -506,7 +506,7 @@ local function CheckCreditAward(victim, attacker)
    if not IsValid(victim) then return end
 
    -- DETECTIVE AWARD
-   if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActiveDetective() and (victim:IsEvil()) then
+   if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActiveDetective() and !victim:IsGood() then
       local amt = GetConVarNumber("ttt_det_credits_traitordead") or 1
       for _, ply in pairs(player.GetAll()) do
          if ply:IsActiveDetective() then
