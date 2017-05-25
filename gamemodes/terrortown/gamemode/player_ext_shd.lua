@@ -17,7 +17,7 @@ function plymeta:GetDetective() return self:GetRole() == ROLE_DETECTIVE end
 -- Team access
 function plymeta:GetEvil()
   for k,v in pairs(TTTRoles) do
-    if self:GetRole() == v.ID and not v.IsGood then
+    if self:GetRole() == v.ID and v.IsEvil then
       return true
     end
   end
@@ -28,6 +28,15 @@ function plymeta:GetGood()
   for k,v in pairs(TTTRoles) do
     if self:GetRole() == v.ID and v.IsGood then
       return true
+    end
+  end
+  return false
+end
+
+function plymeta:GetTeam()
+  for k,v in pairs(TTTRoles) do
+    if self:GetRole() == v.ID then
+      return v.winning_team
     end
   end
   return false
@@ -82,7 +91,7 @@ function AddRoleFunctions(Role)
   plymeta["Get" .. funcname] = function(self) return self:GetRole() == Role.ID end
   plymeta["Is" .. funcname] = plymeta["Get" .. funcname]
   plymeta["IsActive" .. funcname] = function(self) return self:IsActiveRole(Role.ID) end
-  role_strings[Role.ID] = string.lower(funcname)
+  role_strings[Role.ID] = Role.String
 end
 
 function plymeta:GetBaseKarma() return self:GetNWFloat("karma", 1000) end

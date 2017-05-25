@@ -34,8 +34,7 @@ function TTTVote.CalculateVotes(ply, target, sender)
 		totem:AddHalos()
 	end
     for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
-      TTTVote.SetVotes(v,v:GetNWInt("PlayerVotes") - 1)
-      ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") - 1 )
+      v:UsedVote()
       if target:IsRole(ROLE_INNOCENT) and (v:IsRole(ROLE_INNOCENT) or v:GetDetective()) then
         v:SetNWBool("TTTVotePunishment", true)
       end
@@ -45,13 +44,8 @@ function TTTVote.CalculateVotes(ply, target, sender)
   TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
 end
 
-function TTTVote.SetVotes(ply, vote)
-  ply:SetNWInt("PlayerVotes", vote)
-  util.SetPData(ply:SteamID(),"vote_stored", vote)
-end
-
 function TTTVote.ResetVotes(ply, reset)
-  TTTVote.SetVotes(ply, startvotes:GetInt())
+  ply:ResetVotes()
   ply:SetNWInt("VoteCounter",0)
   ply:SetNWInt("UsedVotes", 0)
   ply:SetNWBool("TTTVotePunishment", false)
@@ -81,7 +75,7 @@ function TTTVote.InitVote(ply)
     local currentdate = os.date("%d/%m/%Y",os.time())
     if ply:GetPData("vote_stored_date") == nil then
       TTTVote.SetDate(ply , currentdate)
-      TTTVote.SetVotes(ply, startvotes:GetInt())
+      ply:ResetVotes()
     end
     TTTVote.InitVoteviaDate(ply, ply:GetPData("vote_stored_date"))
   end
@@ -90,10 +84,10 @@ end
 function TTTVote.InitVoteviaDate(ply, date)
   local currentdate = os.date("%d/%m/%Y",os.time())
   if date != currentdate then
-    TTTVote.SetVotes(ply, startvotes:GetInt())
+    ply:ResetVotes()
     TTTVote.SetDate(ply , currentdate)
   else
-    TTTVote.SetVotes(ply,ply:GetPData("vote_stored"))
+    ply:SetVotes(ply:GetPData("vote_stored"))
   end
 end
 
@@ -139,7 +133,7 @@ end
 
 function TTTVote.SaveVote(ply)
   if IsValid(ply) then
-    util.SetPData(ply:SteamID(),"vote_stored", ply:GetNWInt("PlayerVotes") )
+    util.SetPData(ply:SteamID(),"vote_stored", ply:GetVotes() )
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWInt("VoteCounter", 0)
     ply:SetNWBool("TTTVotePunishment", false)
@@ -148,7 +142,7 @@ end
 
 function TTTVote.SaveVoteAll()
   for k, ply in pairs(player.GetAll()) do
-    util.SetPData(ply:SteamID(),"vote_stored", ply:GetNWInt("PlayerVotes") )
+    util.SetPData(ply:SteamID(),"vote_stored", ply:GetVotes() )
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWInt("VoteCounter", 0)
     ply:SetNWBool("TTTVotePunishment", false)
@@ -199,10 +193,6 @@ function TTTVote.PunishtheInnocents()
   end
 end
 
-function TTTVote.CallBack(convar, old, new)
-  SetGlobalBool("ttt_totem", new )
-end
-
 function TTTVote.IsEven(number)
   return number % 2 == 0
 end
@@ -216,4 +206,3 @@ hook.Add("TTTPrepareRound", "ResetVotes", TTTVote.CalculateVoteRoundstart)
 hook.Add("TTTBeginRound", "PunishtheInnocents", TTTVote.PunishtheInnocents)
 hook.Add("TTTEndRound", "ResetVotes", TTTVote.CalculateVoteRoundstart)
 hook.Add("ShutDown", "TTTSaveVotes", TTTVote.SaveVoteAll)
-cvars.AddChangeCallback("ttt_totem", TTTVote.CallBack)

@@ -100,9 +100,15 @@ local function GiveLoadoutItems(ply)
          end
       end
    end
-   if GetRoundState() == ROUND_ACTIVE and ply:IsHunter() then
-      ply:GiveEquipmentItem(EQUIP_RADAR)
-      ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
+   if GetRoundState() == ROUND_ACTIVE then
+     for k,v in pairs(TTTRoles) do
+       if v.ID == ply:GetRole() then
+         ply:GiveEquipmentItem(v.DefaultEquip)
+         if v.DefaultEquip == EQUIP_RADAR then
+           ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
+         end
+       end
+     end
    end
 end
 
@@ -355,7 +361,7 @@ end
 local function OrderEquipment(ply, cmd, args)
    if not IsValid(ply) or #args != 1 then return end
 
-   if not (ply:IsActiveEvil() or ply:IsActiveDetective()) then return end
+   if not (ply:IsActiveSpecial()) then return end
 
    -- no credits, can't happen when buying through menu as button will be off
    if ply:GetCredits() < 1 then return end
@@ -383,12 +389,12 @@ local function OrderEquipment(ply, cmd, args)
       id = tonumber(id)
 
       -- item whitelist check
-	  local allowed
-	  if ply:IsTraitor() or ply:IsDetective() then
-		    allowed = GetEquipmentItem(ply:GetRole(), id)
-	  elseif ply:IsEvil() then
-		    allowed = GetEquipmentItem(ROLE_TRAITOR, id)
-	  end
+  	  local allowed
+  	  if ply:IsTraitor() or ply:IsDetective() then
+  		    allowed = GetEquipmentItem(ply:GetRole(), id)
+  	  elseif GetRoleTableByID(ply:GetRole()).ShopFallBack then
+  		    allowed = GetEquipmentItem(ROLE_TRAITOR, id)
+  	  end
 
       if not allowed then
          print(ply, "tried to buy item not buyable for his class:", id)
@@ -409,7 +415,7 @@ local function OrderEquipment(ply, cmd, args)
 			 print(ply, "tried to buy weapon his role is not permitted to buy")
 			 return
 		  end
-	  else
+	  elseif GetRoleTableByID(ply:GetRole()).ShopFallBack then
 		  if not table.HasValue(swep_table.CanBuy, ROLE_TRAITOR) then
 			 print(ply, "tried to buy weapon his role is not permitted to buy")
 			 return
@@ -489,7 +495,7 @@ local function TransferCredits(ply, cmd, args)
    local credits = tonumber(args[2])
    if sid and credits then
       local target = player.GetBySteamID(sid)
-      if (not IsValid(target)) or (not target:IsActiveSpecial()) or (target:GetRole() ~= ply:GetRole()) or (target == ply) then
+      if (not IsValid(target)) or (not target:IsActiveSpecial()) or (target:GetTeam() ~= ply:GetTeam()) or (target == ply) then
          LANG.Msg(ply, "xfer_no_recip")
          return
       end

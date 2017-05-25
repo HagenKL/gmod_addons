@@ -38,6 +38,7 @@ WIN_NONE      = 1
 WIN_TRAITOR   = 2
 WIN_INNOCENT  = 3
 WIN_TIMELIMIT = 4
+WIN_COUNT     = 5
 
 -- Weapon categories, you can only carry one of each
 WEAPON_NONE   = 0
@@ -91,6 +92,7 @@ TTTRoles = TTTRoles or {
     ID = ROLE_INNOCENT,
     String = "innocent",
     IsGood = true,
+    IsEvil = false,
     IsSpecial = false,
     Creditsforkills = false,
     ShortString = "inno",
@@ -99,15 +101,17 @@ TTTRoles = TTTRoles or {
     RadarColor = Color(0, 255, 0),
     winning_team = WIN_INNOCENT,
     drawtargetidcircle = false,
-    AllowTeamChat = false
+    AllowTeamChat = false,
+    RepeatingCredits = false
   },
   [ROLE_TRAITOR] = {
     ID = ROLE_TRAITOR,
     String = "traitor",
     IsGood = false,
+    IsEvil = true,
     IsSpecial = true,
     Creditsforkills = true,
-    ShortString = "traitor", 
+    ShortString = "traitor",
     Short = "t",
     IsDefault = true,
     RadarColor = Color(255, 0, 0),
@@ -116,12 +120,14 @@ TTTRoles = TTTRoles or {
     drawtargetidcircle = true,
     targetidcirclecolor = Color(255, 0, 0, 200),
     targetidcolor = COLOR_RED,
-    AllowTeamChat = true
+    AllowTeamChat = true,
+    RepeatingCredits = true
   },
   [ROLE_DETECTIVE] = {
     ID = ROLE_DETECTIVE,
     String = "detective",
     IsGood = true,
+    IsEvil = false,
     IsSpecial = true,
     Creditsforkills = true,
     ShortString = "det",
@@ -132,7 +138,8 @@ TTTRoles = TTTRoles or {
     drawtargetidcircle = true,
     targetidcirclecolor = Color(0, 0, 255, 220),
     targetidcolor = COLOR_BLUE,
-    AllowTeamChat = true
+    AllowTeamChat = true,
+    RepeatingCredits = false
   }
 }
 
@@ -161,7 +168,7 @@ function IsRoleGood(role)
 end
 
 function IsRoleEvil(role)
-  return !GetRoleTableByID(role).IsGood
+  return GetRoleTableByID(role).IsEvil
 end
 
 function IsRoleDefault(role)
@@ -177,20 +184,37 @@ function AddNewRole(RoleName,Role)
 
   TTTRoles[Role.ID] = Role
 
+  if Role.newteam then
+    local winstring = "WIN_" .. Role.String
+    TTTRoles[Role.ID].winning_team = winstring
+    _G[Role.winning_team] = WIN_COUNT
+    WIN_COUNT = WIN_COUNT + 1
+  end
+
   AddRoleFunctions(Role)
 
   if SERVER then
     AddRoleOnServer(Role)
+    AddForceCommand(Role)
   else
     AddRoleOnClient(Role)
   end
 
-  print("The " .. string.Capitalize(string.lower(RoleName)) .. " Role has been initialized!")
+  print("The " .. Role.Rolename .. " Role has been initialized!")
 end
 
 function GetRoleTableByID(ID)
   for k,v in pairs(TTTRoles) do
     if v.ID == ID then
+      return v
+    end
+  end
+  return false
+end
+
+function GetRoleTableByString(str)
+  for k,v in pairs(TTTRoles) do
+    if v.String == str then
       return v
     end
   end

@@ -555,7 +555,7 @@ local function CheckCreditAward(victim, attacker)
             LANG.Msg(GetTraitorFilter(true), "credit_tr_all", {num = amt})
 
             for _, ply in pairs(player.GetAll()) do
-               if ply:IsActiveTraitor() then
+               if ply:IsActiveEvil() and GetRoleTableByID(ply:GetRole()).RepeatingCredits then
                   ply:AddCredits(amt)
                end
             end
@@ -645,10 +645,12 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
       local reward = 0
       local atttbl = GetRoleTableByID(attacker:GetRole())
       local plytbl = GetRoleTableByID(ply:GetRole())
-      if attacker:IsActiveEvil() and ply:GetGood() and plytbl.IsSpecial and atttbl.Creditsforkills  then
+      if (attacker:IsActiveEvil() or attacker:IsActiveSurvivor()) and ply:GetGood() and plytbl.IsSpecial and atttbl.Creditsforkills  then
          reward = math.ceil(GetConVarNumber("ttt_credits_detectivekill"))
-      elseif attacker:IsActiveGood() and ply:GetEvil() and plytbl.IsSpecial and atttbl.Creditsforkills then
+      elseif attacker:IsActiveGood() and !attacker:IsActiveSurvivor() and (ply:GetEvil() or ply:IsActiveSurvivor()) and plytbl.IsSpecial and atttbl.Creditsforkills then
          reward = math.ceil(GetConVarNumber("ttt_det_credits_traitorkill"))
+      elseif attacker:IsActiveSurvivor() and ply:GetEvil() and plytbl.IsSpecial and atttbl.Creditsforkills then
+         reward = math.ceil(GetConVarNumber("ttt_credits_detectivekill"))
       end
 
       if reward > 0 then

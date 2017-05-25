@@ -301,6 +301,7 @@ function AddRoleOnServer(Role)
   CreateConVar("ttt_" .. Role.String .. "_pct", Role.DefaultPct)
   CreateConVar("ttt_" .. Role.String .. "_max", Role.DefaultMax)
   CreateConVar("ttt_" .. Role.String .. "_min_players", Role.DefaultMin)
+  CreateConVar("ttt_" .. Role.String .. "_credits_starting",Role.DefaultCredits)
 end
 
 -- When a player initially spawns after mapload, everything is a bit strange;
@@ -704,7 +705,17 @@ function PrintResultMessage(type)
       LANG.Msg("win_innocent")
       ServerLog("Result: innocent win.\n")
    else
-      ServerLog("Result: unknown victory condition!\n")
+     local value
+      for k,v in pairs(TTTRoles) do
+        if v.newteam and type == v.winning_team then
+         value = true
+         LANG.Msg("win_" .. v.String)
+         ServerLog("Result: ".. v.String .. " win,\n")
+        end
+      end
+      if !value then
+        ServerLog("Result: unknown victory condition!\n")
+      end
    end
 end
 
@@ -790,30 +801,60 @@ function GM:TTTCheckForWin()
       return mw
    end
 
-   local traitor_alive = false
-   local innocent_alive = false
-   for k,v in pairs(player.GetAll()) do
+   local alive = {}
+   alive.traitor = false
+   alive.innocent = false
+
+   for k,v in pairs(TTTRoles) do
+     if not v.IsDefault and v.newteam then
+       alive[v.String] = false
+     end
+   end
+
+   for k,v in pairs(player.GetAll()) do -- Get the alive people
       if v:Alive() and v:IsTerror() then
-         if GetRoleTableByID(v:GetRole()).winning_team == WIN_TRAITOR then
-            traitor_alive = true
-         elseif GetRoleTableByID(v:GetRole()).winning_team == WIN_INNOCENT then
-            innocent_alive = true
-         end
-      end
-
-      if traitor_alive and innocent_alive then
-         return WIN_NONE --early out
+        for j,tbl in pairs(TTTRoles) do
+          if tbl.ID == v:GetRole() then
+            if tbl.newteam then
+              alive[tbl.String] = true
+            elseif tbl.winning_team == WIN_TRAITOR then
+              alive.traitor = true
+            elseif tbl.winning_team == WIN_INNOCENT then
+              alive.innocent = true
+            end
+          end
+        end
       end
    end
 
-   if traitor_alive and not innocent_alive then
-      return WIN_TRAITOR
-   elseif not traitor_alive and innocent_alive then
-      return WIN_INNOCENT
-   elseif not innocent_alive then
-      -- ultimately if no one is alive, traitors win
-      return WIN_TRAITOR
+   local i = 0
+   for k,v in pairs(alive) do
+     if v then
+       i = i + 1 -- Get if more then one team is alive
+       if i == 2 then
+         i = nil -- Nil the value
+         return WIN_NONE -- Round shouldnt end
+       end
+     end
    end
+   if i == 1 then -- If only one team alive
+     for k,v in pairs(alive) do -- Take the team and let it win
+       if v then
+         return GetRoleTableByString(tostring(k)).winning_team
+       end
+     end
+   elseif i == 0 then -- No one alive, let traitors win
+     return WIN_TRAITOR
+   end
+  -- Old Method
+  --  if traitor_alive and not innocent_alive then
+  --     return WIN_TRAITOR
+  --  elseif not traitor_alive and innocent_alive then
+  --     return WIN_INNOCENT
+  --  elseif not innocent_alive then
+  --     -- ultimately if no one is alive, traitors win
+  --     return WIN_TRAITOR
+  --  end
 
    return WIN_NONE
 end
@@ -870,9 +911,9 @@ function SelectRoles()
    local choice_count = #choices
    for k,v in pairs(TTTRoles) do
      if not v.IsDefault then
-       if v.IsGood and v.IsReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
+       if v.IsGoodReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
          table.insert(goodtbl,v)
-       elseif !v.IsGood and v.IsReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
+       elseif v.IsEvilReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then
          table.insert(badtbl,v)
        end
      end
@@ -951,6 +992,11 @@ function SelectRoles()
    end
 
    for k,v in RandomPairs(TTTRoles) do
+     if v.Chanceperround then
+       if v.Chanceperround > math.random(0,1) then
+         continue
+       end
+     end
      if !v.IsDefault then
        if choice_count < GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then continue end
        local sr = 0

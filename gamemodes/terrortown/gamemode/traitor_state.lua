@@ -50,7 +50,8 @@ end
 
 -- Tell traitors about other traitors
 
-function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if !v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
+function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
+function SendGoodList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendTraitorList(ply_or_rf, pred) SendRoleList(ROLE_TRAITOR, ply_or_rf, pred) end
 function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) end
 
@@ -154,12 +155,16 @@ local function force_detective(ply)
 end
 concommand.Add("ttt_force_detective", force_detective, nil, nil, FCVAR_CHEAT)
 
-local function force_hunter(ply)
-   ply:SetRole(ROLE_HUNTER)
+function AddForceCommand(Role)
 
-   SendFullStateUpdate()
+  _G["force_" .. Role.String] = function(ply)
+    ply:SetRole(Role.ID)
+
+    SendFullStateUpdate()
+  end
+
+  concommand.Add("ttt_force_" .. Role.String, _G["force_" .. Role.String], nil,nil, FCVAR_CHEAT )
 end
-concommand.Add("ttt_force_hunter", force_hunter, nil, nil, FCVAR_CHEAT)
 
 
 local function force_spectate(ply, cmd, arg)

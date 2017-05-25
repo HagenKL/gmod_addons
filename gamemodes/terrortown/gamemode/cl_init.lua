@@ -94,6 +94,10 @@ function AddRoleOnClient(Role)
   AddRoleLangColors(Role)
   AddRoleWepSwitchColors(Role)
   AddRoleRowColors(Role)
+  AddWinStuff(Role)
+  if Role.newteam then
+    CLSCORE[string.Capitalize(Role.String) .. "IDs"] = {}
+  end
 end
 
 function AddLangForRole(Role)
@@ -103,6 +107,15 @@ function AddLangForRole(Role)
    LANG.AddToLanguage("english", "body_found_" .. Role.Short, "They were a " .. Role.Rolename .. "!")
    LANG.AddToLanguage("english", "search_role_" .. Role.Short, "This person was a " .. Role.Rolename .. "!")
    LANG.AddToLanguage("english", "target_" .. Role.String, "FELLOW " .. string.upper(Role.Rolename))
+   if Role.newteam then
+     if not COL_KILLS_COUNT then COL_KILLS_COUNT = 3 end
+     LANG.AddToLanguage("english", "hilite_win_" .. Role.String .. "s", "THE " .. string.upper(Role.Rolename) .. " WINS")
+     LANG.AddToLanguage("english", "col_kills" .. COL_KILLS_COUNT, Role.Rolename .. " kills")
+     COL_KILLS_COUNT = COL_KILLS_COUNT + 1
+     LANG.AddToLanguage("english", "info_popup_" .. Role.String, Role.Description)
+     LANG.AddToLanguage("english", "win_" .. Role.String, Role.wintext)
+     LANG.AddToLanguage("english", "ev_win_" .. Role.String, Role.wintext)
+   end
 end
 
 KARMA = {}

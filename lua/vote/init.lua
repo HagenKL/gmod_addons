@@ -4,6 +4,7 @@ if not TTTVote then
 
 	AddCSLuaFile("vote/shared/vote_overrides_shd.lua")
 	AddCSLuaFile("vote/shared/halos_shd.lua")
+	AddCSLuaFile("vote/shared/player.lua")
 	AddCSLuaFile("vote/client/cl_menu.lua")
 	AddCSLuaFile("vote/client/cl_messages.lua")
 	AddCSLuaFile("vote/cl_init.lua")
@@ -25,6 +26,7 @@ if not TTTVote then
 	-- Execute Files
 	include("vote/shared/vote_overrides_shd.lua")
 	include("vote/shared/halos_shd.lua")
+	include("vote/shared/player.lua")
 	include("vote/server/vote.lua")
 	include("vote/server/totem.lua")
 

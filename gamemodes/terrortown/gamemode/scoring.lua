@@ -68,14 +68,25 @@ function SCORE:HandleKill( victim, attacker, dmginfo )
 
    e.vic.tr = victim:GetEvil()
 
+   for k,v in pairs(TTTRoles) do
+     if v.newteam and victim:GetRole() == v.ID then
+       e.vic[v.Short] = true
+     end
+   end
+
    if IsValid(attacker) and attacker:IsPlayer() then
       e.att.ni = attacker:Nick()
       e.att.sid = attacker:SteamID()
       e.att.tr = attacker:GetEvil()
+     for k,v in pairs(TTTRoles) do
+       if v.newteam and attacker:GetRole() == v.ID then
+         e.att[v.Short] = true
+       end
+     end
 
       -- If a traitor gets himself killed by another traitor's C4, it's his own
       -- damn fault for ignoring the indicator.
-      if dmginfo:IsExplosionDamage() and attacker:GetTraitor() and victim:GetTraitor() then
+      if dmginfo:IsExplosionDamage() and attacker:GetEvil() and victim:GetEvil() then
          local infl = dmginfo:GetInflictor()
          if IsValid(infl) and infl:GetClass() == "ttt_c4" then
             e.att = table.Copy(e.vic)
@@ -93,17 +104,37 @@ function SCORE:HandleSpawn( ply )
 end
 
 function SCORE:HandleSelection()
-   local traitors = {}
-   local detectives = {}
-   for k, ply in pairs(player.GetAll()) do
-      if ply:GetEvil() and GetRoleTableByID(ply:GetRole()).IsSpecial then
-         table.insert(traitors, ply:SteamID())
-      elseif ply:GetGood() and GetRoleTableByID(ply:GetRole()).IsSpecial then
-         table.insert(detectives, ply:SteamID())
-      end
+   local tbl = {}
+   tbl.traitors = {}
+   tbl.detectives = {}
+
+   for k,v in pairs(TTTRoles) do
+     if !v.IsDefault and v.newteam then
+       tbl[v.String .. "s"] = {}
+     end
    end
 
-   self:AddEvent({id=EVENT_SELECTED, traitor_ids=traitors, detective_ids=detectives})
+   for k, ply in pairs(player.GetAll()) do
+     for j,v in pairs(TTTRoles) do
+      if ply:GetRole() == v.ID and v.IsEvil and v.IsSpecial and !v.newteam then
+         table.insert(tbl.traitors, ply:SteamID())
+      elseif ply:GetRole() == v.ID and v.IsGood and v.IsSpecial and !v.newteam then
+         table.insert(tbl.detectives, ply:SteamID())
+       elseif ply:GetRole() == v.ID and v.newteam then
+         table.insert(tbl[v.String .. "s"], ply:SteamID())
+      end
+    end
+   end
+
+   local t = {id=EVENT_SELECTED, traitor_ids=tbl.traitors, detective_ids=tbl.detectives}
+
+   for k,v in pairs(TTTRoles) do
+     if v.newteam then
+       t[v.String .. "_ids"] = tbl[v.String .. "s"]
+     end
+   end
+
+   self:AddEvent(t)
 end
 
 function SCORE:HandleBodyFound(finder, found)
@@ -143,27 +174,37 @@ end
 
 function SCORE:ApplyEventLogScores(wintype)
    local scores = {}
-   local traitors = {}
-   local detectives = {}
+   local tbl = {}
+   tbl.traitors = {}
+   tbl.detectives = {}
    for k, ply in pairs(player.GetAll()) do
       scores[ply:SteamID()] = {}
 
       if ply:GetEvil() then
-         table.insert(traitors, ply:SteamID())
-      elseif ply:GetDetective() then
-         table.insert(detectives, ply:SteamID())
+         table.insert(tbl.traitors, ply:SteamID())
+      elseif ply:GetGood() then
+         table.insert(tbl.detectives, ply:SteamID())
+      elseif GetRoleTableByID(ply:GetRole()).newteam then
+         table.insert(tbl[GetRoleTableByID(ply:GetRole()).String .. "s"], ply:SteamID())
       end
    end
 
    -- individual scores, and count those left alive
    local alive = {traitors = 0, innos = 0}
    local dead = {traitors = 0, innos = 0}
-   local scored_log = ScoreEventLog(self.Events, scores, traitors, detectives)
+
+   for k,v in pairs(TTTRoles) do
+     if v.newteam then
+       alive[v.String .. "s"] = 0
+       dead[v.String .. "s"] = 0
+     end
+   end
+   local scored_log = ScoreEventLog(self.Events, scores, tbl.traitors, tbl.detectives, tbl.survivors)
    local ply = nil
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-         ply:AddFrags(KillsToPoints(s, ply:GetEvil()))
+         ply:AddFrags(KillsToPoints(s, ply:GetEvil(), ply:GetSurvivor()))
       end
    end
 
@@ -173,7 +214,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-		 ply:AddFrags(ply:GetEvil() and bonus.traitors or bonus.innos)
+		   ply:AddFrags(ply:GetEvil() and bonus.traitors or (ply:GetSurvivor() and bonus.survivors) or bonus.innos)
       end
    end
 

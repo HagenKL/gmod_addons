@@ -444,7 +444,7 @@ concommand.Add("ttt_cl_traitorpopup_close", ForceCloseTraitorMenu)
 
 function GM:OnContextMenuOpen()
    local r = GetRoundState()
-   if r == ROUND_ACTIVE and not (LocalPlayer():GetEvil() or LocalPlayer():GetDetective()) then
+   if r == ROUND_ACTIVE and not LocalPlayer():IsSpecial() then
       return
    elseif r == ROUND_POST or r == ROUND_PREP then
       CLSCORE:Reopen()

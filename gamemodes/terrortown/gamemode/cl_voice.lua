@@ -32,7 +32,7 @@ local function RoleChatRecv()
 
    local Roletbl = GetRoleTableByID(role)
 
-   if !Roletbl.IsGood and Roletbl.AllowTeamChat then
+   if IsRoleEvil(role) and Roletbl.AllowTeamChat then
       chat.AddText(Color( 255, 30, 40 ),
                    Format("(%s) ", string.upper(GetTranslation("traitor"))),
                    Color( 255, 200, 20),
@@ -40,7 +40,7 @@ local function RoleChatRecv()
                    Color( 255, 255, 200),
                    ": " .. text)
 
-   elseif Roletbl.IsGood and Roletbl.AllowTeamChat then
+   elseif IsRoleGood(role) and Roletbl.AllowTeamChat then
       chat.AddText(Color( 20, 100, 255 ),
                    Format("(%s) ", string.upper(GetTranslation("detective"))),
                    Color( 25, 200, 255),
