@@ -645,11 +645,11 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
       local reward = 0
       local atttbl = GetRoleTableByID(attacker:GetRole())
       local plytbl = GetRoleTableByID(ply:GetRole())
-      if (attacker:IsActiveEvil() or attacker:IsActiveSurvivor()) and ply:GetGood() and plytbl.IsSpecial and atttbl.Creditsforkills  then
+      if attacker:IsActiveEvil() and ply:GetGood() and plytbl.IsSpecial and atttbl.Creditsforkills  then
          reward = math.ceil(GetConVarNumber("ttt_credits_detectivekill"))
       elseif attacker:IsActiveGood() and !attacker:IsActiveSurvivor() and (ply:GetEvil() or ply:IsActiveSurvivor()) and plytbl.IsSpecial and atttbl.Creditsforkills then
          reward = math.ceil(GetConVarNumber("ttt_det_credits_traitorkill"))
-      elseif attacker:IsActiveSurvivor() and ply:GetEvil() and plytbl.IsSpecial and atttbl.Creditsforkills then
+      elseif attacker:IsActiveSurvivor() and (ply:GetEvil() or (ply:GetGood() and !ply:IsActiveSurvivor())) and plytbl.IsSpecial and atttbl.Creditsforkills then
          reward = math.ceil(GetConVarNumber("ttt_credits_detectivekill"))
       end
 
