@@ -9,7 +9,7 @@ local function AddHunter()
 		ShortString = "hunter", -- for icons
 		Short = "h", -- short for icons, ttt based
 		IsDefault = false, -- Is default in TTT, obviously no
-		DefaultColor = Color(255,128,0,255),
+		DefaultColor = Color(255,128,0,255), -- Default Color
 		DefaultPct = "0.15", -- Role Percentage
 		DefaultMax = "1", -- Default Limit
 		DefaultMin = "7", -- Default Min Players for Role to be there
@@ -30,14 +30,14 @@ local function AddJackal()
 	local Jackal = { -- table to create new role
 		Rolename = "Jackal", -- Normal Name
 		String = "jackal", -- String Name
-		IsGood = true, -- Fights for the good, special for survivor because he normally wouldnt be good, but we need to do this to prevent breaking addons.
+		IsGood = false, -- Fights for the good
 		IsEvil = false, -- Fights for the bad
 		IsSpecial = true, -- Is it special, eg. not innocent
 		Creditsforkills = true, -- Gets Credits for kills
 		ShortString = "jackal", -- for icons
 		Short = "jk", -- short for icons, ttt based
 		IsDefault = false, -- Is default in TTT, obviously no
-		DefaultColor = Color(0, 255, 255),
+		DefaultColor = Color(0, 255, 255), -- Default Color
 		DefaultPct = "0.05", -- Role Percentage
 		DefaultMax = "1", -- Default Limit
 		DefaultMin = "6", -- Default Min Players for Role to be there

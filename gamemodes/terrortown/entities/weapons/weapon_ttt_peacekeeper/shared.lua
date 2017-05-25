@@ -128,7 +128,9 @@ function SWEP:Think()
 					table.insert(highnoontargets, v)
 				elseif owner:GetRole() == ROLE_DETECTIVE or owner:GetRole() == ROLE_INNOCENT or (owner.GetGood and owner:GetGood()) then
 					table.insert(highnoontargets, v)
-				end
+				elseif owner.GetJackal and owner:GetJackal() and !v:GetJackal() then
+					table.insert(highnoontargets, v)
+				end 
 			end
 		end
 

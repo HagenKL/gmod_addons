@@ -144,13 +144,13 @@ hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
 		if buster then
 			owner = buster.GetOwner and buster:GetOwner()
 		end
-		if buster and ((owner:IsTraitor() or (owner.IsEvil and owner:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil())) or (owner:GetDetective() or owner:GetRole() == ROLE_INNOCENT or (owner.IsGood and owner:IsGood()))) and ply != owner then
+		if buster and ((owner:IsTraitor() or (owner.IsEvil and owner:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil())) or (owner:GetDetective() or owner:GetRole() == ROLE_INNOCENT or (owner.IsGood and (owner:IsGood() or owner:GetJackal())))) and ply != owner then
 			buster:BlowDoor()
 			return false
 		else
 			for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
 				local own = v.GetOwner and v:GetOwner()
-				if v:GetClass() == "entity_doorbuster" and own and (own:IsTraitor() or (own.IsEvil and own:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) or own:GetDetective() or own:GetRole() == ROLE_INNOCENT or (own.IsGood and own:IsGood())) and ply != own then
+				if v:GetClass() == "entity_doorbuster" and own and (own:IsTraitor() or (own.IsEvil and own:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) or own:GetDetective() or own:GetRole() == ROLE_INNOCENT or (own.IsGood and (owner:IsGood() or owner:GetJackal()))) and ply != own then
 					v:BlowDoor()
 					return false
 				end
