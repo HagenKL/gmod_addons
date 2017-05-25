@@ -102,7 +102,7 @@ if SERVER then
 
 
   local function MFHoly(victim, killer)
-	killer:EmitSound("gamefreak/holy.wav")
+	  killer:EmitSound("gamefreak/holy.wav")
     timer.Create("MFHoly" .. killer:EntIndex(), 1, 5, function()
 		killer:SetGravity(0.01)
 		killer:SetVelocity(Vector(0,0, 250))
@@ -251,11 +251,11 @@ if SERVER then
   		dmg:SetInflictor(fate)
   		dmg:SetDamageType(DMG_BULLET)
   		ent:TakeDamageInfo(dmg)
-		if !ent:IsTerror() then
-			SendMFMessages(ent.MFEnt, ent)
-		end
-  		return false
-  	end
+  		if !ent:IsTerror() then
+  			SendMFMessages(ent.MFEnt, ent)
+  		end
+    		return false
+    	end
   end
 
   local function MFOneHitHook(ent, dmginfo)

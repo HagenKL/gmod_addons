@@ -7,7 +7,7 @@ if (SERVER) then
 	AddCSLuaFile( "gamemodes/terrortown/entities/entities/entity_doorbuster/cl_init.lua" )
 	SWEP.Weight				= 5
 	SWEP.AutoSwitchTo		= false
-	SWEP.AutoSwitchFrom		= false		
+	SWEP.AutoSwitchFrom		= false
 end
 
 if ( CLIENT ) then
@@ -16,9 +16,9 @@ if ( CLIENT ) then
 	SWEP.ViewModelFOV		= 64
 	SWEP.ViewModelFlip		= false
 	SWEP.CSMuzzleFlashes	= false
-	
-	
-	SWEP.PrintName			= "Door Buster"			
+
+
+	SWEP.PrintName			= "Door Buster"
 	SWEP.Author				= "dante vi almark"
 	SWEP.Slot				= 6
 	SWEP.SlotPos			= 11
@@ -102,7 +102,7 @@ end*/
 
 
 function SWEP:Plant()
-	if not SERVER then return end 
+	if not SERVER then return end
 	local tr = self.Owner:GetEyeTrace()
 	local angle = tr.HitNormal:Angle()
     local bomb = ents.Create("entity_doorbuster")

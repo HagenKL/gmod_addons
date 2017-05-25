@@ -19,12 +19,12 @@ function ENT:Initialize()
 	self:SetModelScale(2,0.01)
 
 	if( SERVER ) then
-		self:SetHealth(5)
-		self:SetMaxHealth(5)
+		self:SetHealth(1)
+		self:SetMaxHealth(1)
 		self:GetPhysicsObject():SetMass( 1 )
 		self:GetPhysicsObject():ApplyForceCenter( ( self.Target:GetShootPos() - self:GetPos() ) * Vector( 3, 3, 3 ) )
 	end
-	
+
 	if( CLIENT ) then
       self:EmitSound( Sound( BirdSounds[ math.random( 1, #BirdSounds ) ], 100 ) )
 	end
@@ -34,11 +34,11 @@ end
 function ENT:Think()
 	if( SERVER ) then
 		if( IsValid( self.Target ) ) then
-			local Mul = 2
-			if( self:GetPos():Distance( self.Target:GetPos() ) < 200 ) then Mul = 10 end
+			local Mul = 3
+			if( self:GetPos():Distance( self.Target:GetPos() ) < 200 ) then Mul = 15 end
 			self:GetPhysicsObject():ApplyForceCenter( ( self.Target:GetShootPos() - self:GetPos() ) * Vector( Mul, Mul, Mul ) )
 			self:SetAngles( ( ( self.Target:GetShootPos() - self:GetPos() ) * Vector( Mul, Mul, Mul ) ):Angle() )
-			
+
 			if( !self.Target:Alive() ) then
 				self:Remove()
 			end

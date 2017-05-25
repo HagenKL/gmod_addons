@@ -178,7 +178,7 @@ if SERVER then
   local function DRRoundreset()
     for k,v in pairs(player.GetAll()) do
       if v:IsTerror() and v:IsFakeDead() then
-		v:SetNoDraw(false)
+		    v:SetNoDraw(false)
         --v:SetColor(255,255,255,255)
         net.Start("DRChangeMaterial")
         net.WriteBool(false)
