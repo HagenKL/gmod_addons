@@ -185,6 +185,7 @@ function SCORE:ApplyEventLogScores(wintype)
       elseif ply:GetGood() then
          table.insert(tbl.detectives, ply:SteamID())
       elseif GetRoleTableByID(ply:GetRole()).newteam then
+         tbl[GetRoleTableByID(ply:GetRole()).String .. "s"] = {}
          table.insert(tbl[GetRoleTableByID(ply:GetRole()).String .. "s"], ply:SteamID())
       end
    end
