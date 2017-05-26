@@ -68,7 +68,7 @@ Event(EVENT_FINISH,
                   else
                     for k,v in pairs(TTTRoles) do
                       if v.newteam and e.win == v.winning_team then
-                        return star_icon, v.Rolename .. " won"
+                        return star_icon, v.Rolename .. "s won"
                       end
                     end
                   end

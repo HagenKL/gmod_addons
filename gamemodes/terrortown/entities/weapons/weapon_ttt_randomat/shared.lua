@@ -376,7 +376,7 @@ local NoBulletdamageRandomat = false
   local function RandomatFreeforAll()
     RandomatBroadcast("Randomat: ", Color(255,255,255), "Free for all!")
     for key,ply in pairs(player.GetAll()) do
-      if ply:GetRole() == ROLE_TRAITOR then
+      if ply:GetRole() == ROLE_TRAITOR or (ply.GetEvil and ply:GetEvil()) then
         ply:GiveEquipmentItem(EQUIP_RADAR)
         ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
         timer.Simple(0.1, function()
@@ -390,7 +390,7 @@ local NoBulletdamageRandomat = false
             ply:Give("weapon_ttt_push")
             ply:Give("weapon_ttt_knife")
           end )
-      elseif ply:GetRole() == ROLE_INNOCENT then
+      elseif ply:GetRole() == ROLE_INNOCENT or (ply.GetJackal and ply:GetJackal()) then
         timer.Simple(0.1, function()
             ply:Give("weapon_ttt_push")
             ply:Give("weapon_ttt_knife")
@@ -466,7 +466,7 @@ local NoBulletdamageRandomat = false
           if ModelNum > 0 then
             ModelNum = ModelNum - 1
             ply.Modelchanged = true
-            if ply:GetRole() == ROLE_INNOCENT then
+            if ply:GetRole() == ROLE_INNOCENT or (ply.GetJackal and ply:GetJackal()) then
               ply:SetModel("models/player/mossman.mdl")
             elseif ply:GetTraitor() or (ply.GetEvil and ply:GetEvil()) then
               ply:SetModel("models/player/skeleton.mdl")
@@ -478,7 +478,7 @@ local NoBulletdamageRandomat = false
     hook.Add("PlayerSpawn", "RandomatModelFix", function(ply)
         timer.Simple(0.1, function()
           if IsValid(ply) and ply.Modelchanged then
-            if ply:GetRole() == ROLE_INNOCENT then
+            if ply:GetRole() == ROLE_INNOCENT or (ply.GetJackal and ply:GetJackal()) then
               ply:SetModel("models/player/mossman.mdl")
             elseif ply:GetTraitor() then
               ply:SetModel("models/player/skeleton.mdl")
