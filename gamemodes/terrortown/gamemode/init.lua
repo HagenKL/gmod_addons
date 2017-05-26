@@ -831,7 +831,7 @@ function GM:TTTCheckForWin()
    for k,v in pairs(alive) do
      if v then
        i = i + 1 -- Get if more then one team is alive
-       if i == 2 then
+       if i >= 2 then
          i = nil -- Nil the value
          return WIN_NONE -- Round shouldnt end
        end
