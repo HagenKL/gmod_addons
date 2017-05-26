@@ -1,4 +1,3 @@
-
 local changelogmenu = nil
 
 local function OpenChangelogMenu()

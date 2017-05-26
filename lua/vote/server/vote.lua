@@ -72,7 +72,7 @@ end
 
 local function OpenChangelogMenu(ply)
   net.Start("VoteChangelog")
-  net.WriteString(file.Read("vote/changelog.txt", "LUA"))
+  net.WriteString(file.Read("vote/changelog.lua", "LUA"))
   net.Send(ply)
 end
 

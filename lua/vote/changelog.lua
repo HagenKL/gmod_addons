@@ -10,7 +10,7 @@
 
 <br>
 
-This is the Changelog for Gamefreak's Addons! (Started Documenting 05/26/2017)<br>
+This is the Changelog for Gamefreaks Addons! (Started Documenting 05/26/2017)<br>
 This will only get shown once a day! <br>
 It will get updated every time I have time to change something!<br>
 
@@ -31,11 +31,11 @@ It will get updated every time I have time to change something!<br>
 
 - Fixed a Bug that caused the Role Chat to not be shown  <br>
 
-- Fixed a Bug that prevented the Juggernog from healing (and no you didnt get a staminup instead)  <br>
+- Fixed a Bug that prevented the Juggernog from healing the player. (and no you didnt get a staminup instead)  <br>
 
 <div style="width: 100%; text-align: left; margin: 5px; font-weight: bold;">Known Bugs:</div>
 
-- Something is wrong with the Dead Ringer? ("Achja der DeadRinger funktioniert nicht" - Fisk) I don't know what's not working.
+- Something is wrong with the Dead Ringer, but I dont know what. ("Achja der DeadRinger funktioniert nicht" - Fisk)
 
 <div style="width: 100%; text-align: left; margin-top: 15px; font-weight: bold;">- Gamefreak</div>
 
