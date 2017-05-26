@@ -52,6 +52,7 @@ end
 
 function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendGoodList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
+function SendNeutralList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if !v.IsGood and !v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendTraitorList(ply_or_rf, pred) SendRoleList(ROLE_TRAITOR, ply_or_rf, pred) end
 function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) end
 
@@ -62,11 +63,14 @@ function SendInnocentList(ply_or_rf)
    -- sending traitors only a list of actual innocents.
    local inno_ids = {}
    local traitor_ids = {}
+   local neutral_ids = {}
    for k, v in pairs(player.GetAll()) do
       if v:IsRole(ROLE_INNOCENT) then
          table.insert(inno_ids, v:EntIndex())
       elseif v:IsEvil() then
          table.insert(traitor_ids, v:EntIndex())
+      elseif v:IsJackal() then
+        table.insert(neutral_ids, v:EntIndex())
       end
    end
 
@@ -78,11 +82,23 @@ function SendInnocentList(ply_or_rf)
    -- reset everyone who is not detective
    table.Add(inno_ids, traitor_ids)
    table.Shuffle(inno_ids)
+   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetNeutralFilter())
+   table.Add(inno_ids, neutral_ids)
+   table.Shuffle(inno_ids)
    SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetInnocentFilter())
+end
+
+function SendConfirmedPlayers(ply_or_rf)
+  SendConfirmedTraitors(ply_or_rf)
+  SendConfirmedNeutrals(ply_or_rf)
 end
 
 function SendConfirmedTraitors(ply_or_rf)
    SendEvilList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
+end
+
+function SendConfirmedNeutrals(ply_or_rf)
+   SendNeutralList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
 end
 
 function SendFullStateUpdate()

@@ -70,12 +70,19 @@ function TTTVote.ResetVotes(ply, reset)
   end
 end
 
+local function OpenChangelogMenu(ply)
+  net.Start("VoteChangelog")
+  net.WriteString(file.Read("vote/changelog.txt", "LUA"))
+  net.Send(ply)
+end
+
 function TTTVote.InitVote(ply)
   if IsValid(ply) then
     local currentdate = os.date("%d/%m/%Y",os.time())
     if ply:GetPData("vote_stored_date") == nil then
       TTTVote.SetDate(ply , currentdate)
       ply:ResetVotes()
+      OpenChangelogMenu(ply)
     end
     TTTVote.InitVoteviaDate(ply, ply:GetPData("vote_stored_date"))
   end
@@ -84,8 +91,9 @@ end
 function TTTVote.InitVoteviaDate(ply, date)
   local currentdate = os.date("%d/%m/%Y",os.time())
   if date != currentdate then
-    ply:ResetVotes()
     TTTVote.SetDate(ply , currentdate)
+    ply:ResetVotes()
+    OpenChangelogMenu(ply)
   else
     ply:SetVotes(ply:GetPData("vote_stored"))
   end
@@ -197,6 +205,7 @@ function TTTVote.IsEven(number)
   return number % 2 == 0
 end
 
+concommand.Add("ttt_votechangelog", OpenChangelogMenu)
 concommand.Add("ttt_resetallvotes", TTTVote.ResetVoteforEveryOne)
 concommand.Add("ttt_resetvotes",TTTVote.ResetVoteforOnePlayer, AutoCompleteVote)
 hook.Add("PlayerInitialSpawn", "InitialVote", TTTVote.InitVote)

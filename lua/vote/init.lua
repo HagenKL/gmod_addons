@@ -6,6 +6,7 @@ if not TTTVote then
 	AddCSLuaFile("vote/shared/halos_shd.lua")
 	AddCSLuaFile("vote/shared/player.lua")
 	AddCSLuaFile("vote/client/cl_menu.lua")
+	AddCSLuaFile("vote/client/cl_changelog.lua")
 	AddCSLuaFile("vote/client/cl_messages.lua")
 	AddCSLuaFile("vote/cl_init.lua")
 	AddCSLuaFile("vote/shared.lua")
@@ -38,6 +39,7 @@ if not TTTVote then
 	--end
 
 	--NetworkStrings
+	util.AddNetworkString("VoteChangelog")
 	util.AddNetworkString("TTTVoteMenu")
 	util.AddNetworkString("TTTPlacedVote")
 	util.AddNetworkString("TTTVoteMessage")
