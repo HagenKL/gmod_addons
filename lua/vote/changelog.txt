@@ -19,7 +19,9 @@ It will get updated every time I have time to change something!<br>
 
 - Started Documenting <br>
 
-- Added Jackal <br>
+- Added new Role: <b> Jackal </b> <br>
+<div style=" text-align: left; margin-left: 15px;"> - 3 Credits + Body Armor <br>
+- Wins as the last man standing <br> </div>
 
 <br>
 
