@@ -151,7 +151,7 @@ if CLIENT then
 		if valid&&ply:IsSpec() then surface.PlaySound("weapons/prank.mp3") end
 
 		if valid then
-			local roleString=role==(role==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and "an innocent" or "a traitor"
+			local roleString = (role==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and "an innocent" or "a traitor"
 			if !(valid&&ply:IsTerror()) then chat.AddText("Random Test: ", roleColor,nick,textColor," was ",roleColor,roleString,textColor,"!")
 			else if lply:IsTerror() then PrintFakeCenteredText(nick.." is "..roleString.."!",txtDelay,roleColor) end chat.AddText("Random Test: ", roleColor,nick,textColor," is ",roleColor,roleString,textColor,"!") end
 		end

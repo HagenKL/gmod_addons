@@ -713,7 +713,7 @@ local NoBulletdamageRandomat = false
         RandomatTime,
         RandomatRandomWeapons,
         RandomatSideWays,
-        RandomatScreenFlip,
+        --RandomatScreenFlip,
         RandomatInvert
     }
 
@@ -746,7 +746,7 @@ local NoBulletdamageRandomat = false
           RandomatTime,
           RandomatRandomWeapons,
           RandomatSideWays,
-          RandomatScreenFlip,
+          --RandomatScreenFlip,
           RandomatInvert
       }
     end
