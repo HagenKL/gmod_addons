@@ -455,7 +455,9 @@ if SERVER then
       end
 
       -- send indicator to traitors
-      self:SendWarn(true)
+      if ply:IsActiveEvil() then
+        self:SendWarn(true)
+      end
    end
 
    function ENT:ShowC4Config(ply)
@@ -513,7 +515,7 @@ if SERVER then
       if IsValid(bomb) and bomb:GetClass() == "ttt_c4" and not bomb.DisarmCausedExplosion and bomb:GetArmed() then
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then
             return
-         elseif bomb.SafeWires[wire] or ply:IsEvil() or ply == bomb:GetOwner() then
+         elseif bomb.SafeWires[wire] or (ply:IsEvil() and bomb:GetOwner():IsEvil()) or ply == bomb:GetOwner() then
             LANG.Msg(ply, "c4_disarmed")
 
             bomb:Disarm(ply)
