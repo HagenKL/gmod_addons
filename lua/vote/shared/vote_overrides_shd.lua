@@ -1,5 +1,4 @@
 if SERVER then
-	--local totem = GetGlobalBool("ttt_totem", true)
 	function TTTVote.GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
 		local msg = string.lower(text)
 		if string.sub(msg,1,8) == "!prozent" then
@@ -54,12 +53,10 @@ if SERVER then
 			end
 		end
 	end
-	--if totem then
-		hook.Add("Initialize", "TTTTotemOverrideFunction", TTTVote.Overrides)
-	--end
+
+	hook.Add("Initialize", "TTTTotemOverrideFunction", TTTVote.Overrides)
 	hook.Add("PlayerSay","TTTVote", TTTVote.GetVoteMessage)
 else
-	--local totem = GetGlobalBool("ttt_totem", true)
 	function TTTVote.VoteMakeCounter(pnl)
 		pnl:AddColumn("Votes", function(ply)
 			if ply:GetNWInt("VoteCounter",0) < 3 then

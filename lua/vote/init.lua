@@ -20,10 +20,6 @@ if not TTTVote then
 
 	--Convars
 	CreateConVar("ttt_startvotes","5",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Vote mit der jeder startet.")
-	--local totem = CreateConVar("ttt_totem", "1",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Soll TTT Totem an sein?")
-
-	-- Bool for Client
-	--SetGlobalBool("ttt_totem", totem:GetBool())
 
 	-- Execute Files
 	include("vote/shared/vote_overrides_shd.lua")
@@ -34,9 +30,7 @@ if not TTTVote then
 
 	--Tables
 	TTTVote.votebetters = TTTVote.votebetters or {}
-	--if totem then
 	TTTVote.AnyBeacons = true
-	--end
 
 	--NetworkStrings
 	util.AddNetworkString("VoteChangelog")

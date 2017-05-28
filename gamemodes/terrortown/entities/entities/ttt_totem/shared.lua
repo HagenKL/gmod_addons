@@ -32,26 +32,6 @@ function ENT:Initialize()
   self:PhysWake()
 end
 
-function ENT:AddHalos()
-  local owner = self:GetOwner()
- if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
-   net.Start("TTTVoteAddHalos")
-   net.WriteBool(false)
-   net.WriteEntity(self)
-   net.Broadcast()
- end
-end
-
-function ENT:RemoveHalos()
-  local owner = self:GetOwner()
- if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
-  net.Start("TTTVoteRemoveHalos")
-  net.WriteBool(false)
-  net.WriteEntity(self)
-  net.Broadcast()
- end
-end
-
 function ENT:UseOverride(activator)
   if IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses < 2 then
     activator:SetNWBool("CanSpawnTotem",true)
@@ -62,7 +42,6 @@ function ENT:UseOverride(activator)
     net.Start("TTTTotem")
     net.WriteInt(4,8)
     net.Send(activator)
-    self:RemoveHalos()
     self:Remove()
     timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
   elseif IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses >= 2 then
@@ -96,7 +75,6 @@ function ENT:OnTakeDamage(dmginfo)
     util.Effect("cball_explode", effect)
     sound.Play(zapsound, self:GetPos())
     self:GetOwner():SetNWEntity("Totem",NULL)
-    self:RemoveHalos()
     self:Remove()
     timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
   end
@@ -108,7 +86,6 @@ function ENT:FakeDestroy()
   util.Effect("cball_explode", effect)
   sound.Play(zapsound, self:GetPos())
   self:GetOwner():SetNWEntity("Totem",NULL)
-  self:RemoveHalos()
   self:Remove()
   timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
 end

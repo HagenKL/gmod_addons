@@ -1,16 +1,12 @@
---local totemenabled = GetGlobalBool("ttt_totem", true)
-
-local startvotes = GetConVar("ttt_startvotes")
-
 function TTTVote.ReceiveVotes(len, sender)
   local target = net.ReadEntity()
   if target:GetNWInt("VoteCounter") < 3 then
 	  target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
 	  TTTVote.CalculateVotes(sender, target, sender)
   else
-	net.Start("TTTVoteFailure")
-	net.WriteEntity(target)
-	net.Send(sender)
+  	net.Start("TTTVoteFailure")
+  	net.WriteEntity(target)
+  	net.Send(sender)
   end
 end
 
@@ -28,14 +24,12 @@ function TTTVote.CalculateVotes(ply, target, sender)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
-    TTTVote.AddHalos(target)
-	local totem = ply:GetNWEntity("Totem",NULL)
-	if IsValid(totem) then
-		totem:AddHalos()
-	end
+    if target:IsTerror() then
+      TTTVote.AddHalos(target)
+    end
     for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
       v:UsedVote()
-      if target:IsRole(ROLE_INNOCENT) and (v:IsRole(ROLE_INNOCENT) or v:GetDetective()) then
+      if target:GetGood() and v:GetGood() then
         v:SetNWBool("TTTVotePunishment", true)
       end
     end
@@ -49,19 +43,18 @@ function TTTVote.ResetVotes(ply, reset)
   ply:SetNWInt("VoteCounter",0)
   ply:SetNWInt("UsedVotes", 0)
   ply:SetNWBool("TTTVotePunishment", false)
-  --if totemenabled then
-    TTTVote.AnyTotems = true
-    local totem = ply:GetNWEntity("Totem")
-    if IsValid(totem) then
-      totem:FakeDestroy()
-    end
-    ply.totemuses = 0
-    ply:SetNWEntity("Totem",NULL)
-    ply:SetNWBool("PlacedTotem", false)
-    ply:SetNWBool("CanSpawnTotem", true)
-    ply.DamageNotified = false
-    ply.TotemSuffer = 0
-  --end
+  TTTVote.AnyTotems = true
+  local totem = ply:GetNWEntity("Totem")
+  if IsValid(totem) then
+    totem:FakeDestroy()
+  end
+  ply.totemuses = 0
+  ply:SetNWEntity("Totem",NULL)
+  ply:SetNWBool("PlacedTotem", false)
+  ply:SetNWBool("CanSpawnTotem", true)
+  ply.DamageNotified = false
+  ply.TotemSuffer = 0
+
   for key,v in pairs(player.GetAll()) do
     ply:SetNWInt("UsedVotesontarget " .. v:SteamID(), 0)
   end
@@ -161,9 +154,7 @@ function TTTVote.CalculateVoteRoundstart()
   for k,v in pairs(player.GetAll()) do
     v:SetNWInt("VoteCounter", 0)
     v:SetNWInt("UsedVotes",0)
-    --if totemenabled then
-      TTTVote.AnyTotems = true
-    --end
+    TTTVote.AnyTotems = true
     for key,ply in pairs(player.GetAll()) do
       v:SetNWInt("UsedVotesontarget " .. ply:SteamID(), 0)
     end
