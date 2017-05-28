@@ -915,9 +915,20 @@ function SelectRoles()
 
    local det_count = GetDetectiveCount(choice_count)
 
+   for k,v in pairs(player.GetAll()) do
+     if v.ForcedRole then
+       for j,p in pairs(TTTRoles) do
+         if v.ForcedRole == p.ID then
+           p.RoleForce = v
+           table.RemoveByValue(choices, v)
+         end
+       end
+     end
+   end
+
    for k,v in pairs(TTTRoles) do
      if not v.IsDefault then
-       if v.Chanceperround and v.Chanceperround > math.random(0,1) then
+       if v.Chanceperround and v.Chanceperround > math.random(0,1) and !v.RoleForce then
           continue
        end
        if v.IsGoodReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() and #goodtbl < det_count then
@@ -940,9 +951,15 @@ function SelectRoles()
 
    hook.Call("TTTSelectRoles", GAMEMODE, choices_copy, prev_roles_copy)
 
+   if TTTRoles[ROLE_TRAITOR].RoleForce then
+     TTTRoles[ROLE_TRAITOR].RoleForce:SetRole(ROLE_TRAITOR)
+     traitor_count = traitor_count - 1
+   end
+
    -- first select traitors
    local ts = 0
    while ts < traitor_count do
+
       -- select random index in choices table
       local pick = math.random(1, #choices)
 
@@ -963,6 +980,12 @@ function SelectRoles()
    -- now select detectives, explicitly choosing from players who did not get
    -- traitor, so becoming detective does not mean you lost a chance to be
    -- traitor
+
+   if TTTRoles[ROLE_DETECTIVE].RoleForce then
+     TTTRoles[ROLE_DETECTIVE].RoleForce:SetRole(ROLE_DETECTIVE)
+     det_count = det_count - 1
+   end
+
    local ds = 0
    local min_karma = GetConVarNumber("ttt_detective_karma_min") or 0
    while (ds < det_count) and (#choices >= 1) do
@@ -978,7 +1001,6 @@ function SelectRoles()
 
          break -- out of while
       end
-
 
       local pick = math.random(1, #choices)
       local pply = choices[pick]
@@ -1002,11 +1024,16 @@ function SelectRoles()
    end
 
    for k,v in RandomPairs(roles) do
-     if choice_count < GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() then continue end
+     if choice_count < GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() and !v.RoleForce then continue end
      local sr = 0
      local role_count = math.floor(choice_count * GetConVar("ttt_" .. v.String .. "_pct"):GetFloat())
 
      role_count = math.Clamp(role_count, 1, GetConVar("ttt_" .. v.String .. "_max"):GetInt())
+
+     if v.RoleForce then
+       v.RoleForce:SetRole(v.ID)
+       role_count = role_count - 1
+     end
 
      while sr < role_count do
         local pick = math.random(1, #choices)
@@ -1024,11 +1051,16 @@ function SelectRoles()
      end
    end
 
+   for k,v in pairs(TTTRoles) do
+     v.RoleForce = nil
+   end
+
    GAMEMODE.LastRole = {}
 
    for _, ply in pairs(player.GetAll()) do
       -- initialize credit count for everyone based on their role
       ply:SetDefaultCredits()
+      ply.ForcedRole = nil
 
       -- store a steamid -> role map
       GAMEMODE.LastRole[ply:SteamID()] = ply:GetRole()

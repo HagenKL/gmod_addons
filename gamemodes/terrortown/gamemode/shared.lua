@@ -90,6 +90,7 @@ COLOR_OLIVE  = Color(100, 100, 0, 255)
 TTTRoles = TTTRoles or {
   [ROLE_INNOCENT] = {
     ID = ROLE_INNOCENT,
+    Rolename = "Innocent",
     String = "innocent",
     IsGood = true,
     IsEvil = false,
@@ -106,6 +107,7 @@ TTTRoles = TTTRoles or {
   },
   [ROLE_TRAITOR] = {
     ID = ROLE_TRAITOR,
+    Rolename = "Traitor",
     String = "traitor",
     IsGood = false,
     IsEvil = true,
@@ -124,6 +126,7 @@ TTTRoles = TTTRoles or {
   },
   [ROLE_DETECTIVE] = {
     ID = ROLE_DETECTIVE,
+    Rolename = "Detective",
     String = "detective",
     IsGood = true,
     IsEvil = false,

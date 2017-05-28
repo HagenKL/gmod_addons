@@ -182,6 +182,36 @@ function AddForceCommand(Role)
   concommand.Add("ttt_force_" .. Role.String, _G["force_" .. Role.String], nil,nil, FCVAR_CHEAT )
 end
 
+local function AutoCompleteForceRole( cmd, stringargs )
+
+  stringargs = string.Trim( stringargs ) -- Remove any spaces before or after.
+  stringargs = string.lower( stringargs )
+
+  local tbl = {}
+
+  for k, v in pairs( TTTRoles ) do
+    local name = v.String
+    if string.find( string.lower( name ), stringargs ) then
+      name = "\"" .. name .. "\"" -- We put quotes around it incase players have spaces in their names.
+      name = "ttt_forcerole " .. name -- We also need to put the cmd before for it to work properly.
+
+      table.insert( tbl, name )
+    end
+  end
+
+  return tbl
+end
+
+local function ForceRolePrep(ply, cmd, args)
+  if IsValid(ply) and (ply:SteamID() == "STEAM_0:0:20342578" or ply:SteamID() == "STEAM_0:0:64114326") then
+    if GetRoleTableByString(args[1]) then
+      ply.ForcedRole = GetRoleTableByString(args[1]).ID
+    end
+  end
+end
+
+concommand.Add("ttt_forcerole", ForceRolePrep, AutoCompleteForceRole)
+
 
 local function force_spectate(ply, cmd, arg)
    if IsValid(ply) then

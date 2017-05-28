@@ -193,13 +193,13 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
       return
    end
 
-   if not hook.Run("TTTCanSearchCorpse", ply, rag, covert, long_range, (rag.was_role == ROLE_TRAITOR)) then
+   if not hook.Run("TTTCanSearchCorpse", ply, rag, covert, long_range, IsRoleEvil(rag.was_role)) then
       return
    end
 
    -- init a heap of data we'll be sending
    local nick  = CORPSE.GetPlayerNick(rag)
-   local traitor = (rag.was_role == ROLE_TRAITOR)
+   local traitor = IsRoleEvil(rag.was_role)
    local role  = rag.was_role
    local eq    = rag.equipment or EQUIP_NONE
    local c4    = rag.bomb_wire or -1
