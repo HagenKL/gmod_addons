@@ -131,7 +131,7 @@ if CLIENT then
 
          color = COLOR_RED
 
-      elseif client:IsTraitor() or (client.IsEvil and client:IsEvil()) and (ent:IsTraitor() or (ent.IsEvil and ent:IsEvil())) or client:IsSpec() then
+      elseif (client:IsTraitor() or (client.IsEvil and client:IsEvil())) and (ent:IsTraitor() or (ent.IsEvil and ent:IsEvil())) or client:IsSpec() then
         text = ent:Nick() .. " (Disguised as " .. ent:GetNWString("AdvDisguiseName") .. ")"
         color = COLOR_RED
       else
