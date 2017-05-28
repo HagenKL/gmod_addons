@@ -186,7 +186,7 @@ if CLIENT then
 
         -- Minimalist target ID only draws a health-coloured nickname, no hints, no
         -- karma, no tag
-        if minimal then return end
+        if minimal then return true end
 
         -- Draw subtitle: health or type
         local clr = rag_color
