@@ -216,6 +216,7 @@ if SERVER then
       self:SpawnForRound(true)
     end
 
+    self:SetMaxHealth(100)
     timer.Remove("TTTASC" .. self:EntIndex())
     self:SetNWBool("ASCCanRespawn", false)
     self:SetNWInt("ASCthetimeleft", 10)
