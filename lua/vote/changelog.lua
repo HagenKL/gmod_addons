@@ -23,6 +23,10 @@ It will get updated every time I have time to change something!<br>
 <div style=" text-align: left; margin-left: 15px;"> - 3 Credits + Body Armor <br>
 - Wins as the last man standing <br> </div>
 
+- Added Command: ttt_forcerole <br>
+<div style=" text-align: left; margin-left: 15px;"> - Available options to force are "innocent", "traitor", "detective", "hunter" and "jackal" <br>
+- Only Dhalucard may use this command. <br> </div>
+
 <br>
 
 <div style="width: 100%; text-align: left; margin: 5px; font-weight: bold;">Bugfixes:</div>
