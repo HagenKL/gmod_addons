@@ -70,40 +70,23 @@ SWEP.Secondary.Ammo         = "none"
 
 
 -------------Lemon Launcher local globals---------------------------------
-reloading = 0
-local BM = 0
-local nextthink = 0
-SWEP.LastSpoke = 0
-SWEP.LastReload = 0
 
 
 function SWEP:Initialize()
-util.PrecacheSound("lemongrenade/-lemon.wav")
-util.PrecacheSound("lemongrenade/combustable-.wav")
-util.PrecacheSound("lemongrenade/Combustible.01.wav")
-util.PrecacheSound("lemongrenade/Combustible.02.wav")
-util.PrecacheSound("lemongrenade/Combustible.03.wav")
-util.PrecacheSound("lemongrenade/Combustible.04.wav")
-util.PrecacheSound("lemongrenade/Combustible.05.wav")
-util.PrecacheSound("lemongrenade/lemonadecombustible.wav")
-util.PrecacheSound("lemongrenade/ready_throw.wav")
-util.PrecacheSound("weapons/mortar/mortar_fire1.wav")
-self:SetWeaponHoldType( self.HoldType )
+	util.PrecacheSound("lemongrenade/-lemon.wav")
+	util.PrecacheSound("lemongrenade/combustable-.wav")
+	util.PrecacheSound("lemongrenade/Combustible.01.wav")
+	util.PrecacheSound("lemongrenade/Combustible.02.wav")
+	util.PrecacheSound("lemongrenade/Combustible.03.wav")
+	util.PrecacheSound("lemongrenade/Combustible.04.wav")
+	util.PrecacheSound("lemongrenade/Combustible.05.wav")
+	util.PrecacheSound("lemongrenade/lemonadecombustible.wav")
+	util.PrecacheSound("lemongrenade/ready_throw.wav")
+	util.PrecacheSound("weapons/mortar/mortar_fire1.wav")
+	self:SetWeaponHoldType( self.HoldType )
 	if SERVER then
 		timer.Simple(0.1, function() if (IsValid(self.Owner)) then self.Owner:GiveAmmo(1, "RPG_Round", true) end end)
 	end
-end
-
-function SWEP:Holster()
-	timer.Destroy( "rel1" )
-	timer.Destroy( "rel2" )
-	timer.Destroy( "rel3" )
-	timer.Destroy( "rel4" )
-	timer.Destroy( "cli1" )
-	timer.Destroy( "cli2" )
-	timer.Destroy( "cli3" )
-	timer.Destroy( "cli4" )
-	return self.BaseClass.Holster(self)
 end
 
 function SWEP:Deploy()
@@ -140,8 +123,6 @@ end
 
 function SWEP:PrimaryAttack(data)
 	if (not self:CanPrimaryAttack()) then return end
-	self.LastReload = CurTime() + 0.5
-	nextthink = CurTime()+0.5
 
 	self:EmitSound( "lemongrenade/LemonadeCombustible.wav" )
 	self:EmitSound("weapons/mortar/mortar_fire1.wav")
@@ -183,12 +164,8 @@ function SWEP:PrimaryAttack(data)
 end
 
 function SWEP:SecondaryAttack()
-    if self.LastSpoke < CurTime() then
-        self.LastSpoke = CurTime() + 3
-        self:EmitSound( "lemongrenade/combustible.0" .. math.random( 1, 5 ) .. ".wav" )
-
-    end
-	self.Weapon:SetNextPrimaryFire( self.LastSpoke )
+	self:EmitSound( "lemongrenade/combustible.0" .. math.random( 1, 5 ) .. ".wav")
+	self.Weapon:SetNextSecondaryFire( CurTime() + 3 )
 end
 
 if CLIENT then
