@@ -24,9 +24,6 @@ function TTTVote.CalculateVotes(ply, target, sender)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
-    if target:IsTerror() then
-      TTTVote.AddHalos(target)
-    end
     for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
       v:UsedVote()
       if target:GetGood() and v:GetGood() then
@@ -38,7 +35,8 @@ function TTTVote.CalculateVotes(ply, target, sender)
   TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
 end
 
-function TTTVote.ResetVotes(ply, reset)
+function TTTVote.ResetVotes(ply)
+  ply.totemuses = 0
   ply:ResetVotes()
   ply:SetNWInt("VoteCounter",0)
   ply:SetNWInt("UsedVotes", 0)
@@ -48,7 +46,7 @@ function TTTVote.ResetVotes(ply, reset)
   if IsValid(totem) then
     totem:FakeDestroy()
   end
-  ply.totemuses = 0
+
   ply:SetNWEntity("Totem",NULL)
   ply:SetNWBool("PlacedTotem", false)
   ply:SetNWBool("CanSpawnTotem", true)
@@ -58,7 +56,7 @@ function TTTVote.ResetVotes(ply, reset)
   for key,v in pairs(player.GetAll()) do
     ply:SetNWInt("UsedVotesontarget " .. v:SteamID(), 0)
   end
-  if reset and TTTVote.votebetters[ply:SteamID()] != nil then
+  if SERVER and TTTVote.votebetters[ply:SteamID()] and istable(TTTVote.votebetters[ply:SteamID()]) then
     table.Empty(TTTVote.votebetters[ply:SteamID()])
   end
 end
@@ -99,13 +97,10 @@ end
 function TTTVote.ResetVoteforEveryOne( ply, cmd, args )
   if (!IsValid(ply)) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0) then
     for k,v in pairs(player.GetAll()) do
-      TTTVote.ResetVotes(v, false)
+      TTTVote.ResetVotes(v)
     end
-    table.Empty(TTTVote.votebetters)
     net.Start("TTTResetVote")
     net.WriteBool(true)
-    net.Broadcast()
-    net.Start("TTTVoteRemoveAllHalos")
     net.Broadcast()
   end
 end
@@ -124,7 +119,7 @@ function TTTVote.ResetVoteforOnePlayer(ply, cmd, args)
     end
     local pl = _match
     if IsValid(pl) then
-      TTTVote.ResetVotes(pl, true)
+      TTTVote.ResetVotes(pl)
       net.Start("TTTResetVote")
       net.WriteBool(false)
       net.Send(pl)
@@ -159,8 +154,6 @@ function TTTVote.CalculateVoteRoundstart()
       v:SetNWInt("UsedVotesontarget " .. ply:SteamID(), 0)
     end
   end
-  net.Start("TTTVoteRemoveAllHalos")
-  net.Broadcast()
 end
 
 local function AutoCompleteVote( cmd, stringargs )

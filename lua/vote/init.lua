@@ -3,8 +3,8 @@ if not TTTVote then
 	file.CreateDir( "vote" )
 
 	AddCSLuaFile("vote/shared/vote_overrides_shd.lua")
-	AddCSLuaFile("vote/shared/halos_shd.lua")
 	AddCSLuaFile("vote/shared/player.lua")
+	AddCSLuaFile("vote/client/cl_halos.lua")
 	AddCSLuaFile("vote/client/cl_menu.lua")
 	AddCSLuaFile("vote/client/cl_changelog.lua")
 	AddCSLuaFile("vote/client/cl_messages.lua")
@@ -23,13 +23,12 @@ if not TTTVote then
 
 	-- Execute Files
 	include("vote/shared/vote_overrides_shd.lua")
-	include("vote/shared/halos_shd.lua")
 	include("vote/shared/player.lua")
 	include("vote/server/vote.lua")
 	include("vote/server/totem.lua")
 
 	--Tables
-	TTTVote.votebetters = TTTVote.votebetters or {}
+	TTTVote.votebetters = {}
 	TTTVote.AnyBeacons = true
 
 	--NetworkStrings
@@ -38,10 +37,7 @@ if not TTTVote then
 	util.AddNetworkString("TTTPlacedVote")
 	util.AddNetworkString("TTTVoteMessage")
 	util.AddNetworkString("TTTResetVote")
-	util.AddNetworkString("TTTVoteAddHalos")
-	util.AddNetworkString("TTTVoteRemoveHalos")
 	util.AddNetworkString("TTTTotem")
-	util.AddNetworkString("TTTVoteRemoveAllHalos")
 	util.AddNetworkString("TTTVotePlaceTotem")
 	util.AddNetworkString("TTTVoteMenu")
 	util.AddNetworkString("TTTVoteCurse")

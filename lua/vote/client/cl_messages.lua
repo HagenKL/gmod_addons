@@ -36,7 +36,6 @@ net.Receive("TTTResetVote",function()
     local all = net.ReadBool()
     if all then
       chat.AddText("TTT Vote: ", COLOR_WHITE, "Alle Votes wurden zurückgesetzt!")
-      table.Empty(TTTVote.halos)
     else
       chat.AddText("TTT Vote: ", COLOR_WHITE, "Alle deine Votes wurden von einem Admin zurückgesetzt!")
     end
@@ -60,14 +59,14 @@ function TTTVote.TotemMessage()
   elseif bool == 7 then
 	chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem schon 2 mal aufgehoben!")
   elseif bool == 8 then
-    chat.AddText("TTT Totem: ", COLOR_WHITE, "Alle Totems wurden zerstört!")    
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Alle Totems wurden zerstört!")
   end
   chat.PlaySound()
 end
 
 function TTTVote.VoteFailure()
 	local ply = net.ReadEntity()
-	chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+	  chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
     chat.PlaySound()
 end
 

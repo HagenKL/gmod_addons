@@ -1,7 +1,7 @@
 if SERVER then
   AddCSLuaFile()
   resource.AddWorkshop("842302491")
-  resource.AddFile("materials/vgui/ttt/icon_juggernog.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_juggernog.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_juggernog.png")
   util.AddNetworkString("DrinkingtheJuggernog")
 end
@@ -57,11 +57,6 @@ if SERVER then
         ply:Give("ttt_perk_juggernog")
       end
     end)
-    hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheJuggerDrink" .. v:EntIndex())
-      end
-    end)
 end
 
 if CLIENT then
@@ -78,6 +73,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_juggernog = {img = "vgui/ttt/icon_juggernog", text = "They drunk a Juggernog.", p = highest + 1}
+        search.eq_juggernog = {img = "vgui/ttt/ic_juggernog", text = "They drunk a Juggernog.", p = highest + 1}
    end )
 end

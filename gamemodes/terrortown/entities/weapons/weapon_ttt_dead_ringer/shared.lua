@@ -308,9 +308,6 @@ if SERVER then
     if ownerwep.Base == "weapon_tttbase" then
       ownerwep:SetIronsights(false)
     end
-    if ConVarExists("ttt_startvotes") then
-      TTTVote.RemoveHalos(self)
-    end
 
     DamageLog("DeadRinger: " .. self:Nick() .. " has faked his death.")
 
@@ -407,10 +404,6 @@ if SERVER then
     self:SetNoDraw(false)
 
     self:DrawWorldModel(true)
-
-    if ConVarExists("ttt_startvotes") then
-      TTTVote.AddHalos(self)
-    end
 
     self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
     DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")

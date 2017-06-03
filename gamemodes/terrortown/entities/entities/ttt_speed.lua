@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_speed.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_speed.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_speed.png")
   util.AddNetworkString("DrinkingtheSpeed")
 end
@@ -56,11 +56,6 @@ if SERVER then
         ply:Give("ttt_perk_speed")
       end
     end)
-    hook.Add("TTTPrepareRound", "TTTSpeedResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheSpeedDrink" .. v:EntIndex())
-      end
-    end)
 end
 
 if CLIENT then
@@ -77,6 +72,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_speed = {img = "vgui/ttt/icon_speed", text = "They drunk a Speed Cola.", p = highest + 1}
+        search.eq_speed = {img = "vgui/ttt/ic_speed", text = "They drunk a Speed Cola.", p = highest + 1}
       end )
   end

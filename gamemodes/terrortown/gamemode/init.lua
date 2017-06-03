@@ -931,9 +931,9 @@ function SelectRoles()
        if v.Chanceperround and v.Chanceperround > math.random(0,1) and !v.RoleForce then
           continue
        end
-       if v.IsGoodReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() and #goodtbl < det_count then
+       if v.IsGoodReplacement and (choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() or v.RoleForce) and #goodtbl <= det_count then
          table.insert(goodtbl,v)
-       elseif v.IsEvilReplacement and choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() and #badtbl < traitor_count then
+       elseif v.IsEvilReplacement and (choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() or v.RoleForce) and #badtbl <= traitor_count then
          table.insert(badtbl,v)
        end
        table.insert(roles,v)

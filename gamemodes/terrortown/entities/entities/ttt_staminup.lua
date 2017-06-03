@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_staminup.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_staminup.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_staminup.png")
   util.AddNetworkString("DrinkingtheStaminup")
 end
@@ -56,11 +56,6 @@ if SERVER then
         ply:Give("ttt_perk_staminup")
       end
     end)
-    hook.Add("TTTPrepareRound", "TTTStaminupResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheStaminUpDrink" .. v:EntIndex())
-      end
-    end)
 end
 
 if CLIENT then
@@ -77,6 +72,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_staminup = {img = "vgui/ttt/icon_staminup", text = "They drunk a Stamin-Up.", p = highest + 1}
+        search.eq_staminup = {img = "vgui/ttt/ic_staminup", text = "They drunk a Stamin-Up.", p = highest + 1}
       end )
   end
