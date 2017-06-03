@@ -25,14 +25,14 @@ function GM:PlayerInitialSpawn( ply )
    -- We should update the traitor list, if we are not about to send it
    if rstate <= ROUND_PREP then
       SendEvilList(GetEvilFilter())
-      SendConfirmedPlayers(player.GetAll())
+      SendConfirmedPlayers()
       SendDetectiveList()
    end
 
    -- Game has started, tell this guy where the round is at
    if rstate != ROUND_WAIT then
       SendRoundState(rstate, ply)
-      SendConfirmedPlayers(ply)
+      SendConfirmedSinglePlayer(ply)
       SendDetectiveList(ply)
    end
 
@@ -442,7 +442,7 @@ function GM:PlayerDisconnected(ply)
 	    SendEvilList(GetEvilFilter(false), nil)
 
       -- Same for confirmed traitors on innocent clients
-      SendConfirmedPlayers(player.GetAll())
+      SendConfirmedPlayers()
 
       SendDetectiveList()
    end

@@ -76,22 +76,32 @@ function SendInnocentList(ply_or_rf)
 
    -- traitors get actual innocent, so they do not reset their traitor mates to
    -- innocence
+   local buffer = table.Add(table.Copy(inno_ids), traitor_ids)
+   table.Shuffle(buffer)
+   SendRoleListMessage(ROLE_INNOCENT, buffer, GetNeutralFilter())
+   table.Add(inno_ids, neutral_ids)
+   table.Shuffle(inno_ids)
    SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetEvilFilter())
 
    -- detectives and innocents get an expanded version of the truth so that they
    -- reset everyone who is not detective
    table.Add(inno_ids, traitor_ids)
    table.Shuffle(inno_ids)
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetNeutralFilter())
-   table.Add(inno_ids, neutral_ids)
-   table.Shuffle(inno_ids)
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetInnocentFilter())
+   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetGoodFilter())
 end
 
 function SendConfirmedPlayers(ply_or_rf)
+  SendConfirmedTraitors(GetGoodFilter())
+  SendConfirmedTraitors(GetNeutralFilter())
+  SendConfirmedNeutrals(GetGoodFilter())
+  SendConfirmedNeutrals(GetEvilFilter())
+end
+
+function SendConfirmedSinglePlayer(ply_or_rf)
   SendConfirmedTraitors(ply_or_rf)
   SendConfirmedNeutrals(ply_or_rf)
 end
+
 
 function SendConfirmedTraitors(ply_or_rf)
    SendEvilList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
@@ -136,8 +146,9 @@ local function request_rolelist(ply)
 
       if ply:IsEvil() then
          SendEvilList(ply)
+         SendConfirmedNeutrals(ply)
       else
-         SendConfirmedTraitors(ply)
+         SendConfirmedSinglePlayer(ply)
       end
    end
 end

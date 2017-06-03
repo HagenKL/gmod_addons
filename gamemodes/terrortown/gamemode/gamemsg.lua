@@ -93,15 +93,11 @@ function GetDetectiveFilter(alive_only)
 end
 
 function GetInnocentFilter(alive_only)
-   return GetPlayerFilter(function(p) return p:IsGood() and (not alive_only or p:IsTerror()) end)
+   return GetPlayerFilter(function(p) return (p:IsRole(ROLE_INNOCENT) or p:IsRole(ROLE_DETECTIVE)) and (not alive_only or p:IsTerror()) end)
 end
 
 function GetNeutralFilter(alive_only)
    return GetPlayerFilter(function(p) return !p:IsGood() and !p:IsEvil() and (not alive_only or p:IsTerror()) end)
-end
-
-function GetFriendlyFilter(alive_only)
-   return GetPlayerFilter(function(p) return !p:IsEvil() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetRoleFilter(role, alive_only)

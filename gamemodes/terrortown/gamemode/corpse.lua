@@ -85,7 +85,7 @@ local function IdentifyBody(ply, rag)
 
          if traitor or neutral then
             -- update innocent's list of traitors
-            SendConfirmedPlayers(player.GetAll())
+            SendConfirmedPlayers()
          end
          SCORE:HandleBodyFound(ply, deadply)
       end
