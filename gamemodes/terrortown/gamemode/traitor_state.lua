@@ -116,6 +116,7 @@ function SendFullStateUpdate()
    SendInnocentList()
    SendEvilList(GetEvilFilter())
    SendDetectiveList()
+   SendConfirmedPlayers()
    -- not useful to sync confirmed traitors here
 end
 
