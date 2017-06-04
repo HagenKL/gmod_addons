@@ -12,7 +12,7 @@ function ENT:Initialize()
   self:SetUseType(1)
   self:SetHealth(50)
   self:SetMaxHealth(50)
-  local phys = self.Entity:GetPhysicsObject()
+  local phys = self:GetPhysicsObject()
   if (phys:IsValid()) then
     phys:Wake()
     phys:EnableDrag(true)
@@ -21,44 +21,42 @@ function ENT:Initialize()
 end
 
 function ENT:Explode()
-  if self.Exploded then return end
-  self.Exploded = true
   local effectdata = EffectData()
-  effectdata:SetAngles(self.Entity:GetAngles())
-  effectdata:SetOrigin(self.Entity:GetPos())
-  util.Effect("ThumperDust",effectdata)
+  effectdata:SetAngles(self:GetAngles())
+  effectdata:SetOrigin(self:GetPos())
   local effectdata2 = EffectData()
-  effectdata2:SetOrigin(self.Entity:GetPos())
-  util.Effect("Explosion",effectdata2)
+  effectdata2:SetOrigin(self:GetPos())
   self:EmitSound("ambient/explosions/explode_4.wav",100,100)
+  util.Effect("ThumperDust",effectdata)
+  util.Effect("Explosion",effectdata2)
   util.BlastDamage(self, self.Owner, self:GetPos(), 150, 200 )
   self:Remove()
   local Bombs = ents.FindInSphere(self:GetPos(),120)
   for k, v in pairs(Bombs) do
-    if v:GetClass()=="entity_doorbuster" and v != self.Entity then v:Explode() end
+    if v:GetClass() == "entity_doorbuster" and v != self then v:Explode() end
   end
 end
 
 function ENT:BlowDoor()
   self:Explode()
   for k, v in pairs(ents.FindInSphere(self:GetPos(),80)) do
-    if (v:GetClass() == "prop_door_rotating" || v:GetClass() == "func_door_rotating" || v:GetClass() == "func_door") and not v.Exploded then
+    if (v:GetClass() == "prop_door_rotating" || v:GetClass() == "func_door_rotating" || v:GetClass() == "func_door") then
       v:SetColor(0,0,0,0)
+      v:Fire("Open")
+      v.DoorBusterEnt = nil
+      v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+      v:Remove()
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
       local pos=v:GetPos()
-      pos:Add(self.Entity:GetAngles():Up()*-13)
+      pos:Add(self:GetAngles():Up()*-13)
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
       door:SetSkin(v:GetSkin())
       door:SetMaterial(v:GetMaterial())
       door:Spawn()
       local phys = door:GetPhysicsObject()
-      phys:ApplyForceOffset((self.Entity:GetAngles():Up()*-10000)*phys:GetMass(),self.Entity:GetPos())
-      v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
-      v.Exploded = true
-      v.DoorBusterEnt = nil
-      v:Remove()
+      phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
     end
   end
 end

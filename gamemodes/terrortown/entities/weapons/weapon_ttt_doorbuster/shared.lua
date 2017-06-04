@@ -102,25 +102,26 @@ end*/
 
 
 function SWEP:Plant()
-	if not SERVER then return end
+	if !SERVER then return end
 	local tr = self.Owner:GetEyeTrace()
 	local angle = tr.HitNormal:Angle()
-    local bomb = ents.Create("entity_doorbuster")
-    tr.Entity.DoorBusterEnt = bomb
-    bomb:SetPos(tr.HitPos)
+  local bomb = ents.Create("entity_doorbuster")
+	local ent = tr.Entity
+  ent.DoorBusterEnt = bomb
+  bomb:SetPos(tr.HitPos)
 	bomb:SetAngles(angle+Angle(-90,0,180))
-    bomb:Spawn()
+  bomb:Spawn()
+	bomb:SetOwner(self.Owner)
+	bomb:SetParent(ent)
+	bomb:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 	bomb:EmitSound("weapons/c4/c4_plant.wav")
 	--bomb:EmitSound("weapons/gamefreak/beep.wav")
-	bomb:SetOwner(self.Owner)
-	bomb:SetParent(tr.Entity)
-	bomb:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 	self:Remove()
 end
 
 
 function SWEP:CanPrimaryAttack()
-    local tr = self.Owner:GetEyeTrace()
+  local tr = self.Owner:GetEyeTrace()
 	local hitpos = tr.HitPos
 	local dist = self.Owner:GetShootPos():Distance(hitpos)
 	local InWorld = true;
@@ -132,9 +133,8 @@ end
 
 
 function SWEP:PrimaryAttack()
-	if not self:CanPrimaryAttack() then return end
-	if (self.Weapon:Clip1() <= 0) then return end
-	self.Weapon:Plant()
+	if !self:CanPrimaryAttack() then return end
+	self:Plant()
 end
 
 hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
