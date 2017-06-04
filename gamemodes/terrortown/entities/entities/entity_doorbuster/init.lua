@@ -41,28 +41,36 @@ function ENT:BlowDoor()
   self:Explode()
   for k, v in pairs(ents.FindInSphere(self:GetPos(),80)) do
     if (v:GetClass() == "prop_door_rotating" || v:GetClass() == "func_door_rotating" || v:GetClass() == "func_door") then
-      v:SetColor(0,0,0,0)
       v:Fire("Open")
       v.DoorBusterEnt = nil
-      v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
-      v:Remove()
+
+
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
-      local pos=v:GetPos()
+      local pos = v:GetPos()
       pos:Add(self:GetAngles():Up()*-13)
+
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
-      door:SetSkin(v:GetSkin())
-      door:SetMaterial(v:GetMaterial())
+
+      if (v:GetSkin()) then
+        door:SetSkin(v:GetSkin())
+      end
+      if (v:GetMaterial()) then
+        door:SetMaterial(v:GetMaterial())
+      end
+
+      v:Remove()
       door:Spawn()
       local phys = door:GetPhysicsObject()
-      phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
+      phys:ApplyForceOffset((self:GetAngles():Up() * -700) * phys:GetMass(), self:GetPos())
     end
   end
 end
 
 function ENT:OnTakeDamage(dmginfo)
-  if dmginfo:IsBulletDamage() or dmginfo:GetDamageType() == DMG_CLUB then
+  if dmginfo:GetAttacker() == self.Owner then return end
+  if dmginfo:IsBulletDamage() || dmginfo:GetDamageType() == DMG_CLUB then
     self:SetHealth(self:Health() - dmginfo:GetDamage())
     if self:Health() <= 0 then
       self:BlowDoor()

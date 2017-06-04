@@ -52,15 +52,15 @@ SWEP.ViewModel			= "models/weapons/v_c4.mdl"
 SWEP.WorldModel			= "models/weapons/w_c4.mdl"
 
 
-SWEP.Primary.Recoil			= 0
-SWEP.Primary.Damage			= -1
-SWEP.Primary.NumShots		= 1
-SWEP.Primary.Cone			= 0
-SWEP.Primary.Delay			= 1
-SWEP.Primary.ClipSize		= 1
+SWEP.Primary.Recoil				= 0
+SWEP.Primary.Damage				= -1
+SWEP.Primary.NumShots			= 1
+SWEP.Primary.Cone			  	= 0
+SWEP.Primary.Delay				= 1
+SWEP.Primary.ClipSize			= 1
 SWEP.Primary.DefaultClip	= 1
 SWEP.Primary.Automatic		= false
-SWEP.Primary.Ammo			= "slam"
+SWEP.Primary.Ammo					= "slam"
 SWEP.CanBuy = {}
 if (detectiveEnabled:GetBool()) then
 	table.insert(SWEP.CanBuy, ROLE_DETECTIVE)
@@ -157,4 +157,26 @@ hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
 			end
 		end
 	end
+end)
+
+hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, activator, caller, value )
+    if (ent:GetClass() == "prop_door_rotating" || ent:GetClass() == "func_door_rotating" || ent:GetClass() == "func_door") and input == "Open" then
+        local buster = ent.DoorBusterEnt or nil
+        local owner
+        if buster then
+            owner = buster.GetOwner and buster:GetOwner()
+        end
+        if buster and ((owner:IsTraitor() or (owner.IsEvil and owner:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil())) or (owner:GetDetective() or owner:GetRole() == ROLE_INNOCENT or (owner.IsGood and (owner:IsGood() or owner:GetJackal())))) and ply != owner then
+            buster:BlowDoor()
+            return true
+        else
+            for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
+                local own = v.GetOwner and v:GetOwner()
+                if v:GetClass() == "entity_doorbuster" and own and (own:IsTraitor() or (own.IsEvil and own:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) or own:GetDetective() or own:GetRole() == ROLE_INNOCENT or (own.IsGood and (owner:IsGood() or owner:GetJackal()))) and ply != own then
+                    v:BlowDoor()
+                    return true
+                end
+            end
+        end
+    end
 end)
