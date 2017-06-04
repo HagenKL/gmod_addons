@@ -49,8 +49,12 @@ function ENT:BlowDoor()
 
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
-      door:SetSkin(v:GetSkin())
-      door:SetMaterial(v:GetMaterial())
+      if isnumber(v:GetSkin()) then
+        door:SetSkin(v:GetSkin())
+      end
+      if isstring(v:GetMaterial()) then
+        door:SetMaterial(v:GetMaterial())
+      end
 
       v:Fire("Open")
       v.DoorBusterEnt = nil

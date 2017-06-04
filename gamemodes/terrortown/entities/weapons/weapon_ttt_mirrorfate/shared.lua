@@ -214,7 +214,7 @@ if SERVER then
   end
 
   local function Mirrorfate( victim, killer, damageinfo )
-    if IsValid(killer) and IsValid(victim) and victim:HasWeapon("weapon_ttt_mirrorfate") and !killer:HasWeapon("weapon_ttt_mirrorfate") then
+    if IsValid(killer) and IsValid(victim) and killer:IsPlayer() and victim:HasWeapon("weapon_ttt_mirrorfate") and !killer:HasWeapon("weapon_ttt_mirrorfate") then
       KillTheKillerMirrorfate(victim, killer)
     end
     if IsValid(victim) and timer.Exists("MirrorFatekill" .. victim:EntIndex()) then

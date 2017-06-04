@@ -191,6 +191,7 @@ if SERVER then
       end
       self.shouldasc = false
       self.NOWINASC = false
+      timer.Remove("TTTASC" .. self:EntIndex())
 	    self:SetNWBool("ASCCanRespawn", false)
       self:SetNWInt("ASCthetimeleft", 10)
       return
