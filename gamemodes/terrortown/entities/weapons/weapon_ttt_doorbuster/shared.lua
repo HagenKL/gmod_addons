@@ -159,7 +159,7 @@ hook.Add( "PlayerUse", "DoorBusterExplode", function( ply, ent )
 	end
 end)
 
-hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, activator, caller, value )
+hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, ply, caller, value )
     if (ent:GetClass() == "prop_door_rotating" || ent:GetClass() == "func_door_rotating" || ent:GetClass() == "func_door") and input == "Open" then
         local buster = ent.DoorBusterEnt or nil
         local owner

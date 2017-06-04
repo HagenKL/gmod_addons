@@ -48,15 +48,15 @@ function ENT:BlowDoor()
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
       local pos = v:GetPos()
-      pos:Add(self:GetAngles():Up()*-13)
+      pos:Add(self:GetAngles():Up() * -100)
 
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
 
-      if (v:GetSkin()) then
+      if IsValid(v:GetSkin()) then
         door:SetSkin(v:GetSkin())
       end
-      if (v:GetMaterial()) then
+      if IsValid(v:GetMaterial()) then
         door:SetMaterial(v:GetMaterial())
       end
 
