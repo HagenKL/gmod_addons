@@ -52,7 +52,7 @@ local function RoleChatMsg(sender, role, msg)
    if IsRoleEvil(role) then
       net.Send(GetEvilFilter())
    elseif IsRoleGood(role) and sender:IsSpecial() then
-      net.Send(GetGoodFilter())
+        net.Send(GetGoodSpecialFilter())
    end
 end
 
@@ -82,6 +82,10 @@ end
 
 function GetGoodFilter(alive_only)
    return GetPlayerFilter(function(p) return p:IsGood() and (not alive_only or p:IsTerror()) end)
+end
+
+function GetGoodSpecialFilter(alive_only)
+   return GetPlayerFilter(function(p) return p:IsGood() and p:IsSpecial() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetTraitorFilter(alive_only)
