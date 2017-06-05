@@ -171,7 +171,8 @@ function SWEP:Initialize()
       vm:SetMaterial(mat)
     end
   end
-  timer.Simple(0, function() self:DrinkTheBottle() end)
+  timer.Simple(0.1, function() self:DrinkTheBottle() end)
+  return self.BaseClass.Initialize(self)
 end
 
 function SWEP:GetViewModelPosition( pos, ang )

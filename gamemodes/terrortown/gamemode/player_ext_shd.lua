@@ -24,6 +24,16 @@ function plymeta:GetEvil()
   return false
 end
 
+function plymeta:GetNeutral()
+  for k,v in pairs(TTTRoles) do
+    if self:GetRole() == v.ID and !v.IsEvil and !v.IsGood then
+      return true
+    end
+  end
+  return false
+end
+
+
 function plymeta:GetGood()
   for k,v in pairs(TTTRoles) do
     if self:GetRole() == v.ID and v.IsGood then
@@ -47,6 +57,7 @@ plymeta.IsDetective = plymeta.GetDetective
 
 plymeta.IsEvil = plymeta.GetEvil
 plymeta.IsGood = plymeta.GetGood
+plymeta.IsNeutral = plymeta.IsNeutral
 
 function plymeta:IsSpecial() return self:GetRole() != ROLE_INNOCENT end
 
@@ -65,6 +76,7 @@ function plymeta:IsActiveSpecial() return self:IsSpecial() and self:IsActive() e
 
 function plymeta:IsActiveEvil() return self:GetEvil() and self:IsActive() end
 function plymeta:IsActiveGood() return self:GetGood() and self:IsActive() end
+function plymeta:IsActiveNeutral() return self:GetNeutral() and self:IsActive() end
 
 local role_strings = {
    [ROLE_TRAITOR]   = "traitor",
