@@ -60,6 +60,8 @@ function ENT:BlowDoor()
       v.DoorBusterEnt = nil
       v:Remove()
       door:Spawn()
+      door:SetOwner(self.Owner)
+      door:SetDamageOwner(self.Owner)
       local phys = door:GetPhysicsObject()
       phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
     end
