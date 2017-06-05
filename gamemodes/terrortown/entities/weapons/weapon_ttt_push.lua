@@ -133,7 +133,7 @@ local CHARGE_FORCE_UP_MIN = 100
 local CHARGE_FORCE_UP_MAX = 350
 function SWEP:ChargedAttack()
    local charge = math.Clamp(self:GetCharge(), 0, 1)
-   
+
    self.IsCharging = false
    self:SetCharge(0)
 
@@ -188,7 +188,7 @@ function SWEP:Think()
          return true
       end
 
-      
+
       if SERVER and self:GetCharge() < 1 and self.NextCharge < CurTime() then
          self:SetCharge(math.min(1, self:GetCharge() + CHARGE_AMOUNT))
 
@@ -206,7 +206,7 @@ if CLIENT then
       local nxt = self:GetNextPrimaryFire()
       local charge = self.dt.charge
 
-      if LocalPlayer():IsTraitor() or LocalPlayer():IsHunter() then
+      if LocalPlayer():IsTraitor() or LocalPlayer():IsEvil() then
          surface.SetDrawColor(255, 0, 0, 255)
       else
          surface.SetDrawColor(0, 255, 0, 255)
@@ -231,7 +231,7 @@ if CLIENT then
          surface.DrawLine(bx, y - w, bx, y + w)
 
          bx = x - 30
-         surface.DrawLine(bx, y - w, bx, y + w) 
+         surface.DrawLine(bx, y - w, bx, y + w)
       end
 
       if charge > 0 then
@@ -241,7 +241,7 @@ if CLIENT then
 
          surface.DrawOutlinedRect(x - w/2, y - h, w, h)
 
-         if LocalPlayer():IsTraitor() or LocalPlayer():IsHunter() then
+         if LocalPlayer():IsTraitor() or LocalPlayer():IsEvil() then
             surface.SetDrawColor(255, 0, 0, 155)
          else
             surface.SetDrawColor(0, 255, 0, 155)

@@ -95,12 +95,12 @@ if SERVER then
   hook.Add("TTTOrderedEquipment", "TTTASC", function(ply, id, is_item)
       if id == EQUIP_ASC then
         ply.shouldasc = true
-        if ply:GetTraitor() then
-          ply.SecondChanceChance = 25
+        if ply:GetTraitor() or (ply.IsEvil and ply:IsEvil()) then
+          ply.SecondChanceChance = math.random(15,25)
         elseif ply:GetRole() == ROLE_DETECTIVE then
-          ply.SecondChanceChance = 50
-        elseif ply.IsHunter and ply:IsHunter() then
-          ply.SecondChanceChance = 25
+          ply.SecondChanceChance = math.random(30,50)
+        elseif ply.GetJackal and ply:GetJackal() then
+          ply.SecondChanceChance = math.random(20,30)
         end
         net.Start("ASCBuyed")
         net.WriteInt(ply.SecondChanceChance, 8)
@@ -191,6 +191,9 @@ if SERVER then
       end
       self.shouldasc = false
       self.NOWINASC = false
+      timer.Remove("TTTASC" .. self:EntIndex())
+	    self:SetNWBool("ASCCanRespawn", false)
+      self:SetNWInt("ASCthetimeleft", 10)
       return
     end
 
@@ -214,6 +217,7 @@ if SERVER then
       self:SpawnForRound(true)
     end
 
+    self:SetMaxHealth(100)
     timer.Remove("TTTASC" .. self:EntIndex())
     self:SetNWBool("ASCCanRespawn", false)
     self:SetNWInt("ASCthetimeleft", 10)
@@ -260,10 +264,12 @@ if SERVER then
 
   function CheckifAsc(ply, attacker, dmg)
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
-      if (attacker:GetTraitor() or (attacker.IsHunter and attacker:IsHunter())) and (ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) then
-        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 15, 0, 99)
-      elseif attacker:GetRole() == ROLE_DETECTIVE and (ply:GetTraitor() or (ply.IsHunter and ply:IsHunter())) then
-        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + 25, 0, 99)
+      if (attacker:GetTraitor() or (attacker.IsEvil and attacker:IsEvil())) and ((ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) or (ply.GetGood and (ply:GetGood() or ply:GetJackal()))) then
+        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(10,20), 0, 99)
+      elseif (attacker:GetRole() == ROLE_DETECTIVE or (attacker.GetGood and attacker:GetGood())) and (ply:GetTraitor() or (ply.IsEvil and (ply:IsEvil() or ply:GetJackal()))) then
+        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(20,30), 0, 99)
+      elseif attacker.GetJackal and attacker:GetJackal() and (ply:GetGood() or ply:GetEvil()) then
+        attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(15,25), 0, 99)
       end
       net.Start("ASCKill")
       net.WriteInt(attacker.SecondChanceChance,8)
@@ -345,9 +351,9 @@ if CLIENT then
   net.Receive("ASCError",function()
       local spawnpos = net.ReadBool()
       if spawnpos then
-        chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found or on fire, so you cant revive yourself.")
-      else
         chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "No Valid Spawnpoints! Spawning at Map Spawn.")
+      else
+        chat.AddText("SecondChance ", COLOR_RED, "ERROR", COLOR_WHITE, ": " , Color(255,255,255), "Body not found or on fire, so you cant revive yourself.")
       end
       chat.PlaySound()
     end)

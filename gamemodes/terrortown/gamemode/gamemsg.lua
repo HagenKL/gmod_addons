@@ -49,7 +49,11 @@ local function RoleChatMsg(sender, role, msg)
       net.WriteUInt(role, 4)
       net.WriteEntity(sender)
       net.WriteString(msg)
-   net.Send(GetRoleFilter(role))
+   if IsRoleEvil(role) then
+      net.Send(GetEvilFilter())
+   elseif IsRoleGood(role) and sender:IsSpecial() then
+        net.Send(GetGoodSpecialFilter())
+   end
 end
 
 
@@ -72,12 +76,16 @@ local function GetPlayerFilter(pred)
    return filter
 end
 
-function GetHTFilter(alive_only)
-   return GetPlayerFilter(function(p) return (p:IsTraitor() or p:IsHunter()) and (not alive_only or p:IsTerror()) end)
+function GetEvilFilter(alive_only)
+   return GetPlayerFilter(function(p) return p:IsEvil() and (not alive_only or p:IsTerror()) end)
 end
 
-function GetHunterFilter(alive_only)
-   return GetPlayerFilter(function(p) return p:IsHunter() and (not alive_only or p:IsTerror()) end)
+function GetGoodFilter(alive_only)
+   return GetPlayerFilter(function(p) return p:IsGood() and (not alive_only or p:IsTerror()) end)
+end
+
+function GetGoodSpecialFilter(alive_only)
+   return GetPlayerFilter(function(p) return p:IsGood() and p:IsSpecial() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetTraitorFilter(alive_only)
@@ -89,7 +97,11 @@ function GetDetectiveFilter(alive_only)
 end
 
 function GetInnocentFilter(alive_only)
-   return GetPlayerFilter(function(p) return (not p:IsTraitor()) and (not p:IsHunter()) and (not alive_only or p:IsTerror()) end)
+   return GetPlayerFilter(function(p) return (p:IsRole(ROLE_INNOCENT) or p:IsRole(ROLE_DETECTIVE)) and (not alive_only or p:IsTerror()) end)
+end
+
+function GetNeutralFilter(alive_only)
+   return GetPlayerFilter(function(p) return !p:IsGood() and !p:IsEvil() and (not alive_only or p:IsTerror()) end)
 end
 
 function GetRoleFilter(role, alive_only)
@@ -117,7 +129,7 @@ function GM:PlayerCanSeePlayersChat(text, team_only, listener, speaker)
 	(not GetConVar("ttt_limit_spectator_chat"):GetBool()) or   -- Spectators can chat freely
 	(not DetectiveMode()) or   -- Mumbling
 	(not sTeam and ((team_only and not speaker:IsSpecial()) or (not team_only))) or   -- If someone alive talks (and not a special role in teamchat's case)
-	(not sTeam and team_only and speaker:GetRole() == listener:GetRole()) or
+	(not sTeam and team_only and (speaker:GetTeam() == listener:GetTeam() and (speaker:IsSpecial() and listener:IsSpecial()))) or
 	(sTeam and lTeam) then   -- If the speaker and listener are spectators
 	   return true
 	end
@@ -204,10 +216,10 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
    end
 
    -- Traitors "team"chat by default, non-locationally
-   if speaker:IsActiveTraitor() or speaker:IsActiveHunter() then
+   if speaker:IsActiveEvil() then
       if speaker.traitor_gvoice then
          return true, loc_voice:GetBool()
-      elseif listener:IsActiveTraitor() or listener:IsActiveHunter() then
+      elseif listener:IsActiveEvil() then
          return true, false
       else
          -- unless traitor_gvoice is true, normal innos can't hear speaker
@@ -233,7 +245,7 @@ end
 
 
 local function TraitorGlobalVoice(ply, cmd, args)
-   if not IsValid(ply) or not ply:IsActiveTraitor() or not ply:IsActiveHunter() then return end
+   if not IsValid(ply) or not ply:IsActiveEvil() then return end
    if not #args == 1 then return end
    local state = tonumber(args[1])
 

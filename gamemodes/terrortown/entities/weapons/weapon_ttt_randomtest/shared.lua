@@ -78,7 +78,7 @@ end
 function GetRandomTesterPlayer()
 	local result={}
 	for k,v in pairs(player.GetAll()) do
-		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsHunter and v:IsHunter() == ROLE_HUNTER)) and !v:GetNWBool("RTTested") then
+		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsEvil and (v:IsEvil() or v:IsJackal()))) and !v:GetNWBool("RTTested") then
 			table.insert(result,v)
 		end
 	end
@@ -100,7 +100,7 @@ function SWEP:HandleMessages(ply)
 		net.WriteUInt(self.Delay,8)
 	net.Broadcast()
 
-	if (role==ROLE_TRAITOR or (ROLE_HUNTER and role == ROLE_HUNTER)) then
+	if (role==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) then
 		net.Start("rt notify traitor")
 			net.WriteUInt(txtDelay,8)
 		net.Send(ply)
@@ -110,10 +110,10 @@ function SWEP:HandleMessages(ply)
 
 	timer.Create("RT Timer "..id,self.Delay,1, function()
 		if GetRoundState()!=ROUND_ACTIVE then return end
-		do
-			local roleString,ownerRoleString=role==ROLE_INNOCENT and "innocent" or (role==ROLE_TRAITOR or (ROLE_HUNTER and role == ROLE_HUNTER)) and "traitor",ownerRole==ROLE_INNOCENT and "innocent" or (ownerRole==ROLE_TRAITOR or (ROLE_HUNTER and ownerRole == ROLE_HUNTER)) and "traitor" or "detective"
-			DamageLog("RTester:\t"..ownerNick.." ["..ownerRoleString.."] tested "..nick.." ["..roleString.."]")
-		end
+
+		local roleString, ownerRoleString = (role==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and "traitor" or "innocent", (ownerRole==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(ownerRole))) and "traitor" or ply:GetDetective() and "detective" or "innocent"
+		DamageLog("RTester:\t"..ownerNick.." ["..ownerRoleString.."] tested "..nick.." ["..roleString.."]")
+
 		local valid,ownerValid=IsValid(ply),IsValid(owner)
 		role,nick=valid and ply:GetRole() or role,valid and ply:Nick() or nick
 		ownerRole,ownerNick=ownerValid and owner:GetRole() or ownerRole,ownerValid and owner:Nick() or nick
@@ -143,7 +143,7 @@ end
 
 local function GetRoleColor(role,ply,isOwner)
 	if isOwner&&ply!=LocalPlayer() then return !IsValid(ply) and COLOR_ORANGE or role==ROLE_DETECTIVE and COLOR_BLUE or COLOR_PINK
-	else return !(IsValid(ply)&&ply:IsTerror()) and COLOR_ORANGE or role==ROLE_INNOCENT and COLOR_GREEN or (role==ROLE_TRAITOR or (ROLE_HUNTER and role == ROLE_HUNTER)) and COLOR_RED end
+	else return !(IsValid(ply)&&ply:IsTerror()) and COLOR_ORANGE or (role==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and COLOR_RED or COLOR_GREEN end
 end
 
 if CLIENT then
@@ -169,7 +169,7 @@ if CLIENT then
 		if valid&&ply:IsSpec() then surface.PlaySound("weapons/prank.mp3") end
 
 		if valid then
-			local roleString=role==ROLE_INNOCENT and "an innocent" or (role==ROLE_TRAITOR or (ROLE_HUNTER and role == ROLE_HUNTER)) and "a traitor"
+			local roleString = (role==ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and "a traitor" or "an innocent"
 			if !(valid&&ply:IsTerror()) then chat.AddText("Random Test: ", roleColor,nick,textColor," was ",roleColor,roleString,textColor,"!")
 			else if lply:IsTerror() then PrintCenteredText(nick.." is "..roleString.."!",txtDelay,roleColor) end chat.AddText("Random Test: ", roleColor,nick,textColor," is ",roleColor,roleString,textColor,"!") end
 		end

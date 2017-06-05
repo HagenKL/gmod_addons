@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_staminup.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_staminup.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_staminup.png")
   util.AddNetworkString("DrinkingtheStaminup")
 end
@@ -41,24 +41,9 @@ if CLIENT then
     LANG.AddToLanguage("english", "item_staminup_desc", "Stamin-Up Perk.\nAutomatically drinks perk to greatly increase\nwalk speed!")
 end
 
-local function getNextFreeID()
-  local freeID, i = 1, 1
-  while (freeID == 1) do
-    if (!istable(GetEquipmentItem(ROLE_DETECTIVE, i))
-      and !istable(GetEquipmentItem(ROLE_TRAITOR, i))) then
-      freeID = i
-    end
-    i = i * 2
-  end
-
-  return freeID
-end
-
 EQUIP_STAMINUP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 256
 
 if SERVER then
-
-  local plymeta = FindMetaTable("Player")
 
   hook.Add("TTTCanOrderEquipment", "TTTStaminup", function(ply, id, is_item)
     if tonumber(id) == EQUIP_STAMINUP and ply:IsDrinking() then
@@ -66,22 +51,9 @@ if SERVER then
     end
   end)
 
-  function plymeta:GivetheStaminup()
-    self:Give("ttt_perk_staminup")
-    self:SelectWeapon("ttt_perk_staminup")
-    if self:HasWeapon("ttt_perk_staminup") then
-      self:GetWeapon("ttt_perk_staminup"):DrinkTheBottle()
-    end
-  end
-
   hook.Add("TTTOrderedEquipment", "TTTStaminup", function(ply, id, is_item)
       if id == EQUIP_STAMINUP then
-        ply:GivetheStaminup()
-      end
-    end)
-    hook.Add("TTTPrepareRound", "TTTStaminupResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheStaminUpDrink" .. v:EntIndex())
+        ply:Give("ttt_perk_staminup")
       end
     end)
 end
@@ -100,6 +72,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_staminup = {img = "vgui/ttt/icon_staminup", text = "They drunk a Stamin-Up.", p = highest + 1}
+        search.eq_staminup = {img = "vgui/ttt/ic_staminup", text = "They drunk a Stamin-Up.", p = highest + 1}
       end )
   end

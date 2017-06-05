@@ -21,7 +21,7 @@ function ENT:Initialize()
 
   self:SetMoveType(MOVETYPE_NONE)
   self:SetSolid(SOLID_VPHYSICS)
-  self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
+  self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
 
   if SERVER then
     self:SetMaxHealth(100)
@@ -30,26 +30,6 @@ function ENT:Initialize()
   end
 
   self:PhysWake()
-end
-
-function ENT:AddHalos()
-  local owner = self:GetOwner()
- if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
-   net.Start("TTTVoteAddHalos")
-   net.WriteBool(false)
-   net.WriteEntity(self)
-   net.Broadcast()
- end
-end
-
-function ENT:RemoveHalos()
-  local owner = self:GetOwner()
- if SERVER and owner:IsValid() and owner:GetNWInt("VoteCounter",0) >= 3 then
-  net.Start("TTTVoteRemoveHalos")
-  net.WriteBool(false)
-  net.WriteEntity(self)
-  net.Broadcast()
- end
 end
 
 function ENT:UseOverride(activator)
@@ -62,7 +42,6 @@ function ENT:UseOverride(activator)
     net.Start("TTTTotem")
     net.WriteInt(4,8)
     net.Send(activator)
-    self:RemoveHalos()
     self:Remove()
     timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
   elseif IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses >= 2 then
@@ -79,7 +58,7 @@ function ENT:OnTakeDamage(dmginfo)
   local owner, att, infl, dmg = self:GetOwner(), dmginfo:GetAttacker(), dmginfo:GetInflictor(), dmginfo:GetDamage()
 
   if !IsValid(owner) then return end
-  if infl == owner or att == owner or owner:IsHunter() or owner:IsTraitor() then return end
+  if infl == owner or att == owner or owner:IsEvil() then return end
 
   if ((infl:IsPlayer() and infl:IsHunter()) or (att:IsPlayer() and att:IsHunter())) and infl:GetClass() == "weapon_ttt_totemknife" then
 
@@ -96,7 +75,6 @@ function ENT:OnTakeDamage(dmginfo)
     util.Effect("cball_explode", effect)
     sound.Play(zapsound, self:GetPos())
     self:GetOwner():SetNWEntity("Totem",NULL)
-    self:RemoveHalos()
     self:Remove()
     timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
   end
@@ -108,12 +86,11 @@ function ENT:FakeDestroy()
   util.Effect("cball_explode", effect)
   sound.Play(zapsound, self:GetPos())
   self:GetOwner():SetNWEntity("Totem",NULL)
-  self:RemoveHalos()
   self:Remove()
   timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
 end
 
-hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply) 
+hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply)
   if TTTVote.HasTotem(ply) then
     ply:GetNWEntity("Totem", NULL):FakeDestroy()
   end
@@ -121,9 +98,11 @@ end)
 
 if CLIENT then
   hook.Add("HUDDrawTargetID", "DrawTotem", function()
-    local e = LocalPlayer():GetEyeTrace().Entity
+    local client = LocalPlayer()
+    local e = client:GetEyeTrace().Entity
 
-    if IsValid(e) and e:GetClass() == "ttt_totem" and IsValid(e:GetOwner()) then
+
+    if IsValid(e) and IsValid(e:GetOwner()) and (e:GetOwner() == client or client:IsHunter()) and e:GetClass() == "ttt_totem" then
       local owner = e:GetOwner():Nick()
 
       if string.EndsWith(owner, "s") or string.EndsWith(owner, "x") or string.EndsWith(owner, "z") or string.EndsWith(owner, "ß") then

@@ -14,10 +14,10 @@ local function GetTextForRole(role)
    elseif role == ROLE_DETECTIVE then
       return GetPTranslation("info_popup_detective", {menukey = Key("+menu_context", "C")})
 
-   else
+   elseif IsRoleEvil(role) then
       local traitors = {}
       for _, ply in pairs(player.GetAll()) do
-         if ply:IsTraitor() or ply:IsHunter() then
+         if ply:IsEvil() then
             table.insert(traitors, ply)
          end
       end
@@ -39,6 +39,12 @@ local function GetTextForRole(role)
       end
 
       return text
+   else
+     for k,v in pairs(TTTRoles) do
+       if v.newteam and role == v.ID then
+         return GetPTranslation("info_popup_" .. v.String, {menukey = Key("+menu_context", "C")})
+       end
+     end
    end
 end
 
@@ -128,6 +134,3 @@ local function IdlePopup()
 
 end
 concommand.Add("ttt_cl_idlepopup", IdlePopup)
-
-
-

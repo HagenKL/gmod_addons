@@ -31,18 +31,21 @@ end
 local loadout_weapons = nil
 local function GetLoadoutWeapons(r)
    if not loadout_weapons then
-      local tbl = {
-         [ROLE_INNOCENT] = {},
-         [ROLE_TRAITOR]  = {},
-		   [ROLE_HUNTER]  = {},
-         [ROLE_DETECTIVE]= {}
-      };
-
+      local tbl = {};
+      for k,v in pairs(TTTRoles) do
+        tbl[v.ID] = {}
+      end
       for k, w in pairs(weapons.GetList()) do
          if w and type(w.InLoadoutFor) == "table" then
             for _, wrole in pairs(w.InLoadoutFor) do
                table.insert(tbl[wrole], WEPS.GetClass(w))
             end
+         end
+      end
+
+      for k,v in pairs(TTTRoles) do
+         if !v.IsDefault then
+             table.Add(tbl[v.ID], tbl[ROLE_INNOCENT])
          end
       end
 
@@ -63,6 +66,10 @@ local function GiveLoadoutWeapons(ply)
       if not ply:HasWeapon(cls) and ply:CanCarryType(WEPS.TypeForWeapon(cls)) then
          ply:Give(cls)
       end
+   end
+
+   if GetRoundState() == ROUND_ACTIVE and ply:IsHunter() then
+      ply:Give("weapon_ttt_totemknife")
    end
 end
 
@@ -93,9 +100,15 @@ local function GiveLoadoutItems(ply)
          end
       end
    end
-   if GetRoundState() == ROUND_ACTIVE and ply:IsHunter() then
-      ply:GiveEquipmentItem(EQUIP_RADAR)
-      ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
+   if GetRoundState() == ROUND_ACTIVE then
+     for k,v in pairs(TTTRoles) do
+       if v.ID == ply:GetRole() then
+         ply:GiveEquipmentItem(v.DefaultEquip)
+         if v.DefaultEquip == EQUIP_RADAR then
+           ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
+         end
+       end
+     end
    end
 end
 
@@ -348,7 +361,7 @@ end
 local function OrderEquipment(ply, cmd, args)
    if not IsValid(ply) or #args != 1 then return end
 
-   if not (ply:IsActiveTraitor() or ply:IsActiveHunter() or ply:IsActiveDetective()) then return end
+   if not (ply:IsActiveSpecial()) then return end
 
    -- no credits, can't happen when buying through menu as button will be off
    if ply:GetCredits() < 1 then return end
@@ -356,7 +369,7 @@ local function OrderEquipment(ply, cmd, args)
    -- it's an item if the arg is an id instead of an ent name
    local id = args[1]
    local is_item = tonumber(id)
-   
+
    if not hook.Run("TTTCanOrderEquipment", ply, id, is_item) then return end
 
    -- we use weapons.GetStored to save time on an unnecessary copy, we will not
@@ -376,12 +389,12 @@ local function OrderEquipment(ply, cmd, args)
       id = tonumber(id)
 
       -- item whitelist check
-	  local allowed
-	  if !ply:IsHunter() then
-		allowed = GetEquipmentItem(ply:GetRole(), id)
-	  else
-		allowed = GetEquipmentItem(ROLE_TRAITOR, id)
-	  end
+  	  local allowed
+  	  if ply:IsTraitor() or ply:IsDetective() then
+  		    allowed = GetEquipmentItem(ply:GetRole(), id)
+  	  elseif GetRoleTableByID(ply:GetRole()).ShopFallBack then
+  		    allowed = GetEquipmentItem(ROLE_TRAITOR, id)
+  	  end
 
       if not allowed then
          print(ply, "tried to buy item not buyable for his class:", id)
@@ -397,12 +410,12 @@ local function OrderEquipment(ply, cmd, args)
       end
    elseif swep_table then
       -- weapon whitelist check
-	  if !ply:IsHunter() then
+	  if ply:IsTraitor() or ply:IsDetective() then
 		  if not table.HasValue(swep_table.CanBuy, ply:GetRole()) then
 			 print(ply, "tried to buy weapon his role is not permitted to buy")
 			 return
 		  end
-	  else
+	  elseif GetRoleTableByID(ply:GetRole()).ShopFallBack then
 		  if not table.HasValue(swep_table.CanBuy, ROLE_TRAITOR) then
 			 print(ply, "tried to buy weapon his role is not permitted to buy")
 			 return
@@ -455,7 +468,7 @@ function GM:TTTToggleDisguiser(ply, state)
 end
 
 local function SetDisguise(ply, cmd, args)
-   if not IsValid(ply) or not ply:IsActiveTraitor() or not ply:IsActiveHunter() then return end
+   if not IsValid(ply) or not ply:IsActiveEvil() then return end
 
    if ply:HasEquipmentItem(EQUIP_DISGUISE) then
       local state = #args == 1 and tobool(args[1])
@@ -482,7 +495,7 @@ local function TransferCredits(ply, cmd, args)
    local credits = tonumber(args[2])
    if sid and credits then
       local target = player.GetBySteamID(sid)
-      if (not IsValid(target)) or (not target:IsActiveSpecial()) or (target:GetRole() ~= ply:GetRole()) or (target == ply) then
+      if (not IsValid(target)) or (not target:IsActiveSpecial()) or (target:GetTeam() ~= ply:GetTeam()) or (target == ply) then
          LANG.Msg(ply, "xfer_no_recip")
          return
       end

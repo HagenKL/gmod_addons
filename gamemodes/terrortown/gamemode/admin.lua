@@ -18,8 +18,8 @@ local function TraitorSort(a,b)
    if not IsValid(a) then return true end
    if not IsValid(b) then return false end
 
-   if (a:GetTraitor() or a:GetHunter()) and (not b:GetTraitor() and not b:GetHunter()) then return true end
-   if (b:GetTraitor() or a:GetHunter()) and (not a:GetTraitor() and not a:GetHunter()) then return false end
+   if a:GetEvil() and (not b:GetEvil()) then return true end
+   if a:GetEvil() and (not a:GetEvil()) then return false end
 
    return false
 end
@@ -35,7 +35,7 @@ function PrintTraitors(ply)
 
       for _, p in pairs(ps) do
          if IsValid(p) then
-            pr((p:GetTraitor() or p:GetHunter()) and "TRAITOR" or "Innocent", ":", p:Nick())
+            pr(p:GetEvil() and "TRAITOR" or p:GetJackal() and "Jackal" or "Innocent", ":", p:Nick())
          end
       end
    end

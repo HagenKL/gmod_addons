@@ -1,7 +1,7 @@
 function GetTraitors()
    local trs = {}
    for k,v in ipairs(player.GetAll()) do
-      if v:GetTraitor() or v:GetHunter() then table.insert(trs, v) end
+      if v:GetEvil() then table.insert(trs, v) end
    end
 
    return trs
@@ -50,7 +50,9 @@ end
 
 -- Tell traitors about other traitors
 
-function SendHunterList(ply_or_rf, pred) SendRoleList(ROLE_HUNTER, ply_or_rf, pred) end
+function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
+function SendGoodList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
+function SendNeutralList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if !v.IsGood and !v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendTraitorList(ply_or_rf, pred) SendRoleList(ROLE_TRAITOR, ply_or_rf, pred) end
 function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) end
 
@@ -61,37 +63,60 @@ function SendInnocentList(ply_or_rf)
    -- sending traitors only a list of actual innocents.
    local inno_ids = {}
    local traitor_ids = {}
+   local neutral_ids = {}
    for k, v in pairs(player.GetAll()) do
       if v:IsRole(ROLE_INNOCENT) then
          table.insert(inno_ids, v:EntIndex())
-      elseif v:IsRole(ROLE_TRAITOR) or v:IsRole(ROLE_HUNTER) then
+      elseif v:IsEvil() then
          table.insert(traitor_ids, v:EntIndex())
+      elseif v:IsJackal() then
+        table.insert(neutral_ids, v:EntIndex())
       end
    end
 
    -- traitors get actual innocent, so they do not reset their traitor mates to
    -- innocence
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetTraitorFilter())
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetHunterFilter())
+   local buffer = table.Add(table.Copy(inno_ids), traitor_ids)
+   table.Shuffle(buffer)
+   SendRoleListMessage(ROLE_INNOCENT, buffer, GetNeutralFilter())
+   table.Add(inno_ids, neutral_ids)
+   table.Shuffle(inno_ids)
+   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetEvilFilter())
 
    -- detectives and innocents get an expanded version of the truth so that they
    -- reset everyone who is not detective
    table.Add(inno_ids, traitor_ids)
    table.Shuffle(inno_ids)
-   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetInnocentFilter())
+   SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetGoodFilter())
 end
 
+function SendConfirmedPlayers(ply_or_rf)
+  SendConfirmedTraitors(GetGoodFilter())
+  SendConfirmedTraitors(GetNeutralFilter())
+  SendConfirmedNeutrals(GetGoodFilter())
+  SendConfirmedNeutrals(GetEvilFilter())
+end
+
+function SendConfirmedSinglePlayer(ply_or_rf)
+  SendConfirmedTraitors(ply_or_rf)
+  SendConfirmedNeutrals(ply_or_rf)
+end
+
+
 function SendConfirmedTraitors(ply_or_rf)
-   SendTraitorList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
-   SendHunterList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
+   SendEvilList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
+end
+
+function SendConfirmedNeutrals(ply_or_rf)
+   SendNeutralList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
 end
 
 function SendFullStateUpdate()
    SendPlayerRoles()
    SendInnocentList()
-   SendTraitorList(GetHTFilter())
-   SendHunterList(GetHTFilter())
+   SendEvilList(GetEvilFilter())
    SendDetectiveList()
+   SendConfirmedPlayers()
    -- not useful to sync confirmed traitors here
 end
 
@@ -120,11 +145,11 @@ local function request_rolelist(ply)
       SendRoleReset(ply)
       SendDetectiveList(ply)
 
-      if ply:IsTraitor() or ply:IsHunter() then
-         SendTraitorList(ply)
-         SendHunterList(ply)
+      if ply:IsEvil() then
+         SendEvilList(ply)
+         SendConfirmedNeutrals(ply)
       else
-         SendConfirmedTraitors(ply)
+         SendConfirmedSinglePlayer(ply)
       end
    end
 end
@@ -158,12 +183,46 @@ local function force_detective(ply)
 end
 concommand.Add("ttt_force_detective", force_detective, nil, nil, FCVAR_CHEAT)
 
-local function force_hunter(ply)
-   ply:SetRole(ROLE_HUNTER)
+function AddForceCommand(Role)
 
-   SendFullStateUpdate()
+  _G["force_" .. Role.String] = function(ply)
+    ply:SetRole(Role.ID)
+
+    SendFullStateUpdate()
+  end
+
+  concommand.Add("ttt_force_" .. Role.String, _G["force_" .. Role.String], nil,nil, FCVAR_CHEAT )
 end
-concommand.Add("ttt_force_hunter", force_hunter, nil, nil, FCVAR_CHEAT)
+
+local function AutoCompleteForceRole( cmd, stringargs )
+
+  stringargs = string.Trim( stringargs ) -- Remove any spaces before or after.
+  stringargs = string.lower( stringargs )
+
+  local tbl = {}
+
+  for k, v in pairs( TTTRoles ) do
+    local name = v.String
+    if string.find( string.lower( name ), stringargs ) then
+      name = "\"" .. name .. "\"" -- We put quotes around it incase players have spaces in their names.
+      name = "ttt_forcerole " .. name -- We also need to put the cmd before for it to work properly.
+
+      table.insert( tbl, name )
+    end
+  end
+
+  return tbl
+end
+
+local function ForceRolePrep(ply, cmd, args)
+  if IsValid(ply) and (ply:SteamID() == "STEAM_0:0:20342578" or ply:SteamID() == "STEAM_0:0:64114326") then
+    if GetRoleTableByString(args[1]) then
+      ply.ForcedRole = GetRoleTableByString(args[1]).ID
+    end
+  end
+end
+
+concommand.Add("ttt_forcerole", ForceRolePrep, AutoCompleteForceRole)
 
 
 local function force_spectate(ply, cmd, arg)
@@ -188,4 +247,3 @@ concommand.Add("ttt_spectate", force_spectate)
 net.Receive("TTT_Spectate", function(l, pl)
    force_spectate(pl, nil, { net.ReadBool() and 1 or 0 })
 end)
-

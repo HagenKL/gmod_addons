@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_speed.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_speed.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_speed.png")
   util.AddNetworkString("DrinkingtheSpeed")
 end
@@ -45,30 +45,15 @@ EQUIP_SPEED = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 512
 
 if SERVER then
 
-  local plymeta = FindMetaTable("Player")
-
   hook.Add("TTTCanOrderEquipment", "TTTSpeed", function(ply, id, is_item)
     if tonumber(id) == EQUIP_SPEED and ply:IsDrinking() then
       return false
     end
   end)
 
-  function plymeta:GivetheSpeed()
-    self:Give("ttt_perk_speed")
-    self:SelectWeapon("ttt_perk_speed")
-    if self:HasWeapon("ttt_perk_speed") then
-      self:GetWeapon("ttt_perk_speed"):DrinkTheBottle()
-    end
-  end
-
   hook.Add("TTTOrderedEquipment", "TTTSpeed", function(ply, id, is_item)
       if id == EQUIP_SPEED then
-        ply:GivetheSpeed()
-      end
-    end)
-    hook.Add("TTTPrepareRound", "TTTSpeedResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheSpeedDrink" .. v:EntIndex())
+        ply:Give("ttt_perk_speed")
       end
     end)
 end
@@ -87,6 +72,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_speed = {img = "vgui/ttt/icon_speed", text = "They drunk a Speed Cola.", p = highest + 1}
+        search.eq_speed = {img = "vgui/ttt/ic_speed", text = "They drunk a Speed Cola.", p = highest + 1}
       end )
   end

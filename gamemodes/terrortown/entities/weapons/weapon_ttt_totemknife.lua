@@ -31,8 +31,7 @@ SWEP.Secondary.Ammo         = "none"
 SWEP.Secondary.Delay        = 1.4
 
 SWEP.Kind                   = WEAPON_ROLE
-SWEP.InLoadoutFor = {ROLE_HUNTER}
-
+SWEP.InLoadoutFor           = {ROLE_HUNTER}
 SWEP.IsSilent               = true
 SWEP.AllowDrop 				= false
 SWEP.NoSights 				= true
@@ -119,7 +118,7 @@ if CLIENT then
    function SWEP:DrawHUD()
       local tr = self.Owner:GetEyeTrace(MASK_SHOT)
 
-      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:GetClass() == "ttt_totem" and !tr.Entity:GetOwner():IsTraitor() and !tr.Entity:GetOwner():IsHunter() then
+      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:GetClass() == "ttt_totem" and !tr.Entity:GetOwner():IsEvil() then
 
          local x = ScrW() / 2.0
          local y = ScrH() / 2.0
@@ -140,5 +139,3 @@ if CLIENT then
       return self.BaseClass.DrawHUD(self)
    end
 end
-
-

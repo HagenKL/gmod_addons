@@ -70,64 +70,46 @@ SWEP.Secondary.Ammo         = "none"
 
 
 -------------Lemon Launcher local globals---------------------------------
-reloading = 0
-local BM = 0
-local nextthink = 0
-SWEP.LastSpoke = 0
-SWEP.LastReload = 0
 
 
 function SWEP:Initialize()
-util.PrecacheSound("lemongrenade/-lemon.wav")
-util.PrecacheSound("lemongrenade/combustable-.wav")
-util.PrecacheSound("lemongrenade/Combustible.01.wav")
-util.PrecacheSound("lemongrenade/Combustible.02.wav")
-util.PrecacheSound("lemongrenade/Combustible.03.wav")
-util.PrecacheSound("lemongrenade/Combustible.04.wav")
-util.PrecacheSound("lemongrenade/Combustible.05.wav")
-util.PrecacheSound("lemongrenade/lemonadecombustible.wav")
-util.PrecacheSound("lemongrenade/ready_throw.wav")
-util.PrecacheSound("weapons/mortar/mortar_fire1.wav")
-self:SetWeaponHoldType( self.HoldType )
+	util.PrecacheSound("lemongrenade/-lemon.wav")
+	util.PrecacheSound("lemongrenade/combustable-.wav")
+	util.PrecacheSound("lemongrenade/Combustible.01.wav")
+	util.PrecacheSound("lemongrenade/Combustible.02.wav")
+	util.PrecacheSound("lemongrenade/Combustible.03.wav")
+	util.PrecacheSound("lemongrenade/Combustible.04.wav")
+	util.PrecacheSound("lemongrenade/Combustible.05.wav")
+	util.PrecacheSound("lemongrenade/lemonadecombustible.wav")
+	util.PrecacheSound("lemongrenade/ready_throw.wav")
+	util.PrecacheSound("weapons/mortar/mortar_fire1.wav")
+	self:SetWeaponHoldType( self.HoldType )
 	if SERVER then
 		timer.Simple(0.1, function() if (IsValid(self.Owner)) then self.Owner:GiveAmmo(1, "RPG_Round", true) end end)
 	end
 end
 
-function SWEP:Holster()
-timer.Destroy( "rel1" )
-timer.Destroy( "rel2" )
-timer.Destroy( "rel3" )
-timer.Destroy( "rel4" )
-timer.Destroy( "cli1" )
-timer.Destroy( "cli2" )
-timer.Destroy( "cli3" )
-timer.Destroy( "cli4" )
-return true
-end
-
 function SWEP:Deploy()
    self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
-   return true
+   return self.BaseClass.Deploy(self)
 end
 
 function cbmSprite( Entity, fx, color, spritePath, scale, transity)
-local Sprite = ents.Create("env_sprite");
-Sprite:SetPos( Entity:GetPos() );
-Sprite:SetKeyValue( "renderfx", fx )
-Sprite:SetKeyValue( "model", spritePath)
-Sprite:SetKeyValue( "scale", scale)
-Sprite:SetKeyValue( "spawnflags", "1")
-Sprite:SetKeyValue( "angles", "0 0 0")
-Sprite:SetKeyValue( "rendermode", "3")
-Sprite:SetKeyValue( "renderamt", transity)
-Sprite:SetKeyValue( "rendercolor", color )
-Sprite:SetName( "Hds46_addon_lemonade_lemsprite")
+	local Sprite = ents.Create("env_sprite");
+	Sprite:SetPos( Entity:GetPos() );
+	Sprite:SetKeyValue( "renderfx", fx )
+	Sprite:SetKeyValue( "model", spritePath)
+	Sprite:SetKeyValue( "scale", scale)
+	Sprite:SetKeyValue( "spawnflags", "1")
+	Sprite:SetKeyValue( "angles", "0 0 0")
+	Sprite:SetKeyValue( "rendermode", "3")
+	Sprite:SetKeyValue( "renderamt", transity)
+	Sprite:SetKeyValue( "rendercolor", color )
+	Sprite:SetName( "Hds46_addon_lemonade_lemsprite")
 
-Sprite:Spawn()
-Sprite:Activate()
-Sprite:SetParent( Entity )
-
+	Sprite:Spawn()
+	Sprite:Activate()
+	Sprite:SetParent( Entity )
 end
 
 function cbmLight( Entity)
@@ -141,23 +123,23 @@ end
 
 function SWEP:PrimaryAttack(data)
 	if (not self:CanPrimaryAttack()) then return end
-	self.LastReload = CurTime() + 0.5
-	nextthink = CurTime()+0.5
 
-	self.Weapon:EmitSound("weapons/mortar/mortar_fire1.wav")
-	self.Weapon:SetNextPrimaryFire(CurTime() + 3)
-	self.Weapon:SetNextSecondaryFire(CurTime() + 3.0)
-	self.Weapon:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-	self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	self:EmitSound( "lemongrenade/LemonadeCombustible.wav" )
+	self:EmitSound("weapons/mortar/mortar_fire1.wav")
+	self:SetNextPrimaryFire(CurTime() + 3)
+	self:SetNextSecondaryFire(CurTime() + 3.0)
+	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+	self:SetAnimation( PLAYER_ATTACK1 )
 
 	self:TakePrimaryAmmo(self.Primary.TakeAmmo)
-	self.Weapon:MuzzleFlash()
+	self:MuzzleFlash()
 	local rnda = self.Primary.Recoil * -1
 	local rndb = self.Primary.Recoil * math.random(-1, 1)
 	self.Owner:ViewPunch( Angle( rnda,rndb,rnda ) )
 	local effectdata = EffectData()
 	effectdata:SetOrigin( self.Owner:GetPos() )
 	util.Effect( "Dlemlight", effectdata )
+
 	local p = self.Owner
 	local vec1 = p:GetAimVector()
 	local forw = self:GetOwner():EyeAngles():Forward()
@@ -178,55 +160,41 @@ function SWEP:PrimaryAttack(data)
 	phys:SetVelocity( forw * 3000 )
 	phys:AddAngleVelocity(Vector(90,0,0))
 
-timer.Simple(0.5, function() if IsValid(self.Owner) then if self.Owner:Alive() then self:Reload() end end end )
-
+	timer.Simple(0.5, function() if IsValid(self.Owner) then if self.Owner:Alive() then self:Reload() end end end )
 end
 
 function SWEP:SecondaryAttack()
-    if self.LastSpoke < CurTime() then
-
-        self.LastSpoke = CurTime() + 3
-        self:EmitSound( "lemongrenade/combustible.0" .. math.random( 1, 5 ) .. ".wav" )
-
-    end
-	self.Weapon:SetNextPrimaryFire( self.LastSpoke )
+	self:EmitSound( "lemongrenade/combustible.0" .. math.random( 1, 5 ) .. ".wav")
+	self.Weapon:SetNextSecondaryFire( CurTime() + 3 )
 end
 
 if CLIENT then
-local EFFECT={}
+	local EFFECT={}
 
-function EFFECT:Init( data )
-	self.Origin = data:GetOrigin()
+	function EFFECT:Init( data )
+		self.Origin = data:GetOrigin()
 
-	local dlight = DynamicLight( self:EntIndex() )
-	if ( dlight ) then
-		local r, g, b, a = self:GetColor()
-		dlight.Pos = self:GetPos()
-		dlight.r = 255
-		dlight.g = 255
-		dlight.b = 10
-		dlight.Brightness = 0.9
-		dlight.Size = 150
-		dlight.Decay = 1000
-		dlight.DieTime = CurTime() + 0.05
-        dlight.Style = 0
+		local dlight = DynamicLight( self:EntIndex() )
+		if ( dlight ) then
+			local r, g, b, a = self:GetColor()
+			dlight.Pos = self:GetPos()
+			dlight.r = 255
+			dlight.g = 255
+			dlight.b = 10
+			dlight.Brightness = 0.9
+			dlight.Size = 150
+			dlight.Decay = 1000
+			dlight.DieTime = CurTime() + 0.05
+	        dlight.Style = 0
+		end
 	end
-end
 
-function EFFECT:Think()
-	return false
-end
-
-function EFFECT:Render()
-end
-
-effects.Register(EFFECT, "Dlemlight" )
-end
-
-if CLIENT then
-	function SWEP:PrimaryAttack()
-    if ( self.Weapon:Clip1() > 0 )then
-    self:EmitSound( "lemongrenade/LemonadeCombustible.wav" )
-    end
+	function EFFECT:Think()
+		return false
 	end
+
+	function EFFECT:Render()
+	end
+
+	effects.Register(EFFECT, "Dlemlight" )
 end

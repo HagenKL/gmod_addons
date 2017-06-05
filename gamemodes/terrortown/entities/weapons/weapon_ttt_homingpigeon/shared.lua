@@ -68,7 +68,7 @@ if SERVER then
   net.Receive("SendTargetPigeon", function(len,ply)
       if ply:GetActiveWeapon():GetClass() == "weapon_ttt_homingpigeon" then
         local TargetPly = net.ReadEntity()
-        local wep = net.ReadEntity()
+        local wep = ply:GetWeapon("weapon_ttt_homingpigeon")
         if ( IsValid( ply ) and IsValid( TargetPly ) ) then
           local Pigeon = ents.Create( "ttt_pigeon" )
           if !IsValid( Pigeon ) then return end
@@ -110,10 +110,6 @@ function SWEP:OnRemove()
   end
 end
 
-function SWEP:Deploy()
-  return true
-end
-
 function SWEP:DrawWorldModel()
   if not CLIENT then return end
 
@@ -153,7 +149,6 @@ if CLIENT then
     if IsValid(TargetPly) and TargetPly:IsPlayer() and TargetPly:IsTerror() then
       net.Start("SendTargetPigeon")
       net.WriteEntity(TargetPly)
-      net.WriteEntity(self)
       net.SendToServer()
     else
       self:SetNextPrimaryFire(CurTime() + 0.1)

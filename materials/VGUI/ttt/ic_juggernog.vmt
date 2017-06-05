@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-	"$basetexture" "vgui/ttt/icon_speed"
+ "$basetexture" "vgui/ttt/ic_juggernog"
  "$vertexcolor" 1
  "$vertexalpha" 1
  "$translucent" 1

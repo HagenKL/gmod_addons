@@ -42,9 +42,9 @@ SWEP.Primary.Recoil = 0
 SWEP.Primary.Automatic = false
 SWEP.Primary.Damage = 0
 SWEP.Primary.Cone = 0.001
-SWEP.Primary.ClipSize = 5
-SWEP.Primary.ClipMax = 5
-SWEP.Primary.DefaultClip = 5
+SWEP.Primary.ClipSize = 3
+SWEP.Primary.ClipMax = 3
+SWEP.Primary.DefaultClip = 3
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Ammo = ""
@@ -79,6 +79,15 @@ function SWEP:Initialize()
 	end
 end
 
+function SWEP:Deploy()
+	if SERVER then
+		net.Start("SATMMessage")
+		net.WriteInt(self.satmmode, 16)
+		net.Send(self.Owner)
+	end
+	return self.BaseClass.Deploy(self)
+end
+
 local function ResetTimeScale()
 	game.SetTimeScale(1)
 	net.Start("SATMEndSound")
@@ -90,6 +99,7 @@ function SWEP:PrimaryAttack()
 	self:DoSATMAnimation(true)
 
 	if SERVER then
+		local owner = self.Owner
 		if self.satmmode == 1 || self.satmmode == 2 || self.satmmode == 3 then
 			timer.Remove("ResetSATM")
 			game.SetTimeScale(self.timescale)
@@ -100,17 +110,17 @@ function SWEP:PrimaryAttack()
 				timer.Create("ResetSATM", satmduration:GetInt() * self.timescale, 1, ResetTimeScale)
 			end
 		elseif self.satmmode == 4 then
-			if !self.Owner:OnGround() then
+			if !owner:OnGround() or owner:Crouching() then
 				net.Start("SATMMessage")
 				net.WriteInt(20, 16)
-				net.Send(self.Owner)
+				net.Send(owner)
 
 				return
 			end
 			local aliveplayers = {}
 
 			for k, v in pairs(player.GetAll()) do
-				if v:IsTerror() && v != self.Owner then
+				if v:IsTerror() && v != owner then
 					table.insert(aliveplayers, v)
 				end
 			end
@@ -118,7 +128,7 @@ function SWEP:PrimaryAttack()
 			if #aliveplayers <= 0 then
 				net.Start("SATMMessage")
 				net.WriteInt(15, 16)
-				net.Send(self.Owner)
+				net.Send(owner)
 				return
 			end
 
@@ -127,19 +137,19 @@ function SWEP:PrimaryAttack()
 
 			if ply:IsInWorld() then
 				local plypos = ply:GetPos()
-				local selfpos = self.Owner:GetPos()
+				local selfpos = owner:GetPos()
 				local plyang = ply:EyeAngles()
-				local selfang = self.Owner:EyeAngles()
-				self.Owner:SetPos(plypos)
+				local selfang = owner:EyeAngles()
+				owner:SetPos(plypos)
+				owner:SetEyeAngles(plyang)
 				ply:SetPos(selfpos)
-				self.Owner:SetEyeAngles(plyang)
 				ply:SetEyeAngles(selfang)
 			end
 
 			net.Start("SATMMessage")
 			net.WriteInt(10, 16)
 			net.WriteString(ply:Nick())
-			net.Send(self.Owner)
+			net.Send(owner)
 		end
 	end
 
@@ -178,7 +188,6 @@ function SWEP:DoSATMAnimation(bool)
 	timer.Simple(0.3, function()
 		if IsValid(self) then
 			self:SendWeaponAnim(ACT_VM_IDLE)
-
 			if switchweapon && CLIENT && IsValid(self.Owner) && self.Owner == LocalPlayer() && self.Owner:Alive() then
 				RunConsoleCommand("lastinv")
 			end
@@ -241,11 +250,11 @@ else
 			chat.AddText("SATM: ", Color(255, 255, 255), "Mode: Swap your position with a random player.")
 		elseif mode == 10 then
 			local nick = net.ReadString()
-			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with ", COLOR_WHITE, nick, COLOR_GREEN, ".")
+			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with ", COLOR_GREEN, nick, COLOR_WHITE, ".")
 		elseif mode == 15 then
-			chat.AddText("SATM: ", Color(255, 255, 255), "No more Valid aliveplayers!")
+			chat.AddText("SATM: ", Color(255, 255, 255), "No more players alive!")
 		elseif mode == 20 then
-			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the Ground to switch Positions!")
+			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the ground and to not be crouching to switch positions!")
 		end
 
 		chat.PlaySound()

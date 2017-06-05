@@ -1,7 +1,7 @@
 if SERVER then
   AddCSLuaFile()
   resource.AddWorkshop("842302491")
-  resource.AddFile("materials/vgui/ttt/icon_juggernog.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_juggernog.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_juggernog.png")
   util.AddNetworkString("DrinkingtheJuggernog")
 end
@@ -45,15 +45,6 @@ end
 EQUIP_JUGGERNOG = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 64
 
 if SERVER then
-  local plymeta = FindMetaTable("Player")
-
-  function plymeta:GivetheJugger()
-    self:Give("ttt_perk_juggernog")
-    self:SelectWeapon("ttt_perk_juggernog")
-    if self:HasWeapon("ttt_perk_juggernog") then
-      self:GetWeapon("ttt_perk_juggernog"):DrinkTheBottle()
-    end
-  end
 
   hook.Add("TTTCanOrderEquipment", "TTTJuggernog", function(ply, id, is_item)
     if tonumber(id) == EQUIP_JUGGERNOG and ply:IsDrinking() then
@@ -63,12 +54,7 @@ if SERVER then
 
   hook.Add("TTTOrderedEquipment", "TTTJuggernog", function(ply, id, is_item)
       if id == EQUIP_JUGGERNOG then
-        ply:GivetheJugger()
-      end
-    end)
-    hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheJuggerDrink" .. v:EntIndex())
+        ply:Give("ttt_perk_juggernog")
       end
     end)
 end
@@ -87,6 +73,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_juggernog = {img = "vgui/ttt/icon_juggernog", text = "They drunk a Juggernog.", p = highest + 1}
+        search.eq_juggernog = {img = "vgui/ttt/ic_juggernog", text = "They drunk a Juggernog.", p = highest + 1}
    end )
 end

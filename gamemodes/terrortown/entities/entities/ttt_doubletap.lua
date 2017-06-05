@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_doubletap.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_doubletap.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_doubletap.png")
   util.AddNetworkString("DrinkingtheDoubleTap")
 end
@@ -45,31 +45,15 @@ EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 2048
 
 if SERVER then
 
-  local plymeta = FindMetaTable("Player")
-
-  function plymeta:GivetheDoubleTap()
-    self:Give("ttt_perk_doubletap")
-    self:SelectWeapon("ttt_perk_doubletap")
-    if self:HasWeapon("ttt_perk_doubletap") then
-      self:GetWeapon("ttt_perk_doubletap"):DrinkTheBottle()
-    end
-  end
-
   hook.Add("TTTCanOrderEquipment", "TTTDoubleTap", function(ply, id, is_item)
     if tonumber(id) == EQUIP_DOUBLETAP and ply:IsDrinking() then
       return false
     end
   end)
- 
+
   hook.Add("TTTOrderedEquipment", "TTTDoubleTap", function(ply, id, is_item)
       if id == EQUIP_DOUBLETAP then
-        ply:GivetheDoubleTap()
-      end
-    end)
-
-    hook.Add("TTTPrepareRound", "TTTDoubleTapResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MaketheDoubleTapDrink" .. v:EntIndex())
+        ply:Give("ttt_perk_doubletap")
       end
     end)
 end
@@ -88,6 +72,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_doubletap = {img = "vgui/ttt/icon_doubletap", text = "They drunk a Double Tap Root Beer.", p = highest + 1}
+        search.eq_doubletap = {img = "vgui/ttt/ic_doubletap", text = "They drunk a Double Tap Root Beer.", p = highest + 1}
    end )
 end

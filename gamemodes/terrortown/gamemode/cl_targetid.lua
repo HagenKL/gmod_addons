@@ -26,8 +26,6 @@ end
 
 ---- "T" indicator above traitors
 
-local indicator_mat = Material("vgui/ttt/sprite_traitor")
-local indicator2_mat= Material("vgui/ttt/sprite_hunter")
 local indicator_col = Color(255, 255, 255, 130)
 
 local client, plys, ply, pos, dir, tgt
@@ -41,31 +39,20 @@ function GM:PostDrawTranslucentRenderables()
    client = LocalPlayer()
    plys = GetPlayers()
 
-   if client:GetTraitor() or client:GetHunter() then
+   if client:GetEvil() then
 
       dir = client:GetForward() * -1
 
-      render.SetMaterial(indicator_mat)
-
       for i=1, #plys do
          ply = plys[i]
-         if ply:IsActiveTraitor() and ply != client then
-            pos = ply:GetPos()
-            pos.z = pos.z + 74
+         for k,v in pairs(TTTRoles) do
+            if ply:GetRole() == v.ID and ply:IsActiveEvil() and ply != client then
+               render.SetMaterial(v.indicator_mat)
+               pos = ply:GetPos()
+               pos.z = pos.z + 74
 
-            render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
-         end
-      end
-
-      render.SetMaterial(indicator2_mat)
-
-      for i=1, #plys do
-         ply = plys[i]
-         if ply:IsActiveHunter() and ply != client then
-            pos = ply:GetPos()
-            pos.z = pos.z + 74
-
-            render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
+               render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
+            end
          end
       end
 
@@ -166,10 +153,10 @@ function GM:HUDDrawTargetID()
    if (not IsValid(ent)) or ent.NoTarget then return end
 
    -- some bools for caching what kind of ent we are looking at
-   local target_traitor = false
-   local target_hunter = false
-   local target_detective = false
-   local target_corpse = false
+   local target = {}
+   target.traitor = false
+   target.detective = false
+   target.corpse = false
 
    local text = nil
    local color = COLOR_WHITE
@@ -189,7 +176,7 @@ function GM:HUDDrawTargetID()
       if ent:GetNWBool("disguised", false) then
          client.last_id = nil
 
-         if client:IsTraitor() or client:IsHunter() or client:IsSpec() then
+         if client:IsEvil() or client:IsSpec() then
             text = ent:Nick() .. L.target_disg
          else
             -- Do not show anything
@@ -208,21 +195,25 @@ function GM:HUDDrawTargetID()
          _, color = util.HealthToString(ent:Health(), ent:GetMaxHealth())
       end
 
-      if (client:IsTraitor() or client:IsHunter()) and GetRoundState() == ROUND_ACTIVE then
-         target_traitor = ent:IsTraitor()
+      if client:IsEvil() and GetRoundState() == ROUND_ACTIVE then
+         target.traitor = ent:IsTraitor()
       end
 
-      if (client:IsTraitor() or client:IsHunter()) and GetRoundState() == ROUND_ACTIVE then
-         target_hunter = ent:IsHunter()
+      for k,v in pairs(TTTRoles) do
+         if !v.IsDefault then
+            if ent:GetRole() == v.ID and ent:IsEvil() and client:IsEvil() then
+               target[v.String] = true
+            end
+         end
       end
 
-      target_detective = GetRoundState() > ROUND_PREP and ent:IsDetective() or false
+      target.detective = GetRoundState() > ROUND_PREP and ent:IsDetective() or false
 
    elseif cls == "prop_ragdoll" then
       -- only show this if the ragdoll has a nick, else it could be a mattress
       if CORPSE.GetPlayerNick(ent, false) == false then return end
 
-      target_corpse = true
+      target.corpse = true
 
       if CORPSE.GetFound(ent, false) or not DetectiveMode() then
          text = CORPSE.GetPlayerNick(ent, "A Terrorist")
@@ -241,17 +232,17 @@ function GM:HUDDrawTargetID()
 
    local w, h = 0,0 -- text width/height, reused several times
 
-   if target_traitor or target_detective or target_hunter then
-      surface.SetTexture(ring_tex)
-
-      if target_traitor then
-         surface.SetDrawColor(255, 0, 0, 200)
-      elseif target_hunter then
-         surface.SetDrawColor(255, 230, 0, 200)
-      else
-         surface.SetDrawColor(0, 0, 255, 220)
+   if ent:IsPlayer() then
+      for k,v in pairs(target) do
+         for l,p in pairs(TTTRoles) do
+            if v and p.ID == ent:GetRole() and p.drawtargetidcircle then
+               surface.SetTexture(ring_tex)
+               local col = p.DefaultColor
+               surface.SetDrawColor(Color(col.r,col.g,col.b,200))
+               surface.DrawTexturedRect(x-32, y-32, 64, 64)
+            end
+         end
       end
-      surface.DrawTexturedRect(x-32, y-32, 64, 64)
    end
 
    y = y + 30
@@ -338,19 +329,21 @@ function GM:HUDDrawTargetID()
 
    text = nil
 
-   if target_traitor then
-      text = L.target_traitor
-      clr = COLOR_RED
-   elseif target_hunter then
-      text = L.target_hunter
-      clr = Color(255, 230, 0)
-   elseif target_detective then
-      text = L.target_detective
-      clr = COLOR_BLUE
-   elseif ent.sb_tag and ent.sb_tag.txt != nil then
+   if ent:IsPlayer() then
+      for k,v in pairs(target) do
+         for l,p in pairs(TTTRoles) do
+            if v and ent:GetRole() == p.ID and k != "corpse" then
+               text = L["target_" .. p.String]
+               clr = p.DefaultColor
+            end
+         end
+      end
+   end
+
+   if ent.sb_tag and ent.sb_tag.txt != nil then
       text = L[ ent.sb_tag.txt ]
       clr = ent.sb_tag.color
-   elseif target_corpse and (client:IsActiveTraitor() or client:IsActiveHunter()) and CORPSE.GetCredits(ent, 0) > 0 then
+   elseif target.corpse and client:IsActiveEvil() and CORPSE.GetCredits(ent, 0) > 0 then
       text = L.target_credits
       clr = COLOR_YELLOW
    end

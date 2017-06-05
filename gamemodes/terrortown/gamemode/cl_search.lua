@@ -5,8 +5,8 @@ local PT = LANG.GetParamTranslation
 
 local is_dmg = util.BitSet
 
-local dtt = { search_dmg_crush = DMG_CRUSH, search_dmg_bullet = DMG_BULLET, search_dmg_fall = DMG_FALL, 
-search_dmg_boom = DMG_BLAST, search_dmg_club = DMG_CLUB, search_dmg_drown = DMG_DROWN, search_dmg_stab = DMG_SLASH, 
+local dtt = { search_dmg_crush = DMG_CRUSH, search_dmg_bullet = DMG_BULLET, search_dmg_fall = DMG_FALL,
+search_dmg_boom = DMG_BLAST, search_dmg_club = DMG_CLUB, search_dmg_drown = DMG_DROWN, search_dmg_stab = DMG_SLASH,
 search_dmg_burn = DMG_BURN, search_dmg_tele = DMG_SONIC, search_dmg_car = DMG_VEHICLE }
 
 -- "From his body you can tell XXX"
@@ -50,25 +50,33 @@ local function WeaponToIcon(d)
    return wep and wep.Icon or "vgui/ttt/icon_nades"
 end
 
-local TypeToMat = {
-   nick="id",
-   words="halp",
-   eq_armor="armor",
-   eq_radar="radar",
-   eq_disg="disguise",
-   role={[ROLE_TRAITOR]="traitor", [ROLE_HUNTER]="hunter", [ROLE_DETECTIVE]="det", [ROLE_INNOCENT]="inno"},
-   c4="code",
-   dmg=DmgToMat,
-   wep=WeaponToIcon,
-   head="head",
-   dtime="time",
-   stime="wtester",
-   lastid="lastid",
-   kills="list"
-}
+local function TypeToMatRole()
+  local tbl = {}
+  for k,v in pairs(TTTRoles) do
+    tbl[v.ID] = v.ShortString
+  end
+  return tbl
+end
 
 -- Accessor for better fail handling
 local function IconForInfoType(t, data)
+    local TypeToMat = {
+       nick="id",
+       words="halp",
+       eq_armor="armor",
+       eq_radar="radar",
+       eq_disg="disguise",
+       role=TypeToMatRole(),
+       c4="code",
+       dmg=DmgToMat,
+       wep=WeaponToIcon,
+       head="head",
+       dtime="time",
+       stime="wtester",
+       lastid="lastid",
+       kills="list"
+    }
+
    local base = "vgui/ttt/icon_"
    local mat = TypeToMat[t]
 
@@ -102,14 +110,11 @@ function PreprocSearch(raw)
          search[t].p = 1
          search[t].nick = d
       elseif t == "role" then
-         if d == ROLE_TRAITOR then
-            search[t].text = T("search_role_t")
-		   elseif d == ROLE_HUNTER then
-            search[t].text = T("search_role_h")
-         elseif d == ROLE_DETECTIVE then
-            search[t].text = T("search_role_d")
-         else
-            search[t].text = T("search_role_i")
+         for k,v in pairs(TTTRoles) do
+           if v.ID == d then
+             search[t].text = T("search_role_" .. v.Short)
+             break
+           end
          end
 
          search[t].p = 2
@@ -488,7 +493,7 @@ local function ReceiveRagdollSearch()
    --
    local words = net.ReadString()
    search.words = (words ~= "") and words or nil
-   
+
    hook.Call("TTTBodySearchEquipment", nil, search, eq)
 
    if search.show then

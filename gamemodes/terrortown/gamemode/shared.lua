@@ -18,7 +18,8 @@ ROUND_POST   = 4
 ROLE_INNOCENT  = 0
 ROLE_TRAITOR   = 1
 ROLE_DETECTIVE = 2
-ROLE_HUNTER    = 3
+ROLE_COUNT = 3
+
 ROLE_NONE = ROLE_INNOCENT
 
 -- Game event log defs
@@ -37,6 +38,7 @@ WIN_NONE      = 1
 WIN_TRAITOR   = 2
 WIN_INNOCENT  = 3
 WIN_TIMELIMIT = 4
+WIN_COUNT     = 5
 
 -- Weapon categories, you can only carry one of each
 WEAPON_NONE   = 0
@@ -84,6 +86,64 @@ COLOR_PINK   = Color(255,0,255, 255)
 COLOR_ORANGE = Color(250, 100, 0, 255)
 COLOR_OLIVE  = Color(100, 100, 0, 255)
 
+-- Default Role Table
+TTTRoles = TTTRoles or {
+  [ROLE_INNOCENT] = {
+    ID = ROLE_INNOCENT,
+    Rolename = "Innocent",
+    String = "innocent",
+    IsGood = true,
+    IsEvil = false,
+    IsSpecial = false,
+    Creditsforkills = false,
+    ShortString = "inno",
+    Short = "i",
+    IsDefault = true,
+    DefaultColor = Color(0, 255, 0),
+    winning_team = WIN_INNOCENT,
+    drawtargetidcircle = false,
+    AllowTeamChat = false,
+    RepeatingCredits = false
+  },
+  [ROLE_TRAITOR] = {
+    ID = ROLE_TRAITOR,
+    Rolename = "Traitor",
+    String = "traitor",
+    IsGood = false,
+    IsEvil = true,
+    IsSpecial = true,
+    Creditsforkills = true,
+    ShortString = "traitor",
+    Short = "t",
+    IsDefault = true,
+    DefaultColor = Color(255, 0, 0),
+    indicator_mat = Material("vgui/ttt/sprite_traitor"),
+    winning_team = WIN_TRAITOR,
+    drawtargetidcircle = true,
+    targetidcolor = COLOR_RED,
+    AllowTeamChat = true,
+    RepeatingCredits = true
+  },
+  [ROLE_DETECTIVE] = {
+    ID = ROLE_DETECTIVE,
+    Rolename = "Detective",
+    String = "detective",
+    IsGood = true,
+    IsEvil = false,
+    IsSpecial = true,
+    Creditsforkills = true,
+    ShortString = "det",
+    Short = "d",
+    IsDefault = true,
+    DefaultColor = Color(0, 0, 255),
+    winning_team = WIN_INNOCENT,
+    drawtargetidcircle = true,
+    targetidcolor = COLOR_BLUE,
+    AllowTeamChat = true,
+    RepeatingCredits = false
+  }
+}
+
 include("util.lua")
 include("lang_shd.lua") -- uses some of util
 include("equip_items_shd.lua")
@@ -102,6 +162,64 @@ function GM:CreateTeams()
    -- Not that we use this, but feels good
    team.SetSpawnPoint(TEAM_TERROR, "info_player_deathmatch")
    team.SetSpawnPoint(TEAM_SPEC, "info_player_deathmatch")
+end
+
+function IsRoleGood(role)
+  return GetRoleTableByID(role).IsGood
+end
+
+function IsRoleEvil(role)
+  return GetRoleTableByID(role).IsEvil
+end
+
+function IsRoleDefault(role)
+  return GetRoleTableByID(role).IsDefault
+end
+
+function AddNewRole(RoleName,Role)
+  local rolestring = "ROLE_" .. RoleName
+  if _G[rolestring] then error("Role of name '" .. RoleName .. "' already exists!") return end
+  _G[rolestring] = ROLE_COUNT
+  ROLE_COUNT = ROLE_COUNT + 1
+  Role.ID = _G[rolestring]
+
+  TTTRoles[Role.ID] = Role
+
+  if Role.newteam then
+    local winstring = "WIN_" .. Role.String
+    TTTRoles[Role.ID].winning_team = winstring
+    _G[Role.winning_team] = WIN_COUNT
+    WIN_COUNT = WIN_COUNT + 1
+  end
+
+  AddRoleFunctions(Role)
+
+  if SERVER then
+    AddRoleOnServer(Role)
+    AddForceCommand(Role)
+  else
+    AddRoleOnClient(Role)
+  end
+
+  print("The " .. Role.Rolename .. " Role has been initialized!")
+end
+
+function GetRoleTableByID(ID)
+  for k,v in pairs(TTTRoles) do
+    if v.ID == ID then
+      return v
+    end
+  end
+  return false
+end
+
+function GetRoleTableByString(str)
+  for k,v in pairs(TTTRoles) do
+    if v.String == str then
+      return v
+    end
+  end
+  return false
 end
 
 -- Everyone's model

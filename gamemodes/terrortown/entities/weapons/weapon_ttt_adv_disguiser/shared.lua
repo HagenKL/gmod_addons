@@ -91,7 +91,7 @@ if CLIENT then
 		  end
 	   end
 	end
-	
+
 	local minimalist = GetConVar("ttt_minimal_targetid")
 	local ring_tex = surface.GetTextureID("effects/select_ring")
 	local GetLang = LANG.GetUnsafeLanguageTable
@@ -104,15 +104,16 @@ if CLIENT then
 
 	   local trace = client:GetEyeTrace(MASK_SHOT)
 	   local ent = trace.Entity
-	   if (ent:IsPlayer() and !ent:GetNWBool("AdvDisguiseInDisguise", false)) or !ent:IsPlayer() then return end
-	   if (not IsValid(ent)) or ent.NoTarget then return end
-      
+
+     if not IsValid(ent) or not ent:IsPlayer() or ent.NoTarget then return end
+	   if !ent:GetNWBool("AdvDisguiseInDisguise", false) then return end
+
       DrawPropSpecLabelsAdvDisguiser(client)
-	  
-	  local target_traitor = false
-	  local target_detective = false
-	  local target_corpse = false
-	  
+
+  	  local target_traitor = false
+  	  local target_detective = false
+  	  local target_corpse = false
+
       local text = nil
       local color = COLOR_WHITE
 
@@ -121,7 +122,7 @@ if CLIENT then
       if ent:GetNWBool("disguised", false) then
          client.last_id = nil
 
-         if client:IsTraitor() or client:IsHunter() or client:IsSpec() then
+         if (client:IsTraitor() or (client.IsEvil and client:IsEvil())) and (ent:IsTraitor() or (ent.IsEvil and ent:IsEvil())) or client:IsSpec() then
             text = ent:Nick() .. L.target_disg
          else
             -- Do not show anything
@@ -130,7 +131,7 @@ if CLIENT then
 
          color = COLOR_RED
 
-      elseif ((client:IsTraitor() or (ent.IsHunter and ent:IsHunter()))) and (ent:IsTraitor() or (ent.IsHunter and ent:IsHunter())) or client:IsSpec() then
+      elseif (client:IsTraitor() or (client.IsEvil and client:IsEvil())) and (ent:IsTraitor() or (ent.IsEvil and ent:IsEvil())) or client:IsSpec() then
         text = ent:Nick() .. " (Disguised as " .. ent:GetNWString("AdvDisguiseName") .. ")"
         color = COLOR_RED
       else
@@ -144,7 +145,7 @@ if CLIENT then
         _, color = util.HealthToString(ent:Health(), ent:GetMaxHealth())
       end
 
-      if (client:IsTraitor() or (client.IsHunter and client:IsHunter())) and GetRoundState() == ROUND_ACTIVE then
+      if (client:IsTraitor() or (client.IsEvil and client:IsEvil())) and GetRoundState() == ROUND_ACTIVE then
         target_traitor = ent:GetNWEntity("AdvDisguiseIsTraitor")
       end
 
@@ -185,7 +186,7 @@ if CLIENT then
 
         -- Minimalist target ID only draws a health-coloured nickname, no hints, no
         -- karma, no tag
-        if minimal then return end
+        if minimal then return false end
 
         -- Draw subtitle: health or type
         local clr = rag_color
@@ -238,7 +239,7 @@ if CLIENT then
     end
 
   hook.Add( "HUDDrawTargetID", "AdvDisguiserInit", AdvDisguiserInit )
-  
+
   function RADIO:GetTargetType()
   	if not IsValid(LocalPlayer()) then return end
   	local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
@@ -291,12 +292,12 @@ elseif SERVER then
     for _,ply in pairs (player.GetAll()) do
       ply:SetNWString( "AdvDisguiseName", "" )
       ply:SetNWBool( "AdvDisguiseIsDetective", false )
-	  ply:SetNWBool( "AdvDisguiseIsTraitor", false )
+	    ply:SetNWBool( "AdvDisguiseIsTraitor", false )
       ply:SetNWInt( "AdvDisguiseKarma", 0 )
       ply:SetNWEntity( "AdvDisguiseEnt", nil )
       ply:SetNWBool( "AdvDisguiseInDisguise", false )
       ply:SetNWString("AdvDisguiserModel","")
-      ply.OldModel = ""
+      ply.OldAdvDisguiserModel = ""
     end
   end
   hook.Add("TTTPrepareRound","AdvDisguiseReset ", AdvDisguiseReset )
@@ -305,17 +306,17 @@ elseif SERVER then
 
   if not IsValid(self.Owner) then return end
   self:SetNextSecondaryFire(CurTime() + 0.2)
-  
+
   local owner = self.Owner
   if owner:GetNWBool("AdvDisguiseInDisguise") then
     owner:SetNWBool("AdvDisguiseInDisguise",false)
-    if owner.OldModel then
-      owner:SetModel(owner.OldModel)
+    if owner.OldAdvDisguiserModel then
+      owner:SetModel(owner.OldAdvDisguiserModel)
     end
   else
     if owner:GetNWBool("AdvDisguiseName","") != "" then
       owner:SetNWBool("AdvDisguiseInDisguise",true)
-      owner.OldModel = owner:GetModel()
+      owner.OldAdvDisguiserModel = owner:GetModel()
       if owner:GetNWString("AdvDisguiserModel", "") != "" then
         owner:SetModel(owner:GetNWString("AdvDisguiserModel", ""))
       end
@@ -357,7 +358,6 @@ function SWEP:PrimaryAttack()
   -- effects
   if IsValid(hitEnt) then
     self.Weapon:SendWeaponAnim( ACT_VM_HITCENTER )
-
     self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
   else
     self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
@@ -365,15 +365,16 @@ function SWEP:PrimaryAttack()
 
   if SERVER and IsValid(self.Owner) and tr.Hit and tr.HitNonWorld and IsValid(hitEnt) then
     if hitEnt:IsPlayer() and not hitEnt:IsSpec() then
-      self.Owner:SetNWString( "AdvDisguiseName", hitEnt:Nick() )
-      self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt:IsDetective() )
-	  self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt:IsTraitor() )
-      self.Owner:SetNWInt( "AdvDisguiseKarma", hitEnt:GetBaseKarma() )
+      self.Owner:SetNWString("AdvDisguiseName", hitEnt:Nick() )
+      self.Owner:SetNWBool("AdvDisguiseIsDetective", hitEnt:IsDetective() )
+	    self.Owner:SetNWBool("AdvDisguiseIsTraitor", hitEnt:IsTraitor() or (hitEnt.IsEvil and hitEnt:IsEvil()) )
+      self.Owner:SetNWInt("AdvDisguiseKarma", hitEnt:GetBaseKarma() )
       self.Owner:SetNWEntity( "AdvDisguiseEnt", hitEnt )
       self.Owner:SetNWString("AdvDisguiserModel",hitEnt:GetModel())
 
 
       DamageLog("ADVANCED DISGUISER:\t " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "]" .. " stole " .. hitEnt:Nick() .. " [" .. hitEnt:GetRoleString() .. "]" .. "'s identity.")
+
       net.Start("TTTAdvDisguiseSuccess")
       net.WriteString(hitEnt:Nick())
       net.Send(self.Owner)
@@ -384,11 +385,12 @@ function SWEP:PrimaryAttack()
       if name != "" then
         self.Owner:SetNWString( "AdvDisguiseName", name )
         self.Owner:SetNWBool( "AdvDisguiseIsDetective", hitEnt.was_role == ROLE_DETECTIVE )
-		self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt.was_role == ROLE_TRAITOR )
+		    self.Owner:SetNWBool( "AdvDisguiseIsTraitor", hitEnt.was_role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(hitEnt.was_role)))
         self.Owner:SetNWString("AdvDisguiserModel",hitEnt:GetModel())
-        if IsValid(player.GetByUniqueID( hitEnt.uqid )) then
-          self.Owner:SetNWInt( "AdvDisguiseKarma", player.GetByUniqueID( hitEnt.uqid ):GetBaseKarma())
-          self.Owner:SetNWEntity( "AdvDisguiseEnt" , player.GetByUniqueID( hitEnt.uqid ))
+        local ply = player.GetBySteamID( hitEnt.sid )
+        if IsValid(ply) then
+          self.Owner:SetNWInt( "AdvDisguiseKarma", ply:GetBaseKarma())
+          self.Owner:SetNWEntity( "AdvDisguiseEnt" , ply)
         else
           self.Owner:SetNWInt( "AdvDisguiseKarma", self.Owner():GetBaseKarma())
           self.Owner:SetNWEntity( "AdvDisguiseEnt" , nil)
@@ -427,16 +429,9 @@ function SWEP:Reload()
   return false
 end
 
-function SWEP:Deploy()
-  if SERVER and IsValid(self.Owner) then
-    self.Owner:DrawViewModel(false)
-  end
-  return true
-end
-
 function SWEP.PreDrop(wep)
   wep.Owner:SetNWBool( "AdvDisguiseInDisguise", false )
-  if wep.Owner.OldModel then
-      wep.Owner:SetModel(wep.Owner.OldModel)
+  if wep.Owner.OldAdvDisguiserModel then
+      wep.Owner:SetModel(wep.Owner.OldAdvDisguiserModel)
   end
 end

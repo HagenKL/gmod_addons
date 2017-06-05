@@ -202,10 +202,16 @@ end
 
 local bgcolor = {
    [ROLE_TRAITOR]   = Color(150, 0, 0, 200),
-   [ROLE_HUNTER]   = Color(150, 150, 0, 200),
    [ROLE_DETECTIVE] = Color(0, 0, 150, 200),
    [ROLE_INNOCENT]  = Color(0, 50,  0, 200)
 };
+
+function AddRoleLangColors(Role)
+  local col = Role.DefaultColor
+  bgcolor[Role.ID] = Color(util.ClampColor(col.r - 50), util.ClampColor(col.g - 50), util.ClampColor(col.b - 50), 200)
+end
+
+
 
 -- Table of styles that can take a string and display it in some position,
 -- colour, etc.
@@ -267,10 +273,10 @@ function LANG.ProcessMsg(name, params)
             params[k] = LANG.GetTranslation(name)
          end
       end
-      
+
       text = interp(raw, params)
    end
-   
+
    LANG.ShowStyledMsg(text, LANG.GetStyle(name))
 end
 
@@ -294,7 +300,7 @@ local styledmessages = {
       "buy_no_stock",
       "buy_pending",
       "buy_received",
-      
+
       "xfer_no_recip",
       "xfer_no_credits",
       "xfer_success",
@@ -318,7 +324,6 @@ local styledmessages = {
 
       "credit_det_all",
       "credit_tr_all",
-	  "credit_ht_all",
       "credit_kill"
    },
 

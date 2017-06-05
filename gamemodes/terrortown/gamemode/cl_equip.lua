@@ -57,7 +57,8 @@ function GetEquipmentForRole(role)
 
       Equipment = tbl
    end
-   if role == ROLE_HUNTER then
+
+   if GetRoleTableByID(role).ShopFallBack then
      return Equipment and Equipment[ROLE_TRAITOR] or {}
    else
      return Equipment and Equipment[role] or {}
@@ -149,9 +150,12 @@ local color_darkened = Color(255,255,255, 80)
 -- TODO: make set of global role colour defs, these are same as wepswitch
 local color_slot = {
    [ROLE_TRAITOR]   = Color(180, 50, 40, 255),
-   [ROLE_HUNTER]    = Color(180, 140, 40, 255),
    [ROLE_DETECTIVE] = Color(50, 60, 180, 255)
 };
+
+function AddRoleEquipColors(Role)
+  color_slot[Role.ID] = Role.DefaultColor
+end
 
 local eqframe = nil
 local function TraitorMenuPopup()
@@ -440,7 +444,7 @@ concommand.Add("ttt_cl_traitorpopup_close", ForceCloseTraitorMenu)
 
 function GM:OnContextMenuOpen()
    local r = GetRoundState()
-   if r == ROUND_ACTIVE and not (LocalPlayer():GetTraitor() or LocalPlayer():GetDetective() or LocalPlayer():GetHunter()) then
+   if r == ROUND_ACTIVE and not LocalPlayer():IsSpecial() then
       return
    elseif r == ROUND_POST or r == ROUND_PREP then
       CLSCORE:Reopen()

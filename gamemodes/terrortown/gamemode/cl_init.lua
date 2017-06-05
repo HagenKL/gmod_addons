@@ -86,6 +86,38 @@ function GM:HUDClear()
    TBHUD:Clear()
 end
 
+function AddRoleOnClient(Role)
+  AddLangForRole(Role)
+  AddRoleEquipColors(Role)
+  AddRoleHUDColors(Role)
+  AddRoleHUDPickupColors(Role)
+  AddRoleLangColors(Role)
+  AddRoleWepSwitchColors(Role)
+  AddRoleRowColors(Role)
+  AddWinStuff(Role)
+  if Role.newteam then
+    CLSCORE[string.Capitalize(Role.String) .. "IDs"] = {}
+  end
+end
+
+function AddLangForRole(Role)
+   LANG.AddToLanguage("english", Role.String, Role.Rolename )
+   LANG.AddToLanguage("english", "credit_" .. Role.Short .. "_all", Role.Rolename .. "s, you have been awarded {num} equipment credit(s) for your performance.")
+   LANG.SetStyle("credit_" .. Role.Short .. "_all", "rolecolour")
+   LANG.AddToLanguage("english", "body_found_" .. Role.Short, "They were a " .. Role.Rolename .. "!")
+   LANG.AddToLanguage("english", "search_role_" .. Role.Short, "This person was a " .. Role.Rolename .. "!")
+   LANG.AddToLanguage("english", "target_" .. Role.String, "FELLOW " .. string.upper(Role.Rolename))
+   if Role.newteam then
+     if not COL_KILLS_COUNT then COL_KILLS_COUNT = 3 end
+     LANG.AddToLanguage("english", "hilite_win_" .. Role.String .. "s", "THE " .. string.upper(Role.Rolename) .. " WINS")
+     LANG.AddToLanguage("english", "col_kills" .. COL_KILLS_COUNT, Role.Rolename .. " kills")
+     COL_KILLS_COUNT = COL_KILLS_COUNT + 1
+     LANG.AddToLanguage("english", "info_popup_" .. Role.String, Role.Description)
+     LANG.AddToLanguage("english", "win_" .. Role.String, Role.wintext)
+     LANG.AddToLanguage("english", "ev_win_" .. Role.String, Role.wintext)
+   end
+end
+
 KARMA = {}
 function KARMA.IsEnabled() return GetGlobalBool("ttt_karma", false) end
 
@@ -172,10 +204,12 @@ local function ReceiveRole()
    client:SetRole(role)
 
    Msg("You are: ")
-   if client:IsTraitor() then MsgN("TRAITOR")
-   elseif client:IsHunter() then MsgN("HUNTER")
-   elseif client:IsDetective() then MsgN("DETECTIVE")
-   else MsgN("INNOCENT") end
+   for k,v in pairs(TTTRoles) do
+     if client:GetRole() == v.ID then
+       MsgN(string.upper(v.String))
+       break
+     end
+   end
 end
 net.Receive("TTT_Role", ReceiveRole)
 
@@ -190,7 +224,7 @@ local function ReceiveRoleList()
       if IsValid(ply) and ply.SetRole then
          ply:SetRole(role)
 
-         if ply:IsTraitor() or ply:IsHunter() then
+         if ply:IsEvil() then
             ply.traitor_gvoice = false -- assume traitorchat by default
          end
       end

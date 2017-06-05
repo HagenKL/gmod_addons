@@ -74,7 +74,7 @@ local function DrawTarget(tgt, size, offset, no_shrink)
 
    scrpos.x = math.Clamp(scrpos.x, sz, ScrW() - sz)
    scrpos.y = math.Clamp(scrpos.y, sz, ScrH() - sz)
-   
+
    if IsOffScreen(scrpos) then return end
 
    surface.DrawTexturedRect(scrpos.x - sz, scrpos.y - sz, sz * 2, sz * 2)
@@ -122,7 +122,7 @@ function RADAR:Draw(client)
    surface.SetFont("HudSelectionText")
 
    -- C4 warnings
-   if self.bombs_count != 0 and (client:IsActiveTraitor() or client:IsActiveHunter()) then
+   if self.bombs_count != 0 and client:IsActiveEvil() then
       surface.SetTexture(c4warn)
       surface.SetTextColor(200, 55, 55, 220)
       surface.SetDrawColor(255, 255, 255, 200)
@@ -178,24 +178,18 @@ function RADAR:Draw(client)
       end
 
       role = tgt.role or ROLE_INNOCENT
-      if role == ROLE_TRAITOR then
-         surface.SetDrawColor(255, 0, 0, alpha)
-         surface.SetTextColor(255, 0, 0, alpha)
-	  elseif role == ROLE_HUNTER then
-         surface.SetDrawColor(255, 200, 0, alpha)
-         surface.SetTextColor(255, 200, 0, alpha)
 
-      elseif role == ROLE_DETECTIVE then
-         surface.SetDrawColor(0, 0, 255, alpha)
-         surface.SetTextColor(0, 0, 255, alpha)
+      for k,v in pairs(TTTRoles) do
+        if role == v.ID then
+          surface.SetDrawColor(v.DefaultColor, alpha)
+          surface.SetTextColor(v.DefaultColor, alpha)
+          break
+        end
+      end
 
-      elseif role == 4 then -- decoys
+      if role == 16 then -- decoys
          surface.SetDrawColor(150, 150, 150, alpha)
          surface.SetTextColor(150, 150, 150, alpha)
-
-      else
-         surface.SetDrawColor(0, 255, 0, alpha)
-         surface.SetTextColor(0, 255, 0, alpha)
       end
 
       DrawTarget(tgt, 24, 0)
@@ -240,7 +234,7 @@ local function ReceiveRadarScan()
 
    RADAR.targets = {}
    for i=1, num_targets do
-      local r = net.ReadUInt(4)
+      local r = net.ReadUInt(8)
 
       local pos = Vector()
       pos.x = net.ReadInt(32)
@@ -312,4 +306,3 @@ function RADAR.CreateMenu(parent, frame)
 
    return dform
 end
-

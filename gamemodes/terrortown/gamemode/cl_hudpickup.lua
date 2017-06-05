@@ -9,9 +9,12 @@ GM.PickupHistoryCorner  = surface.GetTextureID( "gui/corner8" )
 local pickupclr = {
    [ROLE_INNOCENT]  = Color(55, 170, 50, 255),
    [ROLE_TRAITOR]   = Color(180, 50, 40, 255),
-   [ROLE_HUNTER]    = Color(180, 140, 40, 255),
    [ROLE_DETECTIVE] = Color(50, 60, 180, 255)
 }
+
+function AddRoleHUDPickupColors(Role)
+  pickupclr[Role.ID] = Role.DefaultColor
+end
 
 function GM:HUDWeaponPickedUp( wep )
    if not (IsValid(wep) and IsValid(LocalPlayer())) or (not LocalPlayer():Alive()) then return end

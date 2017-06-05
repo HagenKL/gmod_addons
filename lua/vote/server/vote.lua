@@ -1,16 +1,12 @@
---local totemenabled = GetGlobalBool("ttt_totem", true)
-
-local startvotes = GetConVar("ttt_startvotes")
-
 function TTTVote.ReceiveVotes(len, sender)
   local target = net.ReadEntity()
   if target:GetNWInt("VoteCounter") < 3 then
 	  target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
 	  TTTVote.CalculateVotes(sender, target, sender)
   else
-	net.Start("TTTVoteFailure")
-	net.WriteEntity(target)
-	net.Send(sender)
+  	net.Start("TTTVoteFailure")
+  	net.WriteEntity(target)
+  	net.Send(sender)
   end
 end
 
@@ -28,15 +24,9 @@ function TTTVote.CalculateVotes(ply, target, sender)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
-    TTTVote.AddHalos(target)
-	local totem = ply:GetNWEntity("Totem",NULL)
-	if IsValid(totem) then
-		totem:AddHalos()
-	end
     for k,v in pairs(TTTVote.votebetters[target:SteamID()]) do
-      TTTVote.SetVotes(v,v:GetNWInt("PlayerVotes") - 1)
-      ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") - 1 )
-      if target:IsRole(ROLE_INNOCENT) and (v:IsRole(ROLE_INNOCENT) or v:GetDetective()) then
+      v:UsedVote()
+      if target:GetGood() and v:GetGood() then
         v:SetNWBool("TTTVotePunishment", true)
       end
     end
@@ -45,35 +35,36 @@ function TTTVote.CalculateVotes(ply, target, sender)
   TTTVote.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
 end
 
-function TTTVote.SetVotes(ply, vote)
-  ply:SetNWInt("PlayerVotes", vote)
-  util.SetPData(ply:SteamID(),"vote_stored", vote)
-end
-
-function TTTVote.ResetVotes(ply, reset)
-  TTTVote.SetVotes(ply, startvotes:GetInt())
+function TTTVote.ResetVotes(ply)
+  ply.totemuses = 0
+  ply:ResetVotes()
   ply:SetNWInt("VoteCounter",0)
   ply:SetNWInt("UsedVotes", 0)
   ply:SetNWBool("TTTVotePunishment", false)
-  --if totemenabled then
-    TTTVote.AnyTotems = true
-    local totem = ply:GetNWEntity("Totem")
-    if IsValid(totem) then
-      totem:FakeDestroy()
-    end
-    ply.totemuses = 0
-    ply:SetNWEntity("Totem",NULL)
-    ply:SetNWBool("PlacedTotem", false)
-    ply:SetNWBool("CanSpawnTotem", true)
-    ply.DamageNotified = false
-    ply.TotemSuffer = 0
-  --end
+  TTTVote.AnyTotems = true
+  local totem = ply:GetNWEntity("Totem")
+  if IsValid(totem) then
+    totem:FakeDestroy()
+  end
+
+  ply:SetNWEntity("Totem",NULL)
+  ply:SetNWBool("PlacedTotem", false)
+  ply:SetNWBool("CanSpawnTotem", true)
+  ply.DamageNotified = false
+  ply.TotemSuffer = 0
+
   for key,v in pairs(player.GetAll()) do
     ply:SetNWInt("UsedVotesontarget " .. v:SteamID(), 0)
   end
-  if reset and TTTVote.votebetters[ply:SteamID()] != nil then
+  if SERVER and TTTVote.votebetters[ply:SteamID()] and istable(TTTVote.votebetters[ply:SteamID()]) then
     table.Empty(TTTVote.votebetters[ply:SteamID()])
   end
+end
+
+local function OpenChangelogMenu(ply)
+  net.Start("VoteChangelog")
+  net.WriteString(file.Read("vote/changelog.lua", "LUA"))
+  net.Send(ply)
 end
 
 function TTTVote.InitVote(ply)
@@ -81,7 +72,8 @@ function TTTVote.InitVote(ply)
     local currentdate = os.date("%d/%m/%Y",os.time())
     if ply:GetPData("vote_stored_date") == nil then
       TTTVote.SetDate(ply , currentdate)
-      TTTVote.SetVotes(ply, startvotes:GetInt())
+      ply:ResetVotes()
+      OpenChangelogMenu(ply)
     end
     TTTVote.InitVoteviaDate(ply, ply:GetPData("vote_stored_date"))
   end
@@ -90,10 +82,11 @@ end
 function TTTVote.InitVoteviaDate(ply, date)
   local currentdate = os.date("%d/%m/%Y",os.time())
   if date != currentdate then
-    TTTVote.SetVotes(ply, startvotes:GetInt())
     TTTVote.SetDate(ply , currentdate)
+    ply:ResetVotes()
+    OpenChangelogMenu(ply)
   else
-    TTTVote.SetVotes(ply,ply:GetPData("vote_stored"))
+    ply:SetVotes(ply:GetPData("vote_stored"))
   end
 end
 
@@ -104,13 +97,10 @@ end
 function TTTVote.ResetVoteforEveryOne( ply, cmd, args )
   if (!IsValid(ply)) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0) then
     for k,v in pairs(player.GetAll()) do
-      TTTVote.ResetVotes(v, false)
+      TTTVote.ResetVotes(v)
     end
-    table.Empty(TTTVote.votebetters)
     net.Start("TTTResetVote")
     net.WriteBool(true)
-    net.Broadcast()
-    net.Start("TTTVoteRemoveAllHalos")
     net.Broadcast()
   end
 end
@@ -129,7 +119,7 @@ function TTTVote.ResetVoteforOnePlayer(ply, cmd, args)
     end
     local pl = _match
     if IsValid(pl) then
-      TTTVote.ResetVotes(pl, true)
+      TTTVote.ResetVotes(pl)
       net.Start("TTTResetVote")
       net.WriteBool(false)
       net.Send(pl)
@@ -139,7 +129,7 @@ end
 
 function TTTVote.SaveVote(ply)
   if IsValid(ply) then
-    util.SetPData(ply:SteamID(),"vote_stored", ply:GetNWInt("PlayerVotes") )
+    util.SetPData(ply:SteamID(),"vote_stored", ply:GetVotes() )
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWInt("VoteCounter", 0)
     ply:SetNWBool("TTTVotePunishment", false)
@@ -148,7 +138,7 @@ end
 
 function TTTVote.SaveVoteAll()
   for k, ply in pairs(player.GetAll()) do
-    util.SetPData(ply:SteamID(),"vote_stored", ply:GetNWInt("PlayerVotes") )
+    util.SetPData(ply:SteamID(),"vote_stored", ply:GetVotes() )
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWInt("VoteCounter", 0)
     ply:SetNWBool("TTTVotePunishment", false)
@@ -159,15 +149,11 @@ function TTTVote.CalculateVoteRoundstart()
   for k,v in pairs(player.GetAll()) do
     v:SetNWInt("VoteCounter", 0)
     v:SetNWInt("UsedVotes",0)
-    --if totemenabled then
-      TTTVote.AnyTotems = true
-    --end
+    TTTVote.AnyTotems = true
     for key,ply in pairs(player.GetAll()) do
       v:SetNWInt("UsedVotesontarget " .. ply:SteamID(), 0)
     end
   end
-  net.Start("TTTVoteRemoveAllHalos")
-  net.Broadcast()
 end
 
 local function AutoCompleteVote( cmd, stringargs )
@@ -199,14 +185,11 @@ function TTTVote.PunishtheInnocents()
   end
 end
 
-function TTTVote.CallBack(convar, old, new)
-  SetGlobalBool("ttt_totem", new )
-end
-
 function TTTVote.IsEven(number)
   return number % 2 == 0
 end
 
+concommand.Add("ttt_votechangelog", OpenChangelogMenu)
 concommand.Add("ttt_resetallvotes", TTTVote.ResetVoteforEveryOne)
 concommand.Add("ttt_resetvotes",TTTVote.ResetVoteforOnePlayer, AutoCompleteVote)
 hook.Add("PlayerInitialSpawn", "InitialVote", TTTVote.InitVote)
@@ -216,4 +199,3 @@ hook.Add("TTTPrepareRound", "ResetVotes", TTTVote.CalculateVoteRoundstart)
 hook.Add("TTTBeginRound", "PunishtheInnocents", TTTVote.PunishtheInnocents)
 hook.Add("TTTEndRound", "ResetVotes", TTTVote.CalculateVoteRoundstart)
 hook.Add("ShutDown", "TTTSaveVotes", TTTVote.SaveVoteAll)
-cvars.AddChangeCallback("ttt_totem", TTTVote.CallBack)

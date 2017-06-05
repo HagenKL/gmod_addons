@@ -94,7 +94,7 @@ function ENT:UseOverride(activator)
    if IsValid(activator) and activator:IsPlayer() then
       -- Traitors not allowed to disarm other traitor's C4 until he is dead
       local owner = self:GetOwner()
-      if self:GetArmed() and owner != activator and (activator:GetTraitor() or activator:GetHunter()) and (IsValid(owner) and owner:Alive() and owner:GetTraitor()) then
+      if self:GetArmed() and owner != activator and activator:GetEvil() and (IsValid(owner) and owner:Alive() and owner:GetEvil()) then
          LANG.Msg(activator, "c4_no_disarm")
          return
       end
@@ -374,7 +374,7 @@ if SERVER then
             net.WriteVector(self:GetPos())
             net.WriteFloat(self:GetExplodeTime())
          end
-      net.Send(GetHTFilter(true))
+      net.Send(GetEvilFilter(true))
    end
 
    function ENT:OnRemove()
@@ -455,7 +455,9 @@ if SERVER then
       end
 
       -- send indicator to traitors
-      self:SendWarn(true)
+      if ply:IsActiveEvil() then
+        self:SendWarn(true)
+      end
    end
 
    function ENT:ShowC4Config(ply)
@@ -513,7 +515,7 @@ if SERVER then
       if IsValid(bomb) and bomb:GetClass() == "ttt_c4" and not bomb.DisarmCausedExplosion and bomb:GetArmed() then
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then
             return
-         elseif bomb.SafeWires[wire] or ply:IsTraitor() or ply:IsHunter() or ply == bomb:GetOwner() then
+         elseif bomb.SafeWires[wire] or (ply:IsEvil() and bomb:GetOwner():IsEvil()) or ply == bomb:GetOwner() then
             LANG.Msg(ply, "c4_disarmed")
 
             bomb:Disarm(ply)

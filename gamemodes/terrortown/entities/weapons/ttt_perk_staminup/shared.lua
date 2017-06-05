@@ -48,14 +48,24 @@ SWEP.ViewModelFlip = false
 SWEP.DeploySpeed = 4
 SWEP.UseHands = true
 
+
 function SWEP:DrinkTheBottle()
-  net.Start("DrinkingtheStaminup")
-  net.Send(self.Owner)
-  timer.Simple(0.5,function()
-      if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
-        self:EmitSound("perks/open.wav")
-        self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
-        timer.Simple(0.8,function()
+  if !self.Owner:HasEquipmentItem(EQUIP_STAMINUP) then
+    if CLIENT then
+      hook.Run("TTTBoughtItem", EQUIP_STAMINUP, EQUIP_STAMINUP)
+    else
+      self.Owner:GiveEquipmentItem(EQUIP_STAMINUP)
+    end
+  end
+  if SERVER then
+    self.Owner:SelectWeapon(self:GetClass())
+    net.Start("DrinkingtheStaminup")
+    net.Send(self.Owner)
+    timer.Simple(0.5,function()
+        if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
+          self:EmitSound("perks/open.wav")
+          self.Owner:ViewPunch( Angle( -1, 1, 0 ) )
+          timer.Simple(0.8,function()
             if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
               self:EmitSound("perks/drink.wav")
               self.Owner:ViewPunch( Angle( -2.5, 0, 0 ) )
@@ -65,7 +75,7 @@ function SWEP:DrinkTheBottle()
                     net.Start("StaminBlurHUD")
                     net.Send(self.Owner)
                     timer.Create("TTTStaminUp" .. self.Owner:EntIndex(),0.8, 1,function()
-                        if IsValid(self) and self.Owner:IsTerror() then
+                        if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("perks/burp.wav")
                           self.Owner:SetNWBool("StaminUpActive",true)
                           self:Remove()
@@ -75,8 +85,9 @@ function SWEP:DrinkTheBottle()
                 end)
             end
           end )
-      end
+        end
     end)
+  end
 end
 
 hook.Add("TTTPrepareRound", "TTTStaminupReset", function()
@@ -98,7 +109,7 @@ function SWEP:OnRemove()
   end
 
 	if CLIENT then
-		if self.Owner == LocalPlayer() then
+		if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
 			local vm = LocalPlayer():GetViewModel()
 			vm:SetMaterial(oldmat)
       oldmat = nil
@@ -145,13 +156,15 @@ hook.Add("TTTPlayerSpeed", "StaminUpSpeed", function(ply)
 
   function SWEP:Initialize()
     if CLIENT then
-      if self.Owner == LocalPlayer() then
+      if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
         local vm = LocalPlayer():GetViewModel()
         local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
         oldmat = vm:GetMaterial() or ""
         vm:SetMaterial(mat)
       end
     end
+    timer.Simple(0.1, function() self:DrinkTheBottle() end)
+    return self.BaseClass.Initialize(self)
   end
 
   function SWEP:GetViewModelPosition( pos, ang )

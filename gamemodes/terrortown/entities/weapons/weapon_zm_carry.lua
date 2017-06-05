@@ -282,13 +282,13 @@ function SWEP:DoAttack(pickup)
    if IsValid(trace.Entity) then
       local ent = trace.Entity
       local phys = trace.Entity:GetPhysicsObject()
-	  
+
 	  if ent:GetClass() == "ttt_totem" then return end
 
       if not IsValid(phys) or not phys:IsMoveable() or phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
          return
       end
-	  
+
 
       -- if we let the client mess with physics, desync ensues
       if CLIENT then return end
@@ -370,7 +370,7 @@ function SWEP:Pickup()
          self.CarryHack:SetOwner(ply)
          self.CarryHack:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
          self.CarryHack:SetSolid(SOLID_NONE)
-         
+
          -- set the desired angles before adding the constraint
          self.CarryHack:SetAngles(self.Owner:GetAngles())
 
@@ -480,7 +480,7 @@ end
 
 function SWEP:PinRagdoll()
    if not pin_rag:GetBool() then return end
-   if (not self.Owner:IsTraitor() and not self.Owner:IsHunter()) and (not pin_rag_inno:GetBool()) then return end
+   if (not self.Owner:IsEvil()) and (not pin_rag_inno:GetBool()) then return end
 
    local rag = self.EntHolding
    local ply = self.Owner
@@ -579,7 +579,7 @@ if CLIENT then
    function SWEP:DrawHUD()
       self.BaseClass.DrawHUD(self)
 
-      if self.dt.can_rag_pin and IsValid(self.dt.carried_rag) and (LocalPlayer():IsTraitor() or LocalPlayer():IsHunter()) then
+      if self.dt.can_rag_pin and IsValid(self.dt.carried_rag) and (LocalPlayer():IsEvil()) then
          local client = LocalPlayer()
 
          local tr = util.TraceLine({start  = client:EyePos(),

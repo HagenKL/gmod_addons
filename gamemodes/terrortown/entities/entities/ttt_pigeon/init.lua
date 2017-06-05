@@ -22,3 +22,13 @@ end
 function ENT:PhysicsCollide( data, phys )
 	self:Explode()
 end
+
+function ENT:OnTakeDamage(dmginfo)
+  if dmginfo:IsBulletDamage() then
+    self:SetHealth(self:Health() - dmginfo:GetDamage())
+    if self:Health() <= 0 then
+      self:Explode()
+    end
+  end
+end
+

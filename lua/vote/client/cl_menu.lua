@@ -20,7 +20,7 @@ function TTTVote.OpenVoteMenu()
   end
   local DLabel = vgui.Create("DLabel",frame)
   DLabel:SetPos(frame:GetWide() / 2 - 75 / 2, frame:GetTall() / 2 + 100)
-  DLabel:SetText(LocalPlayer():GetNWInt("PlayerVotes") - LocalPlayer():GetNWInt("UsedVotes") .. " Votes Übrig." )
+  DLabel:SetText(LocalPlayer():GetCurrentVotes() .. " Votes Übrig." )
   DLabel:SetSize(75,100)
   DLabel:SetTextColor(COLOR_WHITE)
 
@@ -72,7 +72,7 @@ end
 function TTTVote.LookUpVoteMenu(ply, cmd, args, argStr)
   if votemenu and IsValid(votemenu) then votemenu:Close() return end
   if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
-    if LocalPlayer():GetNWInt("PlayerVotes") - LocalPlayer():GetNWInt("UsedVotes") >= 1 then
+    if LocalPlayer():GetCurrentVotes() >= 1 then
       if LocalPlayer():GetNWInt("UsedVotes",0) <= 0 then
         TTTVote.OpenVoteMenu()
       else

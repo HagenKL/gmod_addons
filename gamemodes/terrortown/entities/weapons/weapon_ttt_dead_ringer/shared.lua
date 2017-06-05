@@ -113,7 +113,7 @@ end
 -----------------------------------
 function SWEP:Deploy()
   self:SendWeaponAnim( ACT_VM_DRAW )
-  return true
+  return self.BaseClass.Deploy(self)
 end
 -----------------------------------
 function DRThink()
@@ -153,7 +153,7 @@ end
 hook.Add("Think", "DRThink", DRThink)
 
 if SERVER then
-  function DROwnerGetsDamage(ent,dmginfo)
+  local function DROwnerGetsDamage(ent,dmginfo)
     if ent:IsPlayer() then
       local ply = ent
       if !ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 1 and ply:HasWeapon("weapon_ttt_dead_ringer") then
@@ -166,7 +166,7 @@ if SERVER then
     end
   end
 
-  function ResetDR(ply, attacker)
+  local function ResetDR(ply, attacker)
     if ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
       ply:DRuncloak()
     elseif ply:IsValid() and ply:HasWeapon("weapon_ttt_dead_ringer") then
@@ -175,9 +175,10 @@ if SERVER then
     end
   end
 
-  function DRRoundreset()
+  local function DRRoundreset()
     for k,v in pairs(player.GetAll()) do
       if v:IsTerror() and v:IsFakeDead() then
+		    v:SetNoDraw(false)
         --v:SetColor(255,255,255,255)
         net.Start("DRChangeMaterial")
         net.WriteBool(false)
@@ -189,7 +190,7 @@ if SERVER then
     end
   end
 
-  function DRSpawnReset( ply )
+  local function DRSpawnReset( ply )
       --ply:SetColor(255,255,255,255)
       ply:SetNWInt("DRStatus",0)
       ply:SetNWBool("DRDead",false)
@@ -286,7 +287,7 @@ local deathsounds = {
   Sound("hostage/hpain/hpain6.wav")
 };
 
--- Mostly code from TTT itself, to keep the bodys similar.
+-- Mostly code from TTT itself, to keep the bodies similar.
 if SERVER then
   function plymeta:DRfakedeath(dmginfo)
     net.Start("DRChangeMaterial")
@@ -306,9 +307,6 @@ if SERVER then
     local ownerwep = self:GetActiveWeapon()
     if ownerwep.Base == "weapon_tttbase" then
       ownerwep:SetIronsights(false)
-    end
-    if ConVarExists("ttt_startvotes") then
-      TTTVote.RemoveHalos(self)
     end
 
     DamageLog("DeadRinger: " .. self:Nick() .. " has faked his death.")
@@ -407,10 +405,6 @@ if SERVER then
 
     self:DrawWorldModel(true)
 
-    if ConVarExists("ttt_startvotes") then
-      TTTVote.AddHalos(self)
-    end
-
     self:EmitSound(Sound( "ttt/spy_uncloak_feigndeath.wav" ))
     DamageLog("DeadRinger: " .. self:Nick() .. " has uncloaked himself.")
 
@@ -433,7 +427,7 @@ if (CLIENT) then
         return GROUP_FOUND
       else
         local client = LocalPlayer()
-        if client:IsSpec() or client:IsActiveTraitor() or (client.IsActiveHunter and client:IsActiveHunter()) or ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
+        if client:IsSpec() or client:IsActiveTraitor() or (client.IsActiveEvil and client:IsActiveEvil()) or ((GAMEMODE.round_state != ROUND_ACTIVE) and client:IsTerror()) then
           return GROUP_NOTFOUND
         else
           return GROUP_TERROR

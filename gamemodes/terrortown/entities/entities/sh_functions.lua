@@ -33,7 +33,7 @@ hook.Add("InitPostEntity", "InitPerks", function()
       id = _G["EQUIP_" .. string.upper(perk)],
       loadout = false,
       type = "item_passive",
-      material = "vgui/ttt/icon_" .. string.lower(perk),
+      material = "vgui/ttt/ic_" .. string.lower(perk),
       name = "item_" .. string.lower(perk) .. "_name",
       desc = "item_" .. string.lower(perk) .. "_desc",
       hud = true

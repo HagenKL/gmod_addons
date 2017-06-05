@@ -1,6 +1,6 @@
 if SERVER then
   AddCSLuaFile()
-  resource.AddFile("materials/vgui/ttt/icon_phd.vmt")
+  resource.AddFile("materials/vgui/ttt/ic_phd.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_phd.png")
   util.AddNetworkString("DrinkingthePHD")
 end
@@ -46,30 +46,15 @@ EQUIP_PHD = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 128
 
 if SERVER then
 
-  local plymeta = FindMetaTable("Player")
-
   hook.Add("TTTCanOrderEquipment", "TTTPHD", function(ply, id, is_item)
     if tonumber(id) == EQUIP_PHD and ply:IsDrinking() then
       return false
     end
   end)
 
-  function plymeta:GivethePHD()
-    self:Give("ttt_perk_phd")
-    self:SelectWeapon("ttt_perk_phd")
-    if self:HasWeapon("ttt_perk_phd") then
-      self:GetWeapon("ttt_perk_phd"):DrinkTheBottle()
-    end
-  end
-
   hook.Add("TTTOrderedEquipment", "TTTPHD", function(ply, id, is_item)
       if id == EQUIP_PHD then
-        ply:GivethePHD()
-      end
-    end)
-    hook.Add("TTTPrepareRound", "TTTPHDResettin", function()
-      for k,v in pairs(player.GetAll()) do
-        timer.Remove("MakethePHDDrink" .. v:EntIndex())
+        ply:Give("ttt_perk_phd")
       end
     end)
 end
@@ -88,6 +73,6 @@ if CLIENT then
           highest = math.max(highest, v.p)
         end
 
-        search.eq_phd = {img = "vgui/ttt/icon_phd", text = "They drunk a PHD Flopper.", p = highest + 1}
+        search.eq_phd = {img = "vgui/ttt/ic_phd", text = "They drunk a PHD Flopper.", p = highest + 1}
       end )
   end
