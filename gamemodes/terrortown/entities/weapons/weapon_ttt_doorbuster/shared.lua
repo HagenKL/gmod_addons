@@ -28,7 +28,7 @@ if ( CLIENT ) then
    desc = "Placeable on doors. \nThe Door will explode when opened \nand kill everyone on its way."
 };
 end
-SWEP.ValidDoors = {"func_door","func_door_rotating","prop_door_rotating"}
+SWEP.ValidDoors = {"prop_door_rotating"}
 
 SWEP.Author			= "-Kenny-"
 SWEP.Contact		= ""
@@ -138,7 +138,7 @@ function SWEP:PrimaryAttack()
 end
 
 hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, ply, caller, value )
-    if (ent:GetClass() == "prop_door_rotating" || ent:GetClass() == "func_door_rotating" || ent:GetClass() == "func_door") and (input == "Open" or input == "Use") then
+    if (ent:GetClass() == "prop_door_rotating") and (input == "Open" or input == "Use") then
         local buster = ent.DoorBusterEnt or nil
         local owner
         if buster then

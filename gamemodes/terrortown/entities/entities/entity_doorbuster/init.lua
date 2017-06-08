@@ -40,7 +40,7 @@ end
 function ENT:BlowDoor()
   self:Explode()
   for k, v in pairs(ents.FindInSphere(self:GetPos(),80)) do
-    if (v:GetClass() == "prop_door_rotating" || v:GetClass() == "func_door_rotating" || v:GetClass() == "func_door") then
+    if (v:GetClass() == "prop_door_rotating") then
 
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
@@ -49,12 +49,8 @@ function ENT:BlowDoor()
 
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
-      if isnumber(v:GetSkin()) then
-        door:SetSkin(v:GetSkin())
-      end
-      if isstring(v:GetMaterial()) then
-        door:SetMaterial(v:GetMaterial())
-      end
+      door:SetSkin(v:GetSkin())
+      door:SetMaterial(v:GetMaterial())
 
       v:Fire("Open")
       v.DoorBusterEnt = nil
