@@ -51,7 +51,8 @@ function ENT:BlowDoor()
       door:SetAngles(v:GetAngles())
       door:SetSkin(v:GetSkin())
       door:SetMaterial(v:GetMaterial())
-
+      
+      v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
       v:Fire("Open")
       v.DoorBusterEnt = nil
       v:Remove()
