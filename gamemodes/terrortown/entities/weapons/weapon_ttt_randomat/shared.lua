@@ -176,7 +176,6 @@ if SERVER then
 				GiveRandomWeapon(ply)
 			end
 		end
-
 	end
 
 	local function RandomatItem()
@@ -328,6 +327,7 @@ if SERVER then
 		net.Start("RandomatOverrideTargetID")
 		net.Broadcast()
 	end
+
 	local function RandomatExplode()
 		RandomatBroadcast("Randomat: ", Color(255,255,255), "A Random Person will explode in 30 seconds! Watch out! (EXCEPT DETECTIVES)")
 		local effectdata = EffectData()
@@ -531,7 +531,6 @@ if SERVER then
 				net.WriteBool(false)
 				net.Broadcast()
 				RandomatInvertTimer(false)
-				hook.Remove("TTTPrepareRound", "RandomatInvertTimer")
 			else
 				hook.Add("SetupMove", "RandomatInvertEverything", function(ply, mv, cmd)
 						if ply:IsTerror() then
@@ -588,7 +587,6 @@ if SERVER then
 				net.WriteBool(false)
 				net.Broadcast()
 				RandomatSideWaysTimer(false)
-				hook.Remove("TTTPrepareRound", "RandomatSideWaysTimer")
 			else
 				hook.Add("SetupMove", "RandomatSideWays", function(ply, mv, cmd)
 						if ply:IsTerror() then
