@@ -28,7 +28,7 @@ if ( CLIENT ) then
    desc = "Placeable on doors. \nThe Door will explode when opened \nand kill everyone on its way."
 };
 end
-SWEP.ValidDoors = {"prop_door_rotating"}
+local ValidDoors = {"prop_door_rotating", "func_door_rotating"}
 
 SWEP.Author			= "-Kenny-"
 SWEP.Contact		= ""
@@ -102,33 +102,38 @@ end*/
 
 
 function SWEP:Plant()
-	if !SERVER then return end
-	local tr = self.Owner:GetEyeTrace()
-	local angle = tr.HitNormal:Angle()
-  local bomb = ents.Create("entity_doorbuster")
-	local ent = tr.Entity
-  ent.DoorBusterEnt = bomb
-  bomb:SetPos(tr.HitPos)
-	bomb:SetAngles(angle+Angle(-90,0,180))
-  bomb:Spawn()
-	bomb:SetOwner(self.Owner)
-	bomb:SetParent(ent)
-	bomb:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-	bomb:EmitSound("weapons/c4/c4_plant.wav")
-	--bomb:EmitSound("weapons/gamefreak/beep.wav")
-	self:Remove()
+
+
+    if !SERVER then return end
+
+    local tr = self.Owner:GetEyeTrace()
+    local angle = tr.HitNormal:Angle()
+    local bomb = ents.Create("entity_doorbuster")
+    local ent = tr.Entity
+
+
+    ent.DoorBusterEnt = bomb
+    bomb:SetPos(tr.HitPos)
+    bomb:SetAngles(angle+Angle(-90,0,180))
+    bomb:Spawn()
+    bomb:SetOwner(self.Owner)
+    bomb:SetParent(ent)
+    bomb:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+    bomb:EmitSound("weapons/c4/c4_plant.wav")
+    --bomb:EmitSound("weapons/gamefreak/beep.wav")
+    self:Remove()
 end
 
 
 function SWEP:CanPrimaryAttack()
   local tr = self.Owner:GetEyeTrace()
-	local hitpos = tr.HitPos
-	local dist = self.Owner:GetShootPos():Distance(hitpos)
-	local InWorld = true;
-	if SERVER then
-		InWorld = util.IsInWorld(tr.HitNormal*-50 + tr.HitPos)
-	end
-	return tr.Entity and table.HasValue(self.ValidDoors,tr.Entity:GetClass()) and dist<60 and self.Weapon:Clip1() > 0 and InWorld
+    local hitpos = tr.HitPos
+    local dist = self.Owner:GetShootPos():Distance(hitpos)
+    local InWorld = true;
+    if SERVER then
+        InWorld = util.IsInWorld(tr.HitNormal*-50 + tr.HitPos)
+    end
+    return tr.Entity and table.HasValue(ValidDoors,tr.Entity:GetClass()) and dist<60 and self.Weapon:Clip1() > 0 and InWorld
 end
 
 
@@ -136,25 +141,3 @@ function SWEP:PrimaryAttack()
 	if !self:CanPrimaryAttack() then return end
 	self:Plant()
 end
-
-hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, ply, caller, value )
-    if (ent:GetClass() == "prop_door_rotating") and (input == "Open" or input == "Use") then
-        local buster = ent.DoorBusterEnt or nil
-        local owner
-        if buster then
-            owner = buster.GetOwner and buster:GetOwner()
-        end
-        if buster and ((owner:IsTraitor() or (owner.IsEvil and owner:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil())) or (owner:GetDetective() or owner:GetRole() == ROLE_INNOCENT or (owner.IsGood and (owner:IsGood() or owner:GetJackal())))) and ply != owner then
-            buster:BlowDoor()
-            return true
-        else
-            for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
-                local own = v.GetOwner and v:GetOwner()
-                if v:GetClass() == "entity_doorbuster" and own and (own:IsTraitor() or (own.IsEvil and own:IsEvil()) and !ply:IsTraitor() and !(ply.IsEvil and ply:IsEvil()) or own:GetDetective() or own:GetRole() == ROLE_INNOCENT or (own.IsGood and (owner:IsGood() or owner:GetJackal()))) and ply != own then
-                    v:BlowDoor()
-                    return true
-                end
-            end
-        end
-    end
-end)
