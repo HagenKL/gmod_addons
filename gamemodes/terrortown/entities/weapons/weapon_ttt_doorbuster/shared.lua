@@ -28,7 +28,7 @@ if ( CLIENT ) then
    desc = "Placeable on doors. \nThe Door will explode when opened \nand kill everyone on its way."
 };
 end
-local ValidDoors = {"prop_door_rotating", "func_door_rotating"}
+local ValidDoors = {"prop_door_rotating"}
 
 SWEP.Author			= "-Kenny-"
 SWEP.Contact		= ""
@@ -111,8 +111,6 @@ function SWEP:Plant()
     local bomb = ents.Create("entity_doorbuster")
     local ent = tr.Entity
 
-
-    ent.DoorBusterEnt = bomb
     bomb:SetPos(tr.HitPos)
     bomb:SetAngles(angle+Angle(-90,0,180))
     bomb:Spawn()
