@@ -20,6 +20,12 @@ local function SendPlayerRoles()
    end
 end
 
+local function SendPlayerRole(ply)
+    net.Start("TTT_Role")
+       net.WriteUInt(ply:GetRole(), 4)
+    net.Send(ply)
+end
+
 local function SendRoleListMessage(role, role_ids, ply_or_rf)
    net.Start("TTT_RoleList")
       net.WriteUInt(role, 4)
@@ -143,6 +149,7 @@ local function request_rolelist(ply)
    if GetRoundState() != ROUND_WAIT then
 
       SendRoleReset(ply)
+      SendPlayerRole(ply)
       SendDetectiveList(ply)
 
       if ply:IsEvil() then
