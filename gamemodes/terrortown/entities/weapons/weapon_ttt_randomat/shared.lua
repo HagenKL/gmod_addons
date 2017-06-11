@@ -533,26 +533,22 @@ if SERVER then
 				RandomatInvertTimer(false)
 			else
 				hook.Add("SetupMove", "RandomatInvertEverything", function(ply, mv, cmd)
-						if ply:IsTerror() then
-							local forwardspeed = mv:GetForwardSpeed()
-							local sidespeed = mv:GetSideSpeed()
-							mv:SetForwardSpeed( -forwardspeed )
-							mv:SetSideSpeed( -sidespeed )
-						end
-					end)
-					hook.Add("TTTPrepareRound", "RandomatInvert", function()
-						hook.Remove("SetupMove", "RandomatInvertEverything")
-						hook.Remove("TTTPrepareRound", "RandomatInvert")
-					end)
-					RandomatInvertTimer(true)
-					net.Start("RandomatHooks1")
-					net.WriteBool(true)
-					net.Broadcast()
+					if ply:IsTerror() then
+						local forwardspeed = mv:GetForwardSpeed()
+						local sidespeed = mv:GetSideSpeed()
+						mv:SetForwardSpeed( -forwardspeed )
+						mv:SetSideSpeed( -sidespeed )
+					end
+				end)
+				hook.Add("TTTPrepareRound", "RandomatInvert", function()
+					hook.Remove("SetupMove", "RandomatInvertEverything")
+					hook.Remove("TTTPrepareRound", "RandomatInvert")
+				end)
+				net.Start("RandomatHooks1")
+				net.WriteBool(true)
+				net.Broadcast()
+				RandomatInvertTimer(true)
 			end
-		end)
-		hook.Add("TTTPrepareRound", "RandomatInvertTimer", function()
-			timer.Remove("RandomatInvertTimer")
-			hook.Remove("TTTPrepareRound", "RandomatInvertTimer")
 		end)
 	end
 
@@ -571,10 +567,14 @@ if SERVER then
 			hook.Remove("SetupMove", "RandomatInvertEverything")
 			hook.Remove("TTTPrepareRound", "RandomatInvertEverything")
 		end)
-		RandomatInvertTimer(true)
 		net.Start("RandomatHooks1")
 		net.WriteBool(true)
 		net.Broadcast()
+		RandomatInvertTimer(true)
+		hook.Add("TTTPrepareRound", "RandomatInvertTimerRemove", function()
+			timer.Remove("RandomatInvertTimer")
+			hook.Remove("TTTPrepareRound", "RandomatInvertTimerRemove")
+		end)
 	end
 
 	local function RandomatSideWaysTimer(bool)
@@ -589,33 +589,29 @@ if SERVER then
 				RandomatSideWaysTimer(false)
 			else
 				hook.Add("SetupMove", "RandomatSideWays", function(ply, mv, cmd)
-						if ply:IsTerror() then
-							mv:SetForwardSpeed( 0 )
-						end
-					end )
-					hook.Add("TTTPrepareRound", "RandomatSideWays", function()
-						hook.Remove("SetupMove", "RandomatSideWays")
-						hook.Remove("TTTPrepareRound", "RandomatSideWays")
-					end)
-					RandomatSideWaysTimer(true)
-					net.Start("RandomatHooks2")
-					net.WriteBool(true)
-					net.Broadcast()
+					if ply:IsTerror() then
+						mv:SetForwardSpeed( 0 )
+					end
+				end )
+				hook.Add("TTTPrepareRound", "RandomatSideWays", function()
+					hook.Remove("SetupMove", "RandomatSideWays")
+					hook.Remove("TTTPrepareRound", "RandomatSideWays")
+				end)
+				net.Start("RandomatHooks2")
+				net.WriteBool(true)
+				net.Broadcast()
+				RandomatSideWaysTimer(true)
 			end
-		end)
-		hook.Add("TTTPrepareRound", "RandomatSideWaysTimer", function()
-			timer.Remove("RandomatSideWaysTimer")
-			hook.Remove("TTTPrepareRound", "RandomatSideWaysTimer")
 		end)
 	end
 
 	local function RandomatSideWays()
 		RandomatBroadcast("Randomat: ", COLOR_WHITE, "Only Sideways allowed!.")
 		hook.Add("SetupMove", "RandomatSideWays", function(ply, mv, cmd)
-				if ply:IsTerror() then
-					mv:SetForwardSpeed( 0 )
-				end
-			end )
+			if ply:IsTerror() then
+				mv:SetForwardSpeed( 0 )
+			end
+		end )
 		hook.Add("TTTPrepareRound", "RandomatSideWays", function()
 			hook.Remove("SetupMove", "RandomatSideWays")
 			hook.Remove("TTTPrepareRound", "RandomatSideWays")
@@ -624,6 +620,10 @@ if SERVER then
 		net.Start("RandomatHooks2")
 		net.WriteBool(true)
 		net.Broadcast()
+		hook.Add("TTTPrepareRound", "RandomatSideWaysTimerRemove", function()
+			timer.Remove("RandomatSideWaysTimer")
+			hook.Remove("TTTPrepareRound", "RandomatSideWaysTimerRemove")
+		end)
 	end
 
 		-- global for a reason
