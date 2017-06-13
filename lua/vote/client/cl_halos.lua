@@ -1,4 +1,4 @@
-function TTTVote.DrawVoteHalos()
+function TTTGF.DrawVoteHalos()
   local tbl = {}
 
   for k,v in pairs(player.GetAll()) do -- probably not a good method but a working one.
@@ -10,4 +10,4 @@ function TTTVote.DrawVoteHalos()
   halo.Add(tbl,Color(0,255,0),1,1,2,true,true)
 end
 
-hook.Add("PreDrawHalos","TTTVoteHalos", TTTVote.DrawVoteHalos)
+hook.Add("PreDrawHalos","TTTVoteHalos", TTTGF.DrawVoteHalos)

@@ -168,6 +168,10 @@ function IsRoleGood(role)
   return GetRoleTableByID(role).IsGood
 end
 
+function IsRoleNeutal(role)
+  return !GetRoleTableByID(role).IsGood and !GetRoleTableByID(role).IsEvil
+end
+
 function IsRoleEvil(role)
   return GetRoleTableByID(role).IsEvil
 end
@@ -186,10 +190,10 @@ function AddNewRole(RoleName,Role)
   TTTRoles[Role.ID] = Role
 
   if Role.newteam then
-    local winstring = "WIN_" .. Role.String
-    TTTRoles[Role.ID].winning_team = winstring
-    _G[Role.winning_team] = WIN_COUNT
+    local winstring = "WIN_" .. string.upper(Role.String)
+    _G[winstring] = WIN_COUNT
     WIN_COUNT = WIN_COUNT + 1
+    TTTRoles[Role.ID].winning_team = _G[winstring]
   end
 
   AddRoleFunctions(Role)
@@ -197,7 +201,8 @@ function AddNewRole(RoleName,Role)
   if SERVER then
     AddRoleOnServer(Role)
     AddForceCommand(Role)
-  else
+  end
+  if CLIENT then
     AddRoleOnClient(Role)
   end
 

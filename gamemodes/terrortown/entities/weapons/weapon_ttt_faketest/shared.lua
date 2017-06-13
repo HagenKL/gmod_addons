@@ -68,7 +68,7 @@ end
 function GetFakeTesterPlayer()
 	local result={}
 	for k,v in pairs(player.GetAll()) do
-		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsEvil and v:IsEvil()) or (v.IsJackal and v:IsJackal())) and !v:GetNWBool("RTTested") then
+		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsEvil and v:IsEvil()) or (v.IsNeutral and v:IsNeutral())) and !v:GetNWBool("RTTested") then
 			table.insert(result,v)
 		end
 	end

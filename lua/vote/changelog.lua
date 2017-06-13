@@ -14,6 +14,18 @@ This is the Changelog for Gamefreaks Addons! (Started Documenting 05/26/2017)<br
 This will only get shown once a day! <br>
 It will get updated every time I have time to change something!<br>
 
+<h2>Version 1.0.2 (03/06/2017):</h2>
+
+- Updated Door Buster to work with more doors <br>
+
+- Completely Rewrote the Randomat to make event adding easier (thanks to monster010) <br>
+
+<div style="width: 100%; text-align: left; margin: 5px; font-weight: bold;">Bugfixes:</div>
+
+- Fixed a Bug that caused the Invert Event to continue even tho the round already ended <br>
+
+
+
 <h2>Version 1.0.1 (03/06/2017):</h2>
 
 <div style="width: 100%; text-align: left; margin: 5px; font-weight: bold;">Bugfixes:</div>

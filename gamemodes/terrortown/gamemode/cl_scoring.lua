@@ -138,7 +138,17 @@ function CLSCORE:BuildScorePanel(dpanel)
    dlist:SetSortable(true)
    dlist:SetMultiSelect(false)
 
-   local colnames = {"", "col_player", "col_role", "col_kills1", "col_kills2", "col_kills3", "col_points", "col_team", "col_total"}
+   local colnames = {"", "col_player", "col_role", "col_kills1", "col_kills2", "col_points", "col_team", "col_total"}
+   local count = 3
+   local pos = 6
+   for k,v in pairs(TTTRoles) do
+     if v.newteam then
+       table.insert(colnames,pos,"col_kills" .. count)
+       count = count + 1
+       pos = pos + 1
+     end
+   end
+
    for k, name in pairs(colnames) do
       if name == "" then
          -- skull icon column
@@ -165,9 +175,19 @@ function CLSCORE:BuildScorePanel(dpanel)
 
    for id, s in pairs(scores) do
       if id != -1 then
-         local was_traitor = s.was_traitor
-         local was_jackal = s.was_jackal
-         local role = (was_traitor and T("traitor")) or (was_jackal and T("jackal")) or (s.was_detective and T("detective")) or ""
+        local was = {}
+         was.traitor = s.was_traitor
+
+         local role = (was_traitor and T("traitor")) or (s.was_detective and T("detective")) or ""
+
+         for k,v in pairs(TTTRoles) do
+           if v.newteam then
+             was[v.String .. "s"] = s["was_" .. v.String]
+             if role == "" then
+               role = was[v.String .. "s"] and T(v.String) or ""
+             end
+           end
+         end
 
          local surv = ""
          if s.deaths > 0 then
@@ -183,11 +203,33 @@ function CLSCORE:BuildScorePanel(dpanel)
             skull:SetSize(18,18)
          end
 
-         local points_own   = KillsToPoints(s, was_traitor, was_jackal)
-         local points_team  = ((was_traitor and bonus.traitors) or (was_jackal and bonus.jackals) or bonus.innos)
-         local points_total = points_own + points_team
+         local points_own   = KillsToPoints(s, was)
+         local points_team  = (was.traitor and bonus.traitors) or (was.innocent or was.detective) and bonus.innos or nil
 
-         local l = dlist:AddLine(surv, nicks[id], role, s.innos, s.traitors, s.jackals, points_own, points_team, points_total)
+         for k,v in pairs(TTTRoles) do
+           if v.newteam then
+             was[v.String .. "s"] = s["was_" .. v.String]
+             if points_team == nil then
+               points_team = was[v.String .. "s"] and v.teampoints or nil
+             end
+           end
+         end
+
+         if points_team == nil then points_team = 0 end --prevent bad stuff from happening
+
+         local points_total = points_own + points_team
+         print(points_team)
+         local ct = 6
+         local vararg = {surv, nicks[id], role, s.innos, s.traitors, points_own, points_team, points_total}
+
+         for k,v in pairs(TTTRoles) do
+           if v.newteam then
+             table.insert(vararg,ct,s[v.String .. "s"])
+             ct = ct + 1
+           end
+         end
+
+         local l = dlist:AddLine(unpack(vararg))
 
          -- center align
          for k, col in pairs(l.Columns) do
@@ -483,20 +525,23 @@ end
 
 function CLSCORE:Init(events)
    -- Get start time and traitors
+   local roles = {}
    local starttime = nil
-   local traitors = nil
-   local jackals = nil
-   local detectives = nil
    for k, e in pairs(events) do
       if e.id == EVENT_GAME and e.state == ROUND_ACTIVE then
          starttime = e.t
       elseif e.id == EVENT_SELECTED then
-         traitors = e.traitor_ids
-         jackals = e.jackal_ids
-         detectives = e.detective_ids
+         roles.traitors = e.traitor_ids
+         roles.detectives = e.detective_ids
+         roles.innocent = e.innocent_ids
+         for k,v in pairs(TTTRoles) do
+           if v.newteam then
+             roles[v.String .. "s"] = e[v.String .. "_ids"]
+           end
+         end
       end
 
-      if starttime and traitors then
+      if starttime and roles.traitors then
          break
       end
    end
@@ -511,15 +556,19 @@ function CLSCORE:Init(events)
       end
    end
 
-   scores = ScoreEventLog(events, scores, traitors, detectives, jackals)
+   scores = ScoreEventLog(events, scores, roles)
 
    self.Players = nicks
    self.Scores = scores
-   self.TraitorIDs = traitors
-   self.JackalIDs = jackals
-   self.DetectiveIDs = detectives
+   self.TraitorIDs = roles.traitors
+   self.DetectiveIDs = roles.detectives
    self.StartTime = starttime
    self.Events = events
+   for k,v in pairs(TTTRoles) do
+     if v.newteam then
+       self[string.Capitalize(v.String) .. "IDs"] = roles[v.String .. "s"]
+     end
+   end
 end
 
 function CLSCORE:ReportEvents(events)

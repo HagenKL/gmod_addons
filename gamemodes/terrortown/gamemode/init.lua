@@ -298,11 +298,14 @@ function WaitForPlayers()
 end
 
 function AddRoleOnServer(Role)
-  CreateConVar("ttt_" .. Role.String .. "_pct", Role.DefaultPct)
-  CreateConVar("ttt_" .. Role.String .. "_max", Role.DefaultMax)
-  CreateConVar("ttt_" .. Role.String .. "_min_players", Role.DefaultMin)
-  CreateConVar("ttt_" .. Role.String .. "_credits_starting",Role.DefaultCredits)
+  CreateConVar("ttt_" .. Role.String .. "_pct", Role.DefaultPct, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
+  CreateConVar("ttt_" .. Role.String .. "_max", Role.DefaultMax, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
+  CreateConVar("ttt_" .. Role.String .. "_min_players", Role.DefaultMin, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
+  CreateConVar("ttt_" .. Role.String .. "_credits_starting",Role.DefaultCredits, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
+  -- CreateConVar("ttt_" .. Role.String .. "_enabled","1", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY})
 end
+
+
 
 -- When a player initially spawns after mapload, everything is a bit strange;
 -- just making him spectator for some reason does not work right. Therefore,

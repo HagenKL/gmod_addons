@@ -233,7 +233,7 @@ if SERVER then
 						ply:Give("weapon_ttt_push")
 						ply:Give("weapon_ttt_knife")
 					end )
-			elseif ply:GetRole() == ROLE_INNOCENT or (ply.GetJackal and ply:GetJackal()) then
+			elseif ply:GetRole() == ROLE_INNOCENT or (ply.IsNeutral and ply:IsNeutral()) then
 				timer.Simple(0.1, function()
 						ply:Give("weapon_ttt_push")
 						ply:Give("weapon_ttt_knife")
@@ -290,7 +290,7 @@ if SERVER then
 					if ModelNum > 0 then
 						ModelNum = ModelNum - 1
 						ply.Modelchanged = true
-						if ply:GetRole() == ROLE_INNOCENT or (ply.GetJackal and ply:GetJackal()) then
+						if ply:GetRole() == ROLE_INNOCENT or (ply.IsNeutral and ply:IsNeutral()) then
 							ply:SetModel("models/player/mossman.mdl")
 						elseif ply:GetTraitor() or (ply.GetEvil and ply:GetEvil()) then
 							ply:SetModel("models/player/skeleton.mdl")
@@ -302,7 +302,7 @@ if SERVER then
 		hook.Add("PlayerSpawn", "RandomatModelFix", function(ply)
 				timer.Simple(0.1, function()
 					if IsValid(ply) and ply.Modelchanged then
-						if ply:GetRole() == ROLE_INNOCENT or (ply.GetJackal and ply:GetJackal()) then
+						if ply:GetRole() == ROLE_INNOCENT or (ply.IsNeutral and ply:IsNeutral()) then
 							ply:SetModel("models/player/mossman.mdl")
 						elseif ply:GetTraitor() then
 							ply:SetModel("models/player/skeleton.mdl")

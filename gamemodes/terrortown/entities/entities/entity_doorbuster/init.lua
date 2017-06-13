@@ -68,7 +68,7 @@ function ENT:BlowDoor()
       door:Spawn()
 
       local phys = door:GetPhysicsObject()
-      door:SetAngles(Angle( math.Rand( -10, 10 ), math.Rand( -10, 10 ), 0 ))
+
       phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
     end
   end

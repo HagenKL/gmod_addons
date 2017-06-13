@@ -1,6 +1,6 @@
 local votemenu = nil
 
-function TTTVote.OpenVoteMenu()
+local function OpenVoteMenu()
   local frame = vgui.Create("DFrame")
   frame:SetSize(500,360)
   frame:Center()
@@ -69,12 +69,13 @@ function TTTVote.OpenVoteMenu()
   votemenu = frame
 end
 
-function TTTVote.LookUpVoteMenu(ply, cmd, args, argStr)
+function TTTGF.LookUpVoteMenu(ply, cmd, args, argStr)
+  -- if !VoteEnabled() then return end
   if votemenu and IsValid(votemenu) then votemenu:Close() return end
   if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
     if LocalPlayer():GetCurrentVotes() >= 1 then
       if LocalPlayer():GetNWInt("UsedVotes",0) <= 0 then
-        TTTVote.OpenVoteMenu()
+        OpenVoteMenu()
       else
         chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast diese Runde schon gevotet!")
         chat.PlaySound()
@@ -89,20 +90,22 @@ function TTTVote.LookUpVoteMenu(ply, cmd, args, argStr)
   end
 end
 
-function TTTVote.LookUpTotem(ply, cmd, args, argStr)
+function TTTGF.LookUpTotem(ply, cmd, args, argStr)
+  -- if !TotemEnabled() then return end
   if GetRoundState() != ROUND_WAIT and LocalPlayer():IsTerror() then
     net.Start("TTTVotePlaceTotem")
     net.SendToServer()
   end
 end
 
-/*function TTTVote.CloseVoteMenu(ply, cmd, args, argStr)
+/*function TTTGF.CloseVoteMenu(ply, cmd, args, argStr)
   if votemenu and IsValid(votemenu) then votemenu:Close() end
 end*/
 
---concommand.Add("+votemenu", TTTVote.LookUpVoteMenu,nil,"Opens the vote menu", { FCVAR_DONTRECORD })
---concommand.Add("-votemenu", TTTVote.CloseVoteMenu,nil,"Closes the vote menu", { FCVAR_DONTRECORD })
-concommand.Add("votemenu", TTTVote.LookUpVoteMenu,nil,"Opens / Closes the vote menu", { FCVAR_DONTRECORD })
-concommand.Add("placebeacon", TTTVote.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD }) -- for backwards compatibility reasons
-concommand.Add("placetotem", TTTVote.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD })
-net.Receive("TTTVoteMenu",TTTVote.LookUpVoteMenu)
+--concommand.Add("+votemenu", TTTGF.LookUpVoteMenu,nil,"Opens the vote menu", { FCVAR_DONTRECORD })
+--concommand.Add("-votemenu", TTTGF.CloseVoteMenu,nil,"Closes the vote menu", { FCVAR_DONTRECORD })
+
+concommand.Add("votemenu", TTTGF.LookUpVoteMenu,nil,"Opens / Closes the vote menu", { FCVAR_DONTRECORD })
+net.Receive("TTTVoteMenu",TTTGF.LookUpVoteMenu)
+concommand.Add("placebeacon", TTTGF.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD }) -- for backwards compatibility reasons
+concommand.Add("placetotem", TTTGF.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD })

@@ -19,7 +19,7 @@ local function RadarScan(ply, cmd, args)
 
          local scan_ents
 		 local targets
-		 if !ply:IsHunter() or (!TTTVote.AnyTotems and ply:IsHunter()) then
+		 if !ply:IsHunter() or (!TTTGF.AnyTotems and ply:IsHunter()) then
 			 scan_ents = player.GetAll()
 			 table.Add(scan_ents, ents.FindByClass("ttt_decoy"))
 
@@ -54,7 +54,7 @@ local function RadarScan(ply, cmd, args)
 
 				table.insert(targets, {role=role, pos=pos})
 			 end
-		 elseif ply:IsHunter() and TTTVote.AnyTotems then
+		 elseif ply:IsHunter() and TTTGF.AnyTotems then
 			scan_ents = ents.FindByClass("ttt_totem")
 			targets = {}
 			for k,t in pairs(scan_ents) do

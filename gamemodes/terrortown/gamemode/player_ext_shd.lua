@@ -57,7 +57,7 @@ plymeta.IsDetective = plymeta.GetDetective
 
 plymeta.IsEvil = plymeta.GetEvil
 plymeta.IsGood = plymeta.GetGood
-plymeta.IsNeutral = plymeta.IsNeutral
+plymeta.IsNeutral = plymeta.GetNeutral
 
 function plymeta:IsSpecial() return self:GetRole() != ROLE_INNOCENT end
 

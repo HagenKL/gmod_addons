@@ -68,6 +68,8 @@ function SCORE:HandleKill( victim, attacker, dmginfo )
 
    e.vic.tr = victim:GetEvil()
 
+   e.vic.i = victim:GetGood()
+
    for k,v in pairs(TTTRoles) do
      if v.newteam and victim:GetRole() == v.ID then
        e.vic[v.Short] = true
@@ -78,6 +80,7 @@ function SCORE:HandleKill( victim, attacker, dmginfo )
       e.att.ni = attacker:Nick()
       e.att.sid = attacker:SteamID()
       e.att.tr = attacker:GetEvil()
+      e.att.i = attacker:GetGood()
      for k,v in pairs(TTTRoles) do
        if v.newteam and attacker:GetRole() == v.ID then
          e.att[v.Short] = true
@@ -177,16 +180,26 @@ function SCORE:ApplyEventLogScores(wintype)
    local tbl = {}
    tbl.traitors = {}
    tbl.detectives = {}
+   tbl.innocent = {}
+   for k,v in pairs(TTTRoles) do
+     if v.newteam then
+       tbl[v.String .. "s"] = {}
+     end
+   end
+
    for k, ply in pairs(player.GetAll()) do
       scores[ply:SteamID()] = {}
-
+      local role = GetRoleTableByID(ply:GetRole())
       if ply:GetEvil() then
          table.insert(tbl.traitors, ply:SteamID())
       elseif ply:GetGood() then
+        if ply:IsSpecial() then
          table.insert(tbl.detectives, ply:SteamID())
-      elseif GetRoleTableByID(ply:GetRole()).newteam then
-         tbl[GetRoleTableByID(ply:GetRole()).String .. "s"] = {}
-         table.insert(tbl[GetRoleTableByID(ply:GetRole()).String .. "s"], ply:SteamID())
+       else
+        table.insert(tbl.innocent, ply:SteamID())
+       end
+      elseif role.newteam then
+         table.insert(tbl[role.String .. "s"], ply:SteamID())
       end
    end
 
@@ -200,12 +213,24 @@ function SCORE:ApplyEventLogScores(wintype)
        dead[v.String .. "s"] = 0
      end
    end
-   local scored_log = ScoreEventLog(self.Events, scores, tbl.traitors, tbl.detectives, tbl.jackals)
+
+   local scored_log = ScoreEventLog(self.Events, scores, tbl)
    local ply = nil
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-         ply:AddFrags(KillsToPoints(s, ply:GetEvil(), ply:GetJackal()))
+         local was = {}
+         if ply:GetEvil() then
+           was.traitor = true
+         elseif ply:GetGood() then
+           was.innocent = true
+         end
+         for k,v in pairs(TTTRoles) do
+           if v.newteam and ply:GetRole() == v.ID then
+             was[v.String] = true
+           end
+         end
+         ply:AddFrags(KillsToPoints(s, was))
       end
    end
 
@@ -215,7 +240,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for sid, s in pairs(scored_log) do
       ply = player.GetBySteamID(sid)
       if ply and ply:ShouldScore() then
-		   ply:AddFrags(ply:GetEvil() and bonus.traitors or (ply:GetJackal() and bonus.jackals) or bonus.innos)
+		   ply:AddFrags(ply:GetEvil() and bonus.traitors or (ply:GetNeutral() and bonus.neutrals) or bonus.innos)
       end
    end
 

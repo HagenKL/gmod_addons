@@ -68,8 +68,12 @@ local function GiveLoadoutWeapons(ply)
       end
    end
 
-   if GetRoundState() == ROUND_ACTIVE and ply:IsHunter() then
-      ply:Give("weapon_ttt_totemknife")
+   if GetRoundState() == ROUND_ACTIVE then
+     for k,v in pairs(TTTRoles) do
+       if v.ID == ply:GetRole() and v.DefaultWeapon then
+         ply:Give(v.DefaultWeapon)
+       end
+     end
    end
 end
 
@@ -102,7 +106,7 @@ local function GiveLoadoutItems(ply)
    end
    if GetRoundState() == ROUND_ACTIVE then
      for k,v in pairs(TTTRoles) do
-       if v.ID == ply:GetRole() then
+       if v.ID == ply:GetRole() and v.DefaultEquip then
          ply:GiveEquipmentItem(v.DefaultEquip)
          if v.DefaultEquip == EQUIP_RADAR then
            ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
