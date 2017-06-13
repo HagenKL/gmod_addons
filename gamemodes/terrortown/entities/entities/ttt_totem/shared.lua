@@ -92,7 +92,7 @@ function ENT:FakeDestroy()
 end
 
 hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply)
-  if ply:GetTotem() then
+  if IsValid(ply:GetTotem()) then
     ply:GetTotem():FakeDestroy()
   end
 end)
