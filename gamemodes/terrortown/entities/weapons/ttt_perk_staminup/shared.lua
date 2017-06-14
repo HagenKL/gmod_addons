@@ -160,7 +160,7 @@ hook.Add("TTTPlayerSpeed", "StaminUpSpeed", function(ply)
       if CLIENT then
         if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
           local vm = LocalPlayer():GetViewModel()
-          local mat = "models/perk_bottle/c_perk_bottle_speed" --perk_materials[self:GetPerk()]
+          local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
           oldmat = vm:GetMaterial() or ""
           vm:SetMaterial(mat)
         end

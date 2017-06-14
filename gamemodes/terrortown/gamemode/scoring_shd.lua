@@ -149,7 +149,7 @@ end
 -- Scores were initially calculated as points immediately, but not anymore, so
 -- we can convert them using this fn
 function KillsToPoints(score, was)
-   local points = ((score.suicides * -1) + score.bonus + (score.deaths == 0 and 1 or 0)) + (score.traitors * (was.traitor and -16 or 5)) + (score.innos * (was.traitor and 1 or -8))
+   local points = ((score.suicides * -1) + score.bonus + (score.deaths == 0 and 1 or 0)) + (score.traitors * (was.traitor and -16 or 5)) + (score.innos * (was.innocent and -8 or 1))
 
    for k,v in pairs(TTTRoles) do
      if v.newteam then

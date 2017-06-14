@@ -177,8 +177,9 @@ function CLSCORE:BuildScorePanel(dpanel)
       if id != -1 then
         local was = {}
          was.traitor = s.was_traitor
+         was.innocent = s.was_innocent
 
-         local role = (was_traitor and T("traitor")) or (s.was_detective and T("detective")) or ""
+         local role = (was.traitor and T("traitor")) or (s.was_detective and T("detective")) or ""
 
          for k,v in pairs(TTTRoles) do
            if v.newteam then
