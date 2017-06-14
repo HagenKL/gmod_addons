@@ -68,7 +68,7 @@ end
 
 if SERVER then
 	function SWEP:PrimaryAttack()
-		Randomat:TriggerRandomEvent()
+		Randomat:TriggerRandomEvent(self.Owner)
 		DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat")
 		self:SetNextPrimaryFire(CurTime() + 10)
 		self:Remove()

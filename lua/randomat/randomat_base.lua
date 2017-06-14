@@ -1,7 +1,7 @@
 util.AddNetworkString("randomat_message")
 
 Randomat.Events = Randomat.Events or {}
-Randomat.ActiveEvent = nil
+Randomat.ActiveEvents = {}
 
 local function shuffleTable(t)
 	math.randomseed(os.time())
@@ -27,20 +27,20 @@ function Randomat:register(id, tbl)
 	Randomat.Events[id] = tbl
 end
 
-function Randomat:TriggerRandomEvent()
+function Randomat:TriggerRandomEvent(ply)
 	local events = Randomat.Events
 
 	shuffleTable(events)
 
-	Randomat.ActiveEvent = table.Random(events)
+	Randomat.ActiveEvents[ply:UniqueID()] = table.Random(events)
 
-	Randomat:EventNotify(Randomat.ActiveEvent.Title)
-	Randomat.ActiveEvent:Begin()
-
-	if Randomat.ActiveEvent.Time != nil then
-		timer.Simple(Randomat.ActiveEvent.Time or 60, function()
-			Randomat.ActiveEvent:End()
-			Randomat.ActiveEvent = nil
+	Randomat:EventNotify(Randomat.ActiveEvents[ply:UniqueID()].Title)
+	Randomat.ActiveEvents[ply:UniqueID()]:Begin()
+	
+	if Randomat.ActiveEvents[ply:UniqueID()].Time != nil then
+		timer.Simple(Randomat.ActiveEvents[ply:UniqueID()].Time or 60, function()
+			Randomat.ActiveEvents[ply:UniqueID()]:End()
+			table.remove(Randomat.ActiveEvents, ply:UniqueID())
 		end)
 	end
 end
@@ -59,10 +59,14 @@ end
 
 -- Valid players not spec
 function randomat_meta:GetPlayers(shuffle)
+	return self:GetAlivePlayers(shuffle)
+end
+
+function randomat_meta:GetAlivePlayers(shuffle)
 	local plys = {}
 
 	for _, ply in pairs(player.GetAll()) do
-		if IsValid(ply) and (not ply:IsSpec()) then
+		if IsValid(ply) and (not ply:IsSpec()) and ply:Alive() then
 			table.insert(plys, ply)
 		end
 	end
@@ -87,12 +91,12 @@ end
 function randomat_meta:AddHook(hooktype, callbackfunc)
 	callbackfunc = callbackfunc or self[hooktype]
 
-	hook.Add(hooktype, "RandomatEvent" .. self.Id .. ":" .. hooktype, function(...)
+	hook.Add(hooktype, "RandomatEvent." .. self.Id .. ":" .. hooktype, function(...)
 		return callbackfunc(self, ...)
 	end)
 
 	self.Hooks = self.Hooks or {}
-	table.insert(self.Hooks, {hooktype, "RandomatEvent" .. self.Id .. ":" .. hooktype})
+	table.insert(self.Hooks, {hooktype, "RandomatEvent." .. self.Id .. ":" .. hooktype})
 end
 
 function randomat_meta:CleanUpHooks()
@@ -116,8 +120,11 @@ end
  * Override TTT Stuff
  */
 hook.Add("TTTEndRound", "RandomatEndRound", function()
-	if Randomat.ActiveEvent != nil then
-		Randomat.ActiveEvent:End()
-		Randomat.ActiveEvent = nil
+	if Randomat.ActiveEvents != {} then
+		for _, evt in pairs(Randomat.ActiveEvents) do
+			evt:End()
+		end
+
+		Randomat.ActiveEvents = {}
 	end
 end)

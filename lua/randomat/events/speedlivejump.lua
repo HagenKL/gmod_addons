@@ -4,7 +4,7 @@ EVENT.Title = "50% More Speed, Jump Power and Life for everyone!"
 EVENT.Time = 120
 
 function EVENT:Begin()
-	for i, ply in pairs(self:GetPlayers()) do
+	for i, ply in pairs(self:GetAlivePlayers()) do
 		local newHealth = ply:Health() * 1.5
 		ply:SetHealth(newHealth)
 		ply:SetMaxHealth(newHealth)
@@ -23,7 +23,7 @@ end
 function EVENT:End()
 	self:CleanUpHooks()
 
-	for _, ply in pairs(self:GetPlayers()) do
+	for _, ply in pairs(player.GetAll()) do
 		ply:SetJumpPower(160)
 	end
 end
