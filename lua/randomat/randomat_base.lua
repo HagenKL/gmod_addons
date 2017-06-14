@@ -33,10 +33,11 @@ function Randomat:TriggerRandomEvent(ply)
 	shuffleTable(events)
 
 	Randomat.ActiveEvents[ply:UniqueID()] = table.Random(events)
+	Randomat.ActiveEvents[ply:UniqueID()].Owner = ply
 
 	Randomat:EventNotify(Randomat.ActiveEvents[ply:UniqueID()].Title)
 	Randomat.ActiveEvents[ply:UniqueID()]:Begin()
-	
+
 	if Randomat.ActiveEvents[ply:UniqueID()].Time != nil then
 		timer.Simple(Randomat.ActiveEvents[ply:UniqueID()].Time or 60, function()
 			Randomat.ActiveEvents[ply:UniqueID()]:End()
@@ -91,12 +92,12 @@ end
 function randomat_meta:AddHook(hooktype, callbackfunc)
 	callbackfunc = callbackfunc or self[hooktype]
 
-	hook.Add(hooktype, "RandomatEvent." .. self.Id .. ":" .. hooktype, function(...)
+	hook.Add(hooktype, "RandomatEvent." .. self.Owner:UniqueID() .. "." .. self.Id .. ":" .. hooktype, function(...)
 		return callbackfunc(self, ...)
 	end)
 
 	self.Hooks = self.Hooks or {}
-	table.insert(self.Hooks, {hooktype, "RandomatEvent." .. self.Id .. ":" .. hooktype})
+	table.insert(self.Hooks, {hooktype, "RandomatEvent." .. self.Owner:UniqueID() .. "." .. self.Id .. ":" .. hooktype})
 end
 
 function randomat_meta:CleanUpHooks()
