@@ -16,8 +16,18 @@ local function shuffleTable(t)
 	end
 end
 
-local randomat_meta =  {}
-randomat_meta.__index = randomat_meta
+local function eventIndex()
+	math.randomseed(os.time())
+	local length = math.random(1, 10)
+
+	if length < 1 then return end
+
+	for i = 1, length do
+		result = result .. string.char(math.random(32, 126))
+	end
+
+	return result
+end
 
 function Randomat:register(id, tbl)
 	tbl.Id = id
@@ -29,19 +39,20 @@ end
 
 function Randomat:TriggerRandomEvent(ply)
 	local events = Randomat.Events
+	local __index = eventIndex()
 
 	shuffleTable(events)
 
-	Randomat.ActiveEvents[ply:UniqueID()] = table.Random(events)
-	Randomat.ActiveEvents[ply:UniqueID()].Owner = ply
+	Randomat.ActiveEvents[__index] = table.Random(events)
+	Randomat.ActiveEvents[__index].Owner = ply
 
-	Randomat:EventNotify(Randomat.ActiveEvents[ply:UniqueID()].Title)
-	Randomat.ActiveEvents[ply:UniqueID()]:Begin()
+	Randomat:EventNotify(Randomat.ActiveEvents[__index].Title)
+	Randomat.ActiveEvents[__index]:Begin()
 
-	if Randomat.ActiveEvents[ply:UniqueID()].Time != nil then
-		timer.Simple(Randomat.ActiveEvents[ply:UniqueID()].Time or 60, function()
-			Randomat.ActiveEvents[ply:UniqueID()]:End()
-			table.remove(Randomat.ActiveEvents, ply:UniqueID())
+	if Randomat.ActiveEvents[__index].Time != nil then
+		timer.Simple(Randomat.ActiveEvents[__index].Time or 60, function()
+			Randomat.ActiveEvents[__index]:End()
+			table.remove(Randomat.ActiveEvents, __index)
 		end)
 	end
 end
@@ -57,6 +68,8 @@ end
 /**
  * Randomat Meta
  */
+local randomat_meta =  {}
+randomat_meta.__index = randomat_meta
 
 -- Valid players not spec
 function randomat_meta:GetPlayers(shuffle)
