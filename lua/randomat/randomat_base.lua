@@ -3,6 +3,9 @@ util.AddNetworkString("randomat_message")
 Randomat.Events = Randomat.Events or {}
 Randomat.ActiveEvents = {}
 
+local randomat_meta =  {}
+randomat_meta.__index = randomat_meta
+
 local function shuffleTable(t)
 	math.randomseed(os.time())
 	local rand = math.random
@@ -44,6 +47,7 @@ function Randomat:TriggerRandomEvent(ply)
 	shuffleTable(events)
 
 	Randomat.ActiveEvents[__index] = table.Random(events)
+	Randomat.ActiveEvents[__index].Ident = __index
 	Randomat.ActiveEvents[__index].Owner = ply
 
 	Randomat:EventNotify(Randomat.ActiveEvents[__index].Title)
@@ -68,8 +72,6 @@ end
 /**
  * Randomat Meta
  */
-local randomat_meta =  {}
-randomat_meta.__index = randomat_meta
 
 -- Valid players not spec
 function randomat_meta:GetPlayers(shuffle)
@@ -105,12 +107,12 @@ end
 function randomat_meta:AddHook(hooktype, callbackfunc)
 	callbackfunc = callbackfunc or self[hooktype]
 
-	hook.Add(hooktype, "RandomatEvent." .. self.Owner:UniqueID() .. "." .. self.Id .. ":" .. hooktype, function(...)
+	hook.Add(hooktype, "RandomatEvent." .. self.Ident .. "." .. self.Id .. ":" .. hooktype, function(...)
 		return callbackfunc(self, ...)
 	end)
 
 	self.Hooks = self.Hooks or {}
-	table.insert(self.Hooks, {hooktype, "RandomatEvent." .. self.Owner:UniqueID() .. "." .. self.Id .. ":" .. hooktype})
+	table.insert(self.Hooks, {hooktype, "RandomatEvent." .. self.Ident .. "." .. self.Id .. ":" .. hooktype})
 end
 
 function randomat_meta:CleanUpHooks()
