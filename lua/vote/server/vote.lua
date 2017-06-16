@@ -76,7 +76,7 @@ function TTTGF.InitVote(ply)
     local currentdate = os.date("%d/%m/%Y",os.time())
     if ply:GetPData("vote_stored_date") == nil then
       TTTGF.SetDate(ply , currentdate)
-      ply:ResetVotes()
+      TTTGF.ResetVotes(ply)
       OpenChangelogMenu(ply)
     end
     TTTGF.InitVoteviaDate(ply, ply:GetPData("vote_stored_date"))
@@ -87,7 +87,7 @@ function TTTGF.InitVoteviaDate(ply, date)
   local currentdate = os.date("%d/%m/%Y",os.time())
   if date != currentdate then
     TTTGF.SetDate(ply , currentdate)
-    ply:ResetVotes()
+    TTTGF.ResetVotes(ply)
     OpenChangelogMenu(ply)
   else
     ply:SetVotes(ply:GetPData("vote_stored"))
