@@ -43,7 +43,7 @@ function TTTGF.ResetVotes(ply)
   ply:SetNWInt("UsedVotes", 0)
   ply:SetNWBool("TTTVotePunishment", false)
   -- if VoteEnabled() then
-    TTTGF.AnyTotems = true
+
     local totem = ply:GetNWEntity("Totem")
     if IsValid(totem) then
       totem:FakeDestroy()
@@ -103,6 +103,7 @@ function TTTGF.ResetVoteforEveryOne( ply, cmd, args )
     for k,v in pairs(player.GetAll()) do
       TTTGF.ResetVotes(v)
     end
+    TTTGF.AnyTotems = true
     net.Start("TTTResetVote")
     net.WriteBool(true)
     net.Broadcast()

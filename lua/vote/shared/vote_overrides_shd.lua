@@ -2,7 +2,7 @@ if SERVER then
 
 	function TTTGF.GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
 		local msg = string.lower(text)
-		if string.sub(msg,1,8) == "!prozent" and vote then
+		if string.sub(msg,1,8) == "!prozent" then
 			net.Start("TTTVoteMenu")
 			net.Send(sender)
 			return false
