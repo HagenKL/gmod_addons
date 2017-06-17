@@ -120,7 +120,7 @@ function SWEP:PrimaryAttack()
 			local aliveplayers = {}
 
 			for k, v in pairs(player.GetAll()) do
-				if v:IsTerror() && v != owner then
+				if v:IsTerror() and v != owner and !v:Crouching() then
 					table.insert(aliveplayers, v)
 				end
 			end
@@ -252,7 +252,7 @@ else
 			local nick = net.ReadString()
 			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with ", COLOR_GREEN, nick, COLOR_WHITE, ".")
 		elseif mode == 15 then
-			chat.AddText("SATM: ", Color(255, 255, 255), "No more players alive!")
+			chat.AddText("SATM: ", Color(255, 255, 255), "No more players alive or all alive players crouching!")
 		elseif mode == 20 then
 			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the ground and to not be crouching to switch positions!")
 		end
