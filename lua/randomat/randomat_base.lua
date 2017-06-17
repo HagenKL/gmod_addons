@@ -115,7 +115,6 @@ if SERVER then
 end
 
 function randomat_meta:AddHook(hooktype, callbackfunc)
-	print(hooktype)
 	callbackfunc = callbackfunc or self[hooktype]
 
 	hook.Add(hooktype, "RandomatEvent." .. self.Ident .. "." .. self.Id .. ":" .. hooktype, function(...)
@@ -129,7 +128,6 @@ end
 
 function randomat_meta:CleanUpHooks()
 	if not self.Hooks then return end
-	PrintTable(self.Hooks)
 
 	for _, ahook in pairs(self.Hooks) do
 		hook.Remove(ahook[1], ahook[2])
