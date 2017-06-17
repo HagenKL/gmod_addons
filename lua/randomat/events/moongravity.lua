@@ -14,7 +14,6 @@ function EVENT:Timer()
 		for _, ply in pairs(self:GetPlayers()) do
 			ply:SetGravity(0.1)
 		end
-		self:Timer()
 	end)
 end
 
