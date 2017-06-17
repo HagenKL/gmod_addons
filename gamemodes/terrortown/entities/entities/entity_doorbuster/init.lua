@@ -59,12 +59,10 @@ function ENT:BlowDoor()
 
       door:SetMaterial(v:GetMaterial())
 
-      v.Exploded = true
       v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
       v:Fire("Open")
       v:Remove()
 
-      door:SetPhysicsAttacker(self.Owner)
       door:Spawn()
 
       local phys = door:GetPhysicsObject()
@@ -87,7 +85,7 @@ function ENT:OnTakeDamage(dmginfo)
 end
 
 hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, ply, caller, value )
-    if (ent:GetClass() == "prop_door" or ent:GetClass() == "func_door" or ent:GetClass() == "prop_door_rotating" or ent:GetClass() == "func_door_rotating" ) and (input == "Open" or input == "Use" or input == "Toggle") and !ent.Exploded then
+    if (ent:GetClass() == "prop_door" or ent:GetClass() == "func_door" or ent:GetClass() == "prop_door_rotating" or ent:GetClass() == "func_door_rotating" ) and (input == "Open" or input == "Use" or input == "Toggle") then
         for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
             local owner = v.GetOwner and v:GetOwner()
             if v:GetClass() == "entity_doorbuster" and owner and ply != owner then
