@@ -11,6 +11,7 @@ function EVENT:Begin()
 		end
 		ply:SetDefaultCredits()
 	end
+	SendFullStateUpdate()
 end
 
 Randomat:register("deathmatch", EVENT)

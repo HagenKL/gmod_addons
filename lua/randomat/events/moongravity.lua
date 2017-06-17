@@ -10,7 +10,7 @@ end
 
 function EVENT:End()
 	self:CleanUpHooks()
-	
+
 	for _, ply in pairs(player.GetAll()) do
 		ply:SetGravity(1)
 	end

@@ -23,7 +23,7 @@ function EVENT:Begin()
 
 			if ply:Health() <= 0 then
 				local dmg = DamageInfo()
-				dmg:SetAttacker(v)
+				dmg:SetAttacker(ply)
 				dmg:SetDamage(100)
 				dmg:SetDamageType(DMG_GENERIC)
 

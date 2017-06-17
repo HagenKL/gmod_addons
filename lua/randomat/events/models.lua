@@ -3,13 +3,13 @@ local EVENT = {}
 EVENT.Title = "Watch the models of choosen ones whisly, they say the truth! (In 20 Seconds)"
 
 function EVENT:Begin()
-	timer.Simple(20, function()
+	timer.Create("RandomatModels", 20, 1, function()
 		self:SmallNotify("The Models of the choosen ones have been revealed!")
 
 		local plys = {}
 
 		for _, ply in pairs(self:GetPlayers(true)) do
-			if !v:GetDetective() then
+			if !ply:GetDetective() then
 				table.insert(plys, ply)
 			end
 		end
@@ -46,6 +46,8 @@ end
 
 function EVENT:End()
 	self:CleanUpHooks()
+
+	timer.Remove("RandomatModels")
 
 	for _, ply in pairs(player.GetAll()) do
 		if ply.Modelchanged then

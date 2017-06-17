@@ -1,6 +1,7 @@
 util.AddNetworkString("randomat_message")
 
 Randomat.Events = Randomat.Events or {}
+Randomat.MapEvents = Randomat.MapEvents or {}
 Randomat.ActiveEvents = {}
 
 local randomat_meta =  {}
@@ -25,6 +26,8 @@ local function eventIndex()
 
 	if length < 1 then return end
 
+	local result = ""
+
 	for i = 1, length do
 		result = result .. string.char(math.random(32, 126))
 	end
@@ -33,6 +36,7 @@ local function eventIndex()
 end
 
 function Randomat:register(id, tbl)
+	if Randomat.Events[id] then error("EVENT of name '" .. id .. "' already exists!") return end
 	tbl.Id = id
 	tbl.__index = tbl
 	setmetatable(tbl, randomat_meta)
@@ -41,29 +45,34 @@ function Randomat:register(id, tbl)
 end
 
 function Randomat:TriggerRandomEvent(ply)
-	local events = Randomat.Events
-	local __index = eventIndex()
+	if table.Count(Randomat.MapEvents) == 0 then Randomat.MapEvents = table.Copy(Randomat.Events) end
+	local events = Randomat.MapEvents
+	local index = eventIndex()
 
 	shuffleTable(events)
 
-	Randomat.ActiveEvents[__index] = table.Random(events)
-	Randomat.ActiveEvents[__index].Ident = __index
-	Randomat.ActiveEvents[__index].Owner = ply
+	local event = table.Random(events)
 
-	Randomat:EventNotify(Randomat.ActiveEvents[__index].Title)
-	Randomat.ActiveEvents[__index]:Begin()
+	Randomat.ActiveEvents[index] = event
+	Randomat.ActiveEvents[index].Ident = index
+	Randomat.ActiveEvents[index].Owner = ply
 
-	if Randomat.ActiveEvents[__index].Time != nil then
-		timer.Simple(Randomat.ActiveEvents[__index].Time or 60, function()
-			Randomat.ActiveEvents[__index]:End()
-			table.remove(Randomat.ActiveEvents, __index)
+	Randomat:EventNotify(Randomat.ActiveEvents[index].Title)
+	Randomat.ActiveEvents[index]:Begin()
+
+	if Randomat.ActiveEvents[index].Time != nil then
+		timer.Create("Randomat" .. Randomat.ActiveEvents[index].Ident, Randomat.ActiveEvents[index].Time or 60, 1, function()
+			Randomat.ActiveEvents[index]:End()
+			Randomat.ActiveEvents[index]:SmallNotify("The '" .. Randomat.ActiveEvents[index].Title .. "' Event has ended.")
+			Randomat.ActiveEvents[index] = nil
 		end)
 	end
+	Randomat.MapEvents[event.Id] = nil
 end
 
 function Randomat:EventNotify(title)
 	net.Start("randomat_message")
-	net.WriteUInt(1, 8)
+	net.WriteBool(true)
 	net.WriteString(title)
 	net.WriteUInt(0, 8)
 	net.Broadcast()
@@ -96,27 +105,31 @@ end
 
 if SERVER then
 	function randomat_meta:SmallNotify(msg, length, targ)
+		if !isnumber(length) then length = 0 end
 		net.Start("randomat_message")
-		net.WriteUInt(2, 8)
+		net.WriteBool(false)
 		net.WriteString(msg)
-		net.WriteUInt(length, 0, 8)
+		net.WriteUInt(length, 8)
 		if not targ then net.Broadcast() else net.Send(targ) end
 	end
 end
 
 function randomat_meta:AddHook(hooktype, callbackfunc)
+	print(hooktype)
 	callbackfunc = callbackfunc or self[hooktype]
 
 	hook.Add(hooktype, "RandomatEvent." .. self.Ident .. "." .. self.Id .. ":" .. hooktype, function(...)
-		return callbackfunc(self, ...)
+		return callbackfunc(...)
 	end)
 
 	self.Hooks = self.Hooks or {}
+
 	table.insert(self.Hooks, {hooktype, "RandomatEvent." .. self.Ident .. "." .. self.Id .. ":" .. hooktype})
 end
 
 function randomat_meta:CleanUpHooks()
 	if not self.Hooks then return end
+	PrintTable(self.Hooks)
 
 	for _, ahook in pairs(self.Hooks) do
 		hook.Remove(ahook[1], ahook[2])
@@ -138,6 +151,18 @@ end
 hook.Add("TTTEndRound", "RandomatEndRound", function()
 	if Randomat.ActiveEvents != {} then
 		for _, evt in pairs(Randomat.ActiveEvents) do
+			timer.Remove("Randomat" .. evt.Ident)
+			evt:End()
+		end
+
+		Randomat.ActiveEvents = {}
+	end
+end)
+
+hook.Add("TTTPrepareRound", "RandomatEndRound", function()
+	if Randomat.ActiveEvents != {} then
+		for _, evt in pairs(Randomat.ActiveEvents) do
+			timer.Remove("Randomat" .. evt.Ident)
 			evt:End()
 		end
 

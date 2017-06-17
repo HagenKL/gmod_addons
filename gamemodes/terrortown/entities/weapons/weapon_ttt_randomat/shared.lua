@@ -2,6 +2,7 @@ if SERVER then
 	resource.AddWorkshop("662342819")
 	AddCSLuaFile("shared.lua")
 	resource.AddFile("materials/VGUI/ttt/icon_randomat.vmt")
+	util.AddNetworkString("RandomatRandomWeapons")
 end
 
 if CLIENT then
@@ -66,8 +67,8 @@ function SWEP:OnRemove()
 	end
 end
 
-if SERVER then
-	function SWEP:PrimaryAttack()
+function SWEP:PrimaryAttack()
+	if SERVER and IsFirstTimePredicted() then
 		Randomat:TriggerRandomEvent(self.Owner)
 		DamageLog("RANDOMAT: " .. self.Owner:Nick() .. " [" .. self.Owner:GetRoleString() .. "] used his Randomat")
 		self:SetNextPrimaryFire(CurTime() + 10)

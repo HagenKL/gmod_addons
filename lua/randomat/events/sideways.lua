@@ -11,4 +11,4 @@ function EVENT:Begin()
 	end)
 end
 
-Randomat:register("invert", EVENT)
+--Randomat:register("sideways", EVENT)

@@ -8,60 +8,38 @@ surface.CreateFont("RandomatSmallMsg", {
 	size = 32
 })
 
-local MainData
-local SubData = nil
-
 net.Receive("randomat_message", function()
-	local t = net.ReadUInt(8)
+	local Big = net.ReadBool()
 	local msg = net.ReadString()
 	local length = net.ReadUInt(8)
 	if length == 0 then length = 5 end
 
-	local data = {
-		Message = msg,
-		Length = length
-	}
+	local NotifyPanel = vgui.Create("DNotify")
 
-	if t == 1 then
-		MainData = data
-	elseif t == 2 then
-		SubData = data
-	end
-
-	-- Paint Message
-	local width = ScrW() / 3
-
-	NotifyPanel = vgui.Create("DNotify")
-	NotifyPanel:SetPos(ScrW() / 2 - width / 2, ScrH() / 2 - 50)
-	NotifyPanel:SetSize(width, 100)
+	surface.SetFont("RandomatHeader")
+	NotifyPanel:SetSize(surface.GetTextSize(msg))
+	NotifyPanel:Center()
 
 	local bg = vgui.Create("DPanel", NotifyPanel)
 	bg:SetBackgroundColor(Color(0, 0, 0, 200))
 	bg:Dock(FILL)
 
-	if MainData then
-		local lbl = vgui.Create("DLabel", bg)
-		lbl:SetText(MainData.Message)
+	local lbl = vgui.Create("DLabel", bg)
+	lbl:SetText(msg)
+	if Big then
 		lbl:SetFont("RandomatHeader")
-		lbl:SetTextColor(Color(255, 200, 0))
-		lbl:SetWrap(true)
-		lbl:Dock(FILL)
-
-		local w, h = lbl:GetSize()
-		local tw, th = lbl:GetTextSize()
-
-		lbl:SetPos(w / 2 - tw / 2, 10)
-	end
-
-	if SubData then
-		local lbl = vgui.Create("DLabel", bg)
-		lbl:SetPos(10, 10)
-		lbl:SetText(SubData.Message)
+	else
 		lbl:SetFont("RandomatSmallMsg")
-		lbl:SetTextColor(Color(255, 200, 0))
-		lbl:SizeToContents()
 	end
+	lbl:SetTextColor(Color(255, 200, 0))
+	lbl:SetWrap(true)
+	lbl:Dock(FILL)
 
-	NotifyPanel:AddItem(bg)
+	local w, h = lbl:GetSize()
+	local tw, th = lbl:GetTextSize()
+
+	lbl:SetText(msg)
+
+	NotifyPanel:AddItem(bg, 5)
 	surface.PlaySound("weapons/c4_initiate.wav")
 end)

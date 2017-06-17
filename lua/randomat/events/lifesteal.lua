@@ -8,4 +8,4 @@ function EVENT:Begin()
 	end)
 end
 
-Randomat:register("lifesteel", EVENT)
+Randomat:register("lifesteal", EVENT)

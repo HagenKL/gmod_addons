@@ -12,11 +12,13 @@ function EVENT:Timing()
 		local ply = table.Random(self:GetPlayers(true))
 		local dmg = DamageInfo()
 
-		dmg:SetAttacker(ply)
-		dmg:SetDamage(math.random(10,50))
-		dmg:SetDamageType(DMG_GENERIC)
+		if IsValid(ply) then
+			dmg:SetAttacker(ply)
+			dmg:SetDamage(math.random(10,50))
+			dmg:SetDamageType(DMG_GENERIC)
 
-		ply:TakeDamageInfo(dmg)
+			ply:TakeDamageInfo(dmg)
+		end
 		self:Timing()
 	end)
 end

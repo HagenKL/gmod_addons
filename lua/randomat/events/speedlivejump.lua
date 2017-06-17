@@ -1,7 +1,7 @@
 local EVENT = {}
 
 EVENT.Title = "50% More Speed, Jump Power and Life for everyone!"
-EVENT.Time = 120
+--EVENT.Time = 120
 
 function EVENT:Begin()
 	for i, ply in pairs(self:GetAlivePlayers()) do
@@ -13,11 +13,10 @@ function EVENT:Begin()
 		if ply:Health() <= 30 then
 			ply:SetHealth(50)
 		end
-
-		self:AddHook("TTTPlayerSpeed", function()
-			return 1.5
-		end)
 	end
+  self:AddHook("TTTPlayerSpeed", function()
+    return 1.5
+  end)
 end
 
 function EVENT:End()
@@ -28,4 +27,4 @@ function EVENT:End()
 	end
 end
 
-Randomat:register("deathmatch", EVENT)
+Randomat:register("speedlivejump", EVENT)

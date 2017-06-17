@@ -11,6 +11,7 @@ end
 
 AddServer("randomat/randomat_base.lua")
 AddClient("randomat/cl_message.lua")
+AddClient("randomat/cl_networkstrings.lua")
 
 local files, _ = file.Find("randomat/events/*.lua", "LUA")
 

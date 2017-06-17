@@ -5,12 +5,12 @@ EVENT.Title = "A Random Person will explode in 30 seconds! Watch out! (EXCEPT DE
 function EVENT:Begin()
 	local effectdata = EffectData()
 
-	timer.Simple(30, function()
+	timer.Create("RandomatExplode",30,1, function()
 		local plys = self:GetPlayers(true)
 		local ply = plys[math.random(#plys)]
 
 		if IsValid(ply) then
-			self:SmallNotify(ply:Nick() .. "exploded!")
+			self:SmallNotify(ply:Nick() .. " exploded!")
 			ply:EmitSound(Sound("ambient/explosions/explode_4.wav"))
 
 			util.BlastDamage(ply, ply, ply:GetPos(), 300, 10000)
@@ -21,9 +21,13 @@ function EVENT:Begin()
 
 			util.Effect("HelicopterMegaBomb", effectdata)
 		else
-			self:SmallNotify("No one explode!")
+			self:SmallNotify("No one exploded!")
 		end
 	end)
 end
 
-Randomat:register("freeforall", EVENT)
+function EVENT:End()
+	timer.Remove("RandomatExplode")
+end
+
+Randomat:register("explode", EVENT)

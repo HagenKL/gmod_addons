@@ -1,7 +1,7 @@
 local EVENT = {}
 
 EVENT.Title = "Maybe you should look at your controls."
-EVENT.Time = 120
+EVENT.Time = 60
 
 function EVENT:Begin()
 	self:AddHook("SetupMove", function(ply, mv, cmd)
@@ -15,4 +15,4 @@ function EVENT:Begin()
 	end)
 end
 
-Randomat:register("invert", EVENT)
+--Randomat:register("invert", EVENT)

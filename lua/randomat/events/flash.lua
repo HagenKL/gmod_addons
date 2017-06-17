@@ -1,7 +1,7 @@
 local EVENT = {}
 
 EVENT.Title = "Everything is as fast as Flash now!(50% faster)"
-EVENT.Time = 120
+--EVENT.Time = 120
 
 function EVENT:Begin()
 	game.SetTimeScale(1.5)

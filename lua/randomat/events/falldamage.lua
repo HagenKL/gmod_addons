@@ -1,7 +1,7 @@
 local EVENT = {}
 
 EVENT.Title = "No more Falldamage!"
-EVENT.Time = 120
+--EVENT.Time = 120
 
 function EVENT:Begin()
 	self:AddHook("EntityTakeDamage", function(ent, dmginfo)
