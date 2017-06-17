@@ -16,7 +16,11 @@ net.Receive("randomat_message", function()
 
 	local NotifyPanel = vgui.Create("DNotify")
 
-	surface.SetFont("RandomatHeader")
+	if Big then
+		surface.SetFont("RandomatHeader")
+	else
+		surface.SetFont("RandomatSmallMsg")
+	end
 	NotifyPanel:SetSize(surface.GetTextSize(msg))
 	NotifyPanel:Center()
 
