@@ -43,7 +43,7 @@ local function OpenVoteMenu()
     end
   end
   ListView.DoDoubleClick = function(List, lineID,line)
-    if LocalPlayer():IsTerror() and GetRoundState() == ROUND_ACTIVE then
+    if LocalPlayer():IsTerror() and GetRoundState() == ROUND_ACTIVE or LocalPlayer():GetNWInt("UsedVotes", 0) <= 0 then
       local nick,steamid = line:GetColumnText(1), line:GetColumnText(2)
       if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
         local ply = player.GetBySteamID(steamid)
@@ -74,7 +74,7 @@ function TTTGF.LookUpVoteMenu(ply, cmd, args, argStr)
   if votemenu and IsValid(votemenu) then votemenu:Close() return end
   if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
     if LocalPlayer():GetCurrentVotes() >= 1 then
-      if LocalPlayer():GetNWInt("UsedVotes",0) <= 0 then
+      if LocalPlayer():GetNWInt("UsedVotes", 0) <= 0 then
         OpenVoteMenu()
       else
         chat.AddText("TTT Vote: ", COLOR_WHITE, "Du hast diese Runde schon gevotet!")

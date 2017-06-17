@@ -3,7 +3,6 @@
 function TTTGF.ReceiveVotes(len, sender)
   local target = net.ReadEntity()
   if target:GetNWInt("VoteCounter") < 3 and sender:GetCurrentVotes() >= 1 and sender:GetNWInt("UsedVotes",0) <= 0  then
-	  target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
 	  TTTGF.CalculateVotes(sender, target, sender)
   else
   	net.Start("TTTVoteFailure")
@@ -21,9 +20,10 @@ function TTTGF.SendVoteNotify(sender, target, totalvotes)
 end
 
 function TTTGF.CalculateVotes(ply, target, sender)
+  target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
   TTTGF.votebetters[target:SteamID()] = TTTGF.votebetters[target:SteamID()] or {}
   table.insert(TTTGF.votebetters[target:SteamID()], ply)
-  ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes") + 1 )
+  ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes",0) + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
     for k,v in pairs(TTTGF.votebetters[target:SteamID()]) do

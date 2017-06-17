@@ -20,7 +20,7 @@ if SERVER then
 
   function plymeta:UsedVote()
     local votes = self:GetNWInt("PlayerVotes",0) - 1
-    self:SetNWInt("UsedVotes", self:GetNWInt("UsedVotes") - 1 )
+    self:SetNWInt("UsedVotes", self:GetNWInt("UsedVotes") + 1 )
     self:SetNWInt("PlayerVotes", votes)
     util.SetPData(self:SteamID(),"vote_stored", votes )
   end
