@@ -57,7 +57,7 @@ plymeta.IsDetective = plymeta.GetDetective
 
 plymeta.IsEvil = plymeta.GetEvil
 plymeta.IsGood = plymeta.GetGood
-plymeta.IsNeutral = plymeta.IsNeutral
+plymeta.IsNeutral = plymeta.GetNeutral
 
 function plymeta:IsSpecial() return self:GetRole() != ROLE_INNOCENT end
 
@@ -68,7 +68,9 @@ end
 
 -- convenience functions for common patterns
 function plymeta:IsRole(role) return self:GetRole() == role end
+function plymeta:IsTeam(team) return self:GetTeam() == team end
 function plymeta:IsActiveRole(role) return self:IsRole(role) and self:IsActive() end
+function plymeta:IsActiveTeam(team) return self:IsTeam(team) and self:IsActive() end
 function plymeta:IsActiveTraitor() return self:IsActiveRole(ROLE_TRAITOR) end
 function plymeta:IsActiveDetective() return self:IsActiveRole(ROLE_DETECTIVE) end
 

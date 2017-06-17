@@ -75,7 +75,7 @@ function SendInnocentList(ply_or_rf)
          table.insert(inno_ids, v:EntIndex())
       elseif v:IsEvil() then
          table.insert(traitor_ids, v:EntIndex())
-      elseif v:IsJackal() then
+      elseif v:IsNeutral() then
         table.insert(neutral_ids, v:EntIndex())
       end
    end

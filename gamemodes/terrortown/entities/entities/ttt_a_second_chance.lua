@@ -99,8 +99,10 @@ if SERVER then
           ply.SecondChanceChance = math.random(15,25)
         elseif ply:GetRole() == ROLE_DETECTIVE then
           ply.SecondChanceChance = math.random(30,50)
-        elseif ply.GetJackal and ply:GetJackal() then
+        elseif ply.IsNeutral and ply:IsNeutral() then
           ply.SecondChanceChance = math.random(20,30)
+        else
+          ply.SecondChanceChance = math.random(20,40)
         end
         net.Start("ASCBuyed")
         net.WriteInt(ply.SecondChanceChance, 8)
@@ -264,11 +266,11 @@ if SERVER then
 
   function CheckifAsc(ply, attacker, dmg)
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
-      if (attacker:GetTraitor() or (attacker.IsEvil and attacker:IsEvil())) and ((ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) or (ply.GetGood and (ply:GetGood() or ply:GetJackal()))) then
+      if (attacker:GetTraitor() or (attacker.IsEvil and attacker:IsEvil())) and ((ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) or (ply.GetGood and (ply:GetGood() or ply:IsNeutral()))) then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(10,20), 0, 99)
-      elseif (attacker:GetRole() == ROLE_DETECTIVE or (attacker.GetGood and attacker:GetGood())) and (ply:GetTraitor() or (ply.IsEvil and (ply:IsEvil() or ply:GetJackal()))) then
+      elseif (attacker:GetRole() == ROLE_DETECTIVE or (attacker.GetGood and attacker:GetGood())) and (ply:GetTraitor() or (ply.IsEvil and (ply:IsEvil() or ply:IsNeutral()))) then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(20,30), 0, 99)
-      elseif attacker.GetJackal and attacker:GetJackal() and (ply:GetGood() or ply:GetEvil()) then
+      elseif attacker.IsNeutral and attacker:IsNeutral() and (ply:GetGood() or ply:GetEvil()) then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(15,25), 0, 99)
       end
       net.Start("ASCKill")

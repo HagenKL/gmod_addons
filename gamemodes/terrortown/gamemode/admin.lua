@@ -35,7 +35,11 @@ function PrintTraitors(ply)
 
       for _, p in pairs(ps) do
          if IsValid(p) then
-            pr(p:GetEvil() and "TRAITOR" or p:GetJackal() and "Jackal" or "Innocent", ":", p:Nick())
+           for k,v in pairs(TTTRoles) do
+             if p:GetRole() == v.ID then
+               pr(v.Rolename, ":", p:Nick())
+             end
+           end
          end
       end
    end

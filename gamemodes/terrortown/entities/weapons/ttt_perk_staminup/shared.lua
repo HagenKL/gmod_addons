@@ -155,15 +155,17 @@ hook.Add("TTTPlayerSpeed", "StaminUpSpeed", function(ply)
   end)
 
   function SWEP:Initialize()
-    if CLIENT then
-      if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
-        local vm = LocalPlayer():GetViewModel()
-        local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
-        oldmat = vm:GetMaterial() or ""
-        vm:SetMaterial(mat)
+    timer.Simple(0.1, function()
+      self:DrinkTheBottle()
+      if CLIENT then
+        if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
+          local vm = LocalPlayer():GetViewModel()
+          local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
+          oldmat = vm:GetMaterial() or ""
+          vm:SetMaterial(mat)
+        end
       end
-    end
-    timer.Simple(0.1, function() self:DrinkTheBottle() end)
+    end)
     return self.BaseClass.Initialize(self)
   end
 

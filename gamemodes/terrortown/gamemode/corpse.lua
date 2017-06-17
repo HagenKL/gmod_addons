@@ -57,7 +57,7 @@ local function IdentifyBody(ply, rag)
    local finder = ply:Nick()
    local nick = CORPSE.GetPlayerNick(rag, "")
    local traitor = IsRoleEvil(rag.was_role)
-   local neutral = rag.was_role == ROLE_JACKAL
+   local neutral = IsRoleNeutal(rag.was_role)
 
    -- Announce body
    if bodyfound:GetBool() and not CORPSE.GetFound(rag, false) then

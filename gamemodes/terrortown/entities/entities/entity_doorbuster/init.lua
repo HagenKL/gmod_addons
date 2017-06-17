@@ -43,29 +43,32 @@ function ENT:BlowDoor()
   self:Explode()
 
   for k, v in pairs(ents.FindInSphere(self:GetPos(),80)) do
-    if IsValid(v) and (v:GetClass() == "prop_door_rotating") then
+    if IsValid(v) and (v:GetClass() == "prop_door" or v:GetClass() == "func_door" or v:GetClass() == "prop_door_rotating" or v:GetClass() == "func_door_rotating" ) then
 
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
       local pos = v:GetPos()
-      pos:Add(self:GetAngles():Up() * -100)
+      pos:Add(self:GetAngles():Up() * -13)
 
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
 
-      door:SetSkin(v:GetSkin())
+      if v:GetSkin() then
+        door:SetSkin(v:GetSkin())
+      end
 
       door:SetMaterial(v:GetMaterial())
 
       v.Exploded = true
       v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
-      v.DoorBusterEnt = nil
       v:Fire("Open")
       v:Remove()
 
+      door:SetPhysicsAttacker(self.Owner)
       door:Spawn()
 
       local phys = door:GetPhysicsObject()
+
       phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
     end
   end
@@ -84,7 +87,7 @@ function ENT:OnTakeDamage(dmginfo)
 end
 
 hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, ply, caller, value )
-    if (ent:GetClass() == "prop_door_rotating") and (input == "Open" or input == "Use") and !ent.Exploded then
+    if (ent:GetClass() == "prop_door" or ent:GetClass() == "func_door" or ent:GetClass() == "prop_door_rotating" or ent:GetClass() == "func_door_rotating" ) and (input == "Open" or input == "Use" or input == "Toggle") and !ent.Exploded then
         for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
             local owner = v.GetOwner and v:GetOwner()
             if v:GetClass() == "entity_doorbuster" and owner and ply != owner then

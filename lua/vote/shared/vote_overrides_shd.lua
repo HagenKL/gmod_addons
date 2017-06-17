@@ -1,18 +1,19 @@
 if SERVER then
-	function TTTVote.GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
+
+	function TTTGF.GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
 		local msg = string.lower(text)
 		if string.sub(msg,1,8) == "!prozent" then
 			net.Start("TTTVoteMenu")
 			net.Send(sender)
 			return false
 		elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
-			TTTVote.PlaceTotem(nil, sender)
+			TTTGF.PlaceTotem(nil, sender)
 			return false
 		end
 	end
 
-	function TTTVote.AdjustSpeed(ply)
-		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
+	function TTTGF.AdjustSpeed(ply)
+		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
 			local Totem = ply:GetNWEntity("Totem", NULL)
 			if IsValid(Totem) then
 				local distance = Totem:GetPos():Distance(ply:GetPos())
@@ -30,11 +31,11 @@ if SERVER then
 		return 1
 	end
 
-	function TTTVote.Overrides() --Overriding functions that dont have hooks to modify
+	function TTTGF.Overrides() --Overriding functions that dont have hooks to modify
 
 		local plymeta = FindMetaTable("Player")
 		function plymeta:SetSpeed(slowed)
-			local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or TTTVote.AdjustSpeed(self)
+			local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or TTTGF.AdjustSpeed(self)
 
 			-- if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
 			-- 	mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
@@ -54,10 +55,12 @@ if SERVER then
 		end
 	end
 
-	hook.Add("Initialize", "TTTTotemOverrideFunction", TTTVote.Overrides)
-	hook.Add("PlayerSay","TTTVote", TTTVote.GetVoteMessage)
+	-- if TotemEnabled() then
+		hook.Add("Initialize", "TTTTotemOverrideFunction", TTTGF.Overrides)
+	-- end
+	hook.Add("PlayerSay","TTTVote", TTTGF.GetVoteMessage)
 else
-	function TTTVote.VoteMakeCounter(pnl)
+	function TTTGF.VoteMakeCounter(pnl)
 		pnl:AddColumn("Votes", function(ply)
 			if ply:GetNWInt("VoteCounter",0) < 3 then
 				return ply:GetNWInt("VoteCounter",0)
@@ -67,11 +70,13 @@ else
 		end)
 	end
 
-	function TTTVote.MakeVoteScoreBoardColor(ply)
+	function TTTGF.MakeVoteScoreBoardColor(ply)
 		if ply:GetNWInt("VoteCounter",0) >= 3 then
 			return Color(0,120,0)
 		end
 	end
-	hook.Add("TTTScoreboardRowColorForPlayer", "TTTVoteColorScoreboard", TTTVote.MakeVoteScoreBoardColor)
-	hook.Add("TTTScoreboardColumns", "TTTVoteCounteronScoreboard", TTTVote.VoteMakeCounter)
+	-- if VoteEnabled() then
+		hook.Add("TTTScoreboardRowColorForPlayer", "TTTVoteColorScoreboard", TTTGF.MakeVoteScoreBoardColor)
+		hook.Add("TTTScoreboardColumns", "TTTVoteCounteronScoreboard", TTTGF.VoteMakeCounter)
+	-- end
 end

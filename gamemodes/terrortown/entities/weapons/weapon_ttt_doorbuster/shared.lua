@@ -28,7 +28,6 @@ if ( CLIENT ) then
    desc = "Placeable on doors. \nThe Door will explode when opened \nand kill everyone on its way."
 };
 end
-local ValidDoors = {"prop_door_rotating"}
 
 SWEP.Author			= "-Kenny-"
 SWEP.Contact		= ""
@@ -74,6 +73,7 @@ SWEP.Secondary.DefaultClip  = -1
 SWEP.Secondary.Automatic    = true
 SWEP.Secondary.Ammo     = "none"
 SWEP.Secondary.Delay = 2
+local ValidDoors = {"prop_door", "func_door", "prop_door_rotating", "func_door_rotating"}
 
 function SWEP:Initialize()
 	self:SetWeaponHoldType(self.HoldType)
@@ -124,14 +124,14 @@ end
 
 
 function SWEP:CanPrimaryAttack()
-  local tr = self.Owner:GetEyeTrace()
+   local tr = self.Owner:GetEyeTrace()
     local hitpos = tr.HitPos
     local dist = self.Owner:GetShootPos():Distance(hitpos)
-    local InWorld = true;
+    local InWorld = true
     if SERVER then
         InWorld = util.IsInWorld(tr.HitNormal*-50 + tr.HitPos)
     end
-    return tr.Entity and table.HasValue(ValidDoors,tr.Entity:GetClass()) and dist<60 and self.Weapon:Clip1() > 0 and InWorld
+    return tr.Entity and table.HasValue(ValidDoors,tr.Entity:GetClass()) and dist<90 and self.Weapon:Clip1() > 0 and InWorld
 end
 
 

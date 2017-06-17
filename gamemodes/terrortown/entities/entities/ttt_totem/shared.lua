@@ -43,7 +43,7 @@ function ENT:UseOverride(activator)
     net.WriteInt(4,8)
     net.Send(activator)
     self:Remove()
-    timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
+    timer.Simple(0.01, function() if SERVER then TTTGF.TotemUpdate() end end)
   elseif IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses >= 2 then
     net.Start("TTTTotem")
     net.WriteInt(7,8)
@@ -60,6 +60,7 @@ function ENT:OnTakeDamage(dmginfo)
   if !IsValid(owner) then return end
   if infl == owner or att == owner or owner:IsEvil() then return end
 
+  if !infl.IsHunter and !att.IsHunter then return end
   if ((infl:IsPlayer() and infl:IsHunter()) or (att:IsPlayer() and att:IsHunter())) and infl:GetClass() == "weapon_ttt_totemknife" then
 
     if SERVER and owner:IsValid() and att:IsValid() and att:IsPlayer() then
@@ -68,7 +69,7 @@ function ENT:OnTakeDamage(dmginfo)
       net.Broadcast()
     end
 
-    TTTVote.GiveTotemHunterCredits(att,self)
+    TTTGF.GiveTotemHunterCredits(att,self)
 
     local effect = EffectData()
     effect:SetOrigin(self:GetPos())
@@ -76,7 +77,7 @@ function ENT:OnTakeDamage(dmginfo)
     sound.Play(zapsound, self:GetPos())
     self:GetOwner():SetNWEntity("Totem",NULL)
     self:Remove()
-    timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
+    timer.Simple(0.01, function() if SERVER then TTTGF.TotemUpdate() end end)
   end
 end
 
@@ -87,12 +88,12 @@ function ENT:FakeDestroy()
   sound.Play(zapsound, self:GetPos())
   self:GetOwner():SetNWEntity("Totem",NULL)
   self:Remove()
-  timer.Simple(0.01, function() if SERVER then TTTVote.TotemUpdate() end end)
+  timer.Simple(0.01, function() if SERVER then TTTGF.TotemUpdate() end end)
 end
 
 hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply)
-  if TTTVote.HasTotem(ply) then
-    ply:GetNWEntity("Totem", NULL):FakeDestroy()
+  if IsValid(ply:GetTotem()) then
+    ply:GetTotem():FakeDestroy()
   end
 end)
 
@@ -102,7 +103,7 @@ if CLIENT then
     local e = client:GetEyeTrace().Entity
 
 
-    if IsValid(e) and IsValid(e:GetOwner()) and (e:GetOwner() == client or client:IsHunter()) and e:GetClass() == "ttt_totem" then
+    if IsValid(e) and IsValid(e:GetOwner()) and e:GetClass() == "ttt_totem" and (e:GetOwner() == client or (client.IsHunter and client:IsHunter())) then
       local owner = e:GetOwner():Nick()
 
       if string.EndsWith(owner, "s") or string.EndsWith(owner, "x") or string.EndsWith(owner, "z") or string.EndsWith(owner, "ß") then

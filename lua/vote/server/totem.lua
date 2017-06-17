@@ -1,4 +1,6 @@
-function TTTVote.PlaceTotem(len, sender)
+-- if !TotemEnabled() then print("TTT Totem is not enabled on this Server, set ttt_totem to 1 to activate!") return end
+
+function TTTGF.PlaceTotem(len, sender)
 	local ply = sender
 	if !IsValid(ply) or !ply:IsTerror() then return end
 	if !ply:GetNWBool("CanSpawnTotem", true) or IsValid(ply:GetNWEntity("Totem",NULL)) or ply:GetNWBool("PlacedTotem") then
@@ -29,61 +31,61 @@ function TTTVote.PlaceTotem(len, sender)
 			net.Start("TTTTotem")
 			net.WriteInt(3,8)
 			net.Send(ply)
-			TTTVote.TotemUpdate()
+			TTTGF.TotemUpdate()
 		end
 	end
 end
 
-function TTTVote.HasTotem(ply)
+function TTTGF.HasTotem(ply)
 	return IsValid(ply:GetNWEntity("Totem", NULL))
 end
 
-function TTTVote.TotemUpdate()
-	if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
+function TTTGF.TotemUpdate()
+	if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
 
-		TTTVote.totems = {}
+		TTTGF.totems = {}
 		for k,v in pairs(player.GetAll()) do
-			if (v:IsTerror() or !v:Alive()) and (TTTVote.HasTotem(v) or v:GetNWBool("CanSpawnTotem", false)) then
-				table.insert(TTTVote.totems, v)
+			if (v:IsTerror() or !v:Alive()) and (TTTGF.HasTotem(v) or v:GetNWBool("CanSpawnTotem", false)) then
+				table.insert(TTTGF.totems, v)
 			end
 		end
 
-		if #TTTVote.totems >= 1 then
-			TTTVote.AnyTotems = true
+		if #TTTGF.totems >= 1 then
+			TTTGF.AnyTotems = true
 		else
-			TTTVote.AnyTotems = false
+			TTTGF.AnyTotems = false
 			net.Start("TTTTotem")
 			net.WriteInt(8,8)
 			net.Broadcast()
 			return
 		end
 
-		TTTVote.innototems = {}
+		TTTGF.innototems = {}
 
-		for k,v in pairs(TTTVote.totems) do
+		for k,v in pairs(TTTGF.totems) do
 			if !v:GetEvil() then
-				table.insert(TTTVote.innototems, v)
+				table.insert(TTTGF.innototems, v)
 			end
 		end
 
-		if TTTVote.AnyTotems and #TTTVote.innototems == 0 then
-			TTTVote.DestroyAllTotems()
+		if TTTGF.AnyTotems and #TTTGF.innototems == 0 then
+			TTTGF.DestroyAllTotems()
 		end
 	end
 end
 
-function TTTVote.DestroyAllTotems()
+function TTTGF.DestroyAllTotems()
 	for k,v in pairs(ents.FindByClass("ttt_totem")) do
 		v:FakeDestroy()
 	end
 	for k,v in pairs(player.GetAll()) do
 		v:SetNWBool("CanSpawnTotem", false)
 	end
-	TTTVote.TotemUpdate()
+	TTTGF.TotemUpdate()
  end
 
-function TTTVote.TotemSuffer()
-	if GetRoundState() == ROUND_ACTIVE and TTTVote.AnyTotems then
+function TTTGF.TotemSuffer()
+	if GetRoundState() == ROUND_ACTIVE and TTTGF.AnyTotems then
 		for k,v in pairs(player.GetAll()) do
 			if v:IsTerror() and !v:GetNWBool("PlacedTotem", false) and v.TotemSuffer then
 				if v.TotemSuffer == 0 then
@@ -107,12 +109,12 @@ function TTTVote.TotemSuffer()
 	end
 end
 
-function TTTVote.GiveTotemHunterCredits(ply,totem)
+function TTTGF.GiveTotemHunterCredits(ply,totem)
 	LANG.Msg(ply, "credit_h_all", {num = 1})
 	ply:AddCredits(1)
 end
 
-function TTTVote.ResetTotems()
+function TTTGF.ResetTotems()
 	for k,v in pairs(player.GetAll()) do
 		v:SetNWBool("CanSpawnTotem", true)
 		v:SetNWBool("PlacedTotem", false)
@@ -121,24 +123,24 @@ function TTTVote.ResetTotems()
 		v.DamageNotified = false
 		v.totemuses = 0
 	end
-	TTTVote.AnyTotems = true
+	TTTGF.AnyTotems = true
 end
 
-function TTTVote.ResetSuffer()
+function TTTGF.ResetSuffer()
 	for k,v in pairs(player.GetAll()) do
 		v.TotemSuffer = 0
 	end
 end
 
-function TTTVote.DestroyTotem(ply)
+function TTTGF.DestroyTotem(ply)
 	if GetRoundState() == ROUND_ACTIVE then
 		ply:SetNWBool("CanSpawnTotem", false)
 		ply.TotemSuffer = 0
-		TTTVote.TotemUpdate()
+		TTTGF.TotemUpdate()
 	end
 end
 
-function TTTVote.TotemInit(ply)
+function TTTGF.TotemInit(ply)
 		ply:SetNWBool("CanSpawnTotem", true)
 		ply:SetNWBool("PlacedTotem", false)
 		ply:SetNWEntity("Totem", NULL)
@@ -148,11 +150,11 @@ function TTTVote.TotemInit(ply)
 end
 
 
-hook.Add("PlayerInitialSpawn", "TTTTotemInit", TTTVote.TotemInit)
-net.Receive("TTTVotePlaceTotem", TTTVote.PlaceTotem)
-hook.Add("TTTPrepareRound", "ResetValues", TTTVote.ResetTotems)
-hook.Add("PlayerDeath", "TTTDestroyTotem", TTTVote.DestroyTotem)
-hook.Add("Think", "TotemSuffer", TTTVote.TotemSuffer)
-hook.Add("TTTBeginRound", "TTTTotemSync", TTTVote.TotemUpdate)
-hook.Add("TTTBeginRound", "TTTTotemResetSuffer", TTTVote.ResetSuffer)
-hook.Add("PlayerDisconnected", "TTTTotemSync", TTTVote.TotemUpdate)
+hook.Add("PlayerInitialSpawn", "TTTTotemInit", TTTGF.TotemInit)
+net.Receive("TTTVotePlaceTotem", TTTGF.PlaceTotem)
+hook.Add("TTTPrepareRound", "ResetValues", TTTGF.ResetTotems)
+hook.Add("PlayerDeath", "TTTDestroyTotem", TTTGF.DestroyTotem)
+hook.Add("Think", "TotemSuffer", TTTGF.TotemSuffer)
+hook.Add("TTTBeginRound", "TTTTotemSync", TTTGF.TotemUpdate)
+hook.Add("TTTBeginRound", "TTTTotemResetSuffer", TTTGF.ResetSuffer)
+hook.Add("PlayerDisconnected", "TTTTotemSync", TTTGF.TotemUpdate)

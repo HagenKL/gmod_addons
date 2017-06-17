@@ -14,12 +14,12 @@ net.Receive("TTTVoteMessage",function()
       chat.AddText("TTT Vote: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " votet auf den verdächtigen ", COLOR_RED, target:Nick(), COLOR_WHITE, "! (" .. totalvotes .. "/3)")
     else
       chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
-      TTTVote.PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
+      TTTGF.PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
     end
     chat.PlaySound()
   end)
 
-function TTTVote.PrintCenteredKOSText(txt,delay,color)
+function TTTGF.PrintCenteredKOSText(txt,delay,color)
   if hook.GetTable()["TTTVoteKOS"] then
     hook.Remove("HUDPaint", "TTTVoteKOS")
     hook.Add("HUDPaint", "TTTVoteKOS", function() draw.SimpleText(txt,"TTTVotefont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
@@ -42,7 +42,17 @@ net.Receive("TTTResetVote",function()
     chat.PlaySound()
   end)
 
-function TTTVote.TotemMessage()
+function TTTGF.VoteFailure()
+	local ply = net.ReadEntity()
+	  chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+    chat.PlaySound()
+end
+
+net.Receive("TTTVoteFailure", TTTGF.VoteFailure)
+net.Receive("TTTVoteMenu",TTTGF.LookUpVoteMenu)
+net.Receive("TTTVoteCurse",TTTGF.Curse)
+
+function TTTGF.TotemMessage()
   local bool = net.ReadInt(8)
   if bool == 1 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast schon ein Totem plaziert!")
@@ -64,13 +74,4 @@ function TTTVote.TotemMessage()
   chat.PlaySound()
 end
 
-function TTTVote.VoteFailure()
-	local ply = net.ReadEntity()
-	  chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
-    chat.PlaySound()
-end
-
-net.Receive("TTTVoteFailure", TTTVote.VoteFailure)
-net.Receive("TTTTotem",TTTVote.TotemMessage)
-net.Receive("TTTVoteMenu",TTTVote.LookUpVoteMenu)
-net.Receive("TTTVoteCurse",TTTVote.Curse)
+net.Receive("TTTTotem",TTTGF.TotemMessage)

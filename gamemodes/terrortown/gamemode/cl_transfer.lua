@@ -31,9 +31,9 @@ function CreateTransferMenu(parent)
    dpick:SetWide(250)
 
    -- fill combobox
-   local r = LocalPlayer():GetRole()
+   local r = LocalPlayer():GetTeam()
    for _, p in pairs(player.GetAll()) do
-      if IsValid(p) and p:IsActiveRole(r) and p != LocalPlayer() then
+      if IsValid(p) and p:IsActiveTeam(r) and p:IsSpecial() and p != LocalPlayer() then
          dpick:AddChoice(p:Nick(), p:SteamID())
       end
    end
