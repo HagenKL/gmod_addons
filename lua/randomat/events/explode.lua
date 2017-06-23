@@ -6,7 +6,12 @@ function EVENT:Begin()
 	local effectdata = EffectData()
 
 	timer.Create("RandomatExplode",30,1, function()
-		local plys = self:GetPlayers(true)
+		local plys = {}
+		for _, ply in pairs(self:GetPlayers(true)) do
+			if !ply:GetDetective() then
+				table.insert(plys, ply)
+			end
+		end
 		local ply = plys[math.random(#plys)]
 
 		if IsValid(ply) then

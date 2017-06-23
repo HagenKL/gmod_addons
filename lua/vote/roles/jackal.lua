@@ -12,7 +12,7 @@ local function AddJackal()
 		DefaultColor = Color(0, 255, 255), -- Default Color
 		DefaultPct = "0.05", -- Role Percentage
 		DefaultMax = "1", -- Default Limit
-		DefaultMin = "6", -- Default Min Players for Role to be there
+		DefaultMin = "7", -- Default Min Players for Role to be there
 		DefaultCredits = "3", -- Default Credits
 		IsGoodReplacement = false, -- Is Replacement for one traitor/detective
 		ShopFallBack = true, -- Falls back to normal shop items, eg. all traitor items
