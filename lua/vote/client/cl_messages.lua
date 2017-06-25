@@ -55,17 +55,17 @@ net.Receive("TTTVoteCurse",TTTGF.Curse)
 function TTTGF.TotemMessage()
   local bool = net.ReadInt(8)
   if bool == 1 then
-    chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast schon ein Totem plaziert!")
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast schon ein Totem platziert!")
   elseif bool == 2 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du musst beim Plazieren deines Totems auf dem Boden stehen!")
   elseif bool == 3 then
-    chat.AddText("TTT Totem: ", COLOR_WHITE, "Dein Totem wurde erfolgreich plaziert!")
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Dein Totem wurde erfolgreich platziert!")
   elseif bool == 4 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem erfolgreich aufgehoben!")
   elseif bool == 5 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Ein Totem wurde zerstört!")
   elseif bool == 6 then
-    chat.AddText("TTT Totem: ", COLOR_WHITE, "Du verlierst nun leben weil du kein Totem plaziert hast!")
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Du verlierst nun leben weil du kein Totem platziert hast!")
   elseif bool == 7 then
 	chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem schon 2 mal aufgehoben!")
   elseif bool == 8 then
