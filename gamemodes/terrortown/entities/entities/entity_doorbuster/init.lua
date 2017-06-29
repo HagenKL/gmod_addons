@@ -48,7 +48,7 @@ function ENT:BlowDoor()
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
       local pos = v:GetPos()
-      -- pos:Add(self:GetAngles():Up() * -13)
+      pos:Add(self:GetAngles():Up() * -13)
 
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
@@ -65,11 +65,11 @@ function ENT:BlowDoor()
 
       door:Spawn()
 
-      local phys = door:GetPhysicsObject()
-
       if self:GetOwner() then
         door:SetPhysicsAttacker(self:GetOwner())
       end
+
+      local phys = door:GetPhysicsObject()
 
       phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
     end
