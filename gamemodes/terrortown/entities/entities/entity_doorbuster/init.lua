@@ -43,12 +43,12 @@ function ENT:BlowDoor()
   self:Explode()
 
   for k, v in pairs(ents.FindInSphere(self:GetPos(),80)) do
-    if IsValid(v) and (v:GetClass() == "prop_door" or v:GetClass() == "func_door" or v:GetClass() == "prop_door_rotating" or v:GetClass() == "func_door_rotating" ) then
+    if IsValid(v) and (v:GetClass() == "prop_door" or v:GetClass() == "func_door" or v:GetClass() == "prop_door_rotating" or v:GetClass() == "func_door_rotating" ) and !v.DoorExploded then
 
       local door = ents.Create("prop_physics")
       door:SetModel(v:GetModel())
       local pos = v:GetPos()
-      pos:Add(self:GetAngles():Up() * -13)
+      -- pos:Add(self:GetAngles():Up() * -13)
 
       door:SetPos(pos)
       door:SetAngles(v:GetAngles())
@@ -59,13 +59,17 @@ function ENT:BlowDoor()
 
       door:SetMaterial(v:GetMaterial())
 
-      v:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
       v:Fire("Open")
+      v.DoorExploded = true
       v:Remove()
 
       door:Spawn()
 
       local phys = door:GetPhysicsObject()
+
+      if self:GetOwner() then
+        door:SetPhysicsAttacker(self:GetOwner())
+      end
 
       phys:ApplyForceOffset((self:GetAngles():Up() * -10000) * phys:GetMass(), self:GetPos())
     end
@@ -76,7 +80,7 @@ function ENT:BlowDoor()
 end
 
 function ENT:OnTakeDamage(dmginfo)
-  if dmginfo:IsBulletDamage() || dmginfo:GetDamageType() == DMG_CLUB then
+  if dmginfo:IsBulletDamage() or dmginfo:GetDamageType() == DMG_CLUB then
     self:SetHealth(self:Health() - dmginfo:GetDamage())
     if self:Health() <= 0 then
       self:BlowDoor()
@@ -88,7 +92,7 @@ hook.Add( "AcceptInput", "DoorBusterExplode", function( ent, input, ply, caller,
     if (ent:GetClass() == "prop_door" or ent:GetClass() == "func_door" or ent:GetClass() == "prop_door_rotating" or ent:GetClass() == "func_door_rotating" ) and (input == "Open" or input == "Use" or input == "Toggle") then
         for k,v in pairs(ents.FindInSphere(ent:GetPos(),80)) do
             local owner = v.GetOwner and v:GetOwner()
-            if v:GetClass() == "entity_doorbuster" and owner and ply != owner then
+            if v:GetClass() == "entity_doorbuster" and owner and ply != owner and !v.Exploded then
                 v:BlowDoor()
                 return true
             end
