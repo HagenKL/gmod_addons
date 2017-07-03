@@ -112,7 +112,7 @@ if SERVER then
 			dmginfo:SetDamage(10000)
 			dmginfo:SetAttacker(victim)
 			dmginfo:SetInflictor(fate)
-			dmginfo:SetDamageType(DMG_FALL)
+			dmginfo:SetDamageType(DMG_GENERIC)
 			killer:TakeDamageInfo(dmginfo)
 			SendMFMessages(victim, killer)
 			killer:SetGravity(1)
