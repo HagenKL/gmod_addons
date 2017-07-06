@@ -4,7 +4,7 @@ if SERVER then
   util.AddNetworkString("TTTAdvDisguiseSuccess")
   util.AddNetworkString("TTTAdvDisguiseIdentity")
 end
-SWEP.HoldType = "knife"
+
 
 if CLIENT then
 
@@ -22,7 +22,7 @@ if CLIENT then
 end
 
 SWEP.Base = "weapon_tttbase"
-
+SWEP.HoldType = "knife"
 SWEP.UseHands = true
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 54
