@@ -88,6 +88,34 @@ function ScoreGroup(p)
    return p:IsTerror() and GROUP_TERROR or GROUP_SPEC
 end
 
+
+-- Comparison functions used to sort scoreboard
+sboard_sort = {
+   name = function (plya, plyb)
+      -- Automatically sorts by name if this returns 0
+      return 0
+   end,
+   ping = function (plya, plyb)
+      return plya:Ping() - plyb:Ping()
+   end,
+   deaths = function (plya, plyb)
+      return plya:Deaths() - plyb:Deaths()
+   end,
+   score = function (plya, plyb)
+      return plya:Frags() - plyb:Frags()
+   end,
+   role = function (plya, plyb)
+      local comp = (plya:GetRole() or 0) - (plyb:GetRole() or 0)
+      -- Reverse on purpose;
+      --    otherwise the default ascending order puts boring innocents first
+      comp = 0 - comp
+      return comp
+   end,
+   karma = function (plya, plyb)
+      return (plya:GetBaseKarma() or 0) - (plyb:GetBaseKarma() or 0)
+   end
+}
+
 ----- PANEL START
 
 function PANEL:Init()
@@ -136,33 +164,6 @@ function PANEL:Init()
    end
 
    hook.Call( "TTTScoreGroups", nil, self.ply_frame:GetCanvas(), self.ply_groups )
-
-   -- Comparison functions used to sort scoreboard
-   _G.sboard_sort = {}
-
-   _G.sboard_sort["name"] = function ( plya, plyb )
-      -- Automatically sorts by name if this returns 0
-      return 0
-   end
-   _G.sboard_sort["ping"] = function ( plya, plyb )
-      return plya:Ping() - plyb:Ping()
-   end
-   _G.sboard_sort["deaths"] = function  ( plya, plyb )
-      return plya:Deaths() - plyb:Deaths()
-   end
-   _G.sboard_sort["score"] = function  ( plya, plyb )
-      return plya:Frags() - plyb:Frags()
-   end
-   _G.sboard_sort["role"] = function  ( plya, plyb )
-      local comp = (plya:GetRole() or 0) - (plyb:GetRole() or 0)
-      -- Reverse on purpose;
-      --    otherwise the default ascending order puts boring innocents first
-      comp = 0 - comp
-      return comp
-   end
-   _G.sboard_sort["karma"] = function  ( plya, plyb )
-      return (plya:GetBaseKarma() or 0) - (plyb:GetBaseKarma() or 0)
-   end
 
    -- the various score column headers
    self.cols = {}
