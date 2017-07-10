@@ -1063,3 +1063,6 @@ L.set_cross_size = "Crosshair size"
 
 --- 5-25-15
 L.hat_retrieve = "You picked up a Detective's hat."
+
+--- 3-9-2017
+L.sb_sortby = "Sort By:"

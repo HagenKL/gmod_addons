@@ -54,7 +54,7 @@ function PANEL:Init()
    self:SetCursor( "hand" )
 end
 
-function PANEL:AddColumn( label, func, width )
+function PANEL:AddColumn( label, func, width, _, _ )
    local lbl = vgui.Create( "DLabel", self )
    lbl.GetPlayerText = func
    lbl.IsHeading = false
@@ -64,6 +64,12 @@ function PANEL:AddColumn( label, func, width )
    return lbl
 end
 
+-- Mirror sb_main, of which it and this file both call using the
+--    TTTScoreboardColumns hook, but it is useless in this file
+-- Exists only so the hook wont return an error if it tries to
+--    use the AddFakeColumn function of `sb_main`, which would
+--    cause this file to raise a `function not found` error or others
+function PANEL:AddFakeColumn() end
 
 local namecolor = {
    default = COLOR_WHITE,
@@ -97,9 +103,9 @@ function GM:TTTScoreboardRowColorForPlayer(ply)
    if not IsValid(ply) then return rolecolor.default end
 
    for k,v in pairs(TTTRoles) do
-     if ply:GetRole() == v.ID and ply:GetRole() != ROLE_INNOCENT then
-       return rolecolor[v.String]
-     end
+      if ply:GetRole() == v.ID and ply:GetRole() != ROLE_INNOCENT then
+        return rolecolor[v.String]
+      end
    end
 
    return rolecolor.default
