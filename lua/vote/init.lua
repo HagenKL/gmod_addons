@@ -8,6 +8,7 @@ if not TTTGF then
 	AddCSLuaFile("vote/client/cl_menu.lua")
 	AddCSLuaFile("vote/client/cl_changelog.lua")
 	AddCSLuaFile("vote/client/cl_messages.lua")
+	AddCSLuaFile("vote/client/cl_deathgrip.lua")
 	AddCSLuaFile("vote/cl_init.lua")
 	AddCSLuaFile("vote/shared.lua")
 	AddCSLuaFile("autorun/ttt_vote_autorun.lua")
@@ -35,6 +36,7 @@ if not TTTGF then
 	include("vote/shared/player.lua")
 	include("vote/server/vote.lua")
 	include("vote/server/totem.lua")
+	include("vote/server/deathgrip.lua")
 
 	--Tables and vars
 	-- if vote then
@@ -55,6 +57,9 @@ if not TTTGF then
 		util.AddNetworkString("TTTVoteMenu")
 		util.AddNetworkString("TTTVoteCurse")
 		util.AddNetworkString("TTTVoteFailure")
+		util.AddNetworkString("TTTDeathGrip")
+		util.AddNetworkString("TTTDeathGripReset")
+		util.AddNetworkString("TTTDeathGripMessage")
 	-- end
 
 	-- if totem then

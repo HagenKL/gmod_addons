@@ -34,8 +34,8 @@ end
 
 function ENT:UseOverride(activator)
   if IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses < 2 then
-    activator:SetNWBool("CanSpawnTotem",true)
-    activator:SetNWBool("PlacedTotem", false)
+    activator.CanSpawnTotem = true
+    activator.PlacedTotem = false
     activator:SetNWEntity("Totem",NULL)
     if !activator.totemuses then activator.totemuses = 0 end
     activator.totemuses = activator.totemuses + 1
@@ -43,7 +43,7 @@ function ENT:UseOverride(activator)
     net.WriteInt(4,8)
     net.Send(activator)
     self:Remove()
-    timer.Simple(0.01, function() if SERVER then TTTGF.TotemUpdate() end end)
+    timer.Simple(0.01, function() if SERVER then TotemUpdate() end end)
   elseif IsValid(activator) and activator:IsTerror() and self:GetOwner() == activator and activator.totemuses >= 2 then
     net.Start("TTTTotem")
     net.WriteInt(7,8)
@@ -69,7 +69,7 @@ function ENT:OnTakeDamage(dmginfo)
       net.Broadcast()
     end
 
-    TTTGF.GiveTotemHunterCredits(att,self)
+    GiveTotemHunterCredits(att,self)
 
     local effect = EffectData()
     effect:SetOrigin(self:GetPos())
@@ -77,7 +77,7 @@ function ENT:OnTakeDamage(dmginfo)
     sound.Play(zapsound, self:GetPos())
     self:GetOwner():SetNWEntity("Totem",NULL)
     self:Remove()
-    timer.Simple(0.01, function() if SERVER then TTTGF.TotemUpdate() end end)
+    timer.Simple(0.01, function() if SERVER then TotemUpdate() end end)
   end
 end
 
@@ -88,7 +88,7 @@ function ENT:FakeDestroy()
   sound.Play(zapsound, self:GetPos())
   self:GetOwner():SetNWEntity("Totem",NULL)
   self:Remove()
-  timer.Simple(0.01, function() if SERVER then TTTGF.TotemUpdate() end end)
+  timer.Simple(0.01, function() if SERVER then TotemUpdate() end end)
 end
 
 hook.Add("PlayerDisconnected", "TTTTotemDestroy", function(ply)

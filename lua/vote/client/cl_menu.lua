@@ -69,7 +69,7 @@ local function OpenVoteMenu()
   votemenu = frame
 end
 
-function TTTGF.LookUpVoteMenu(ply, cmd, args, argStr)
+local function LookUpVoteMenu(ply, cmd, args, argStr)
   -- if !VoteEnabled() then return end
   if votemenu and IsValid(votemenu) then votemenu:Close() return end
   if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
@@ -90,7 +90,7 @@ function TTTGF.LookUpVoteMenu(ply, cmd, args, argStr)
   end
 end
 
-function TTTGF.LookUpTotem(ply, cmd, args, argStr)
+local function LookUpTotem(ply, cmd, args, argStr)
   -- if !TotemEnabled() then return end
   if GetRoundState() != ROUND_WAIT and LocalPlayer():IsTerror() then
     net.Start("TTTVotePlaceTotem")
@@ -105,7 +105,7 @@ end*/
 --concommand.Add("+votemenu", TTTGF.LookUpVoteMenu,nil,"Opens the vote menu", { FCVAR_DONTRECORD })
 --concommand.Add("-votemenu", TTTGF.CloseVoteMenu,nil,"Closes the vote menu", { FCVAR_DONTRECORD })
 
-concommand.Add("votemenu", TTTGF.LookUpVoteMenu,nil,"Opens / Closes the vote menu", { FCVAR_DONTRECORD })
-net.Receive("TTTVoteMenu",TTTGF.LookUpVoteMenu)
-concommand.Add("placebeacon", TTTGF.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD }) -- for backwards compatibility reasons
-concommand.Add("placetotem", TTTGF.LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD })
+concommand.Add("votemenu", LookUpVoteMenu,nil,"Opens / Closes the vote menu", { FCVAR_DONTRECORD })
+net.Receive("TTTVoteMenu", LookUpVoteMenu)
+concommand.Add("placebeacon", LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD }) -- for backwards compatibility reasons
+concommand.Add("placetotem", LookUpTotem,nil,"Places a Totem", { FCVAR_DONTRECORD })

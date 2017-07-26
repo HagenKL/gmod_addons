@@ -16,4 +16,5 @@ if not TTTGF then
   include("vote/client/cl_messages.lua")
   include("vote/client/cl_menu.lua")
   include("vote/client/cl_changelog.lua")
+  include("vote/client/cl_deathgrip.lua")
 end

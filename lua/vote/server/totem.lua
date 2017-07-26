@@ -1,9 +1,9 @@
 -- if !TotemEnabled() then print("TTT Totem is not enabled on this Server, set ttt_totem to 1 to activate!") return end
 
-function TTTGF.PlaceTotem(len, sender)
+function PlaceTotem(len, sender)
 	local ply = sender
 	if !IsValid(ply) or !ply:IsTerror() then return end
-	if !ply:GetNWBool("CanSpawnTotem", true) or IsValid(ply:GetNWEntity("Totem",NULL)) or ply:GetNWBool("PlacedTotem") then
+	if !ply.CanSpawnTotem or IsValid(ply:GetNWEntity("Totem",NULL)) or ply.PlaceTotem then
 		net.Start("TTTTotem")
 		net.WriteInt(1,8)
 		net.Send(ply)
@@ -25,27 +25,41 @@ function TTTGF.PlaceTotem(len, sender)
 			totem:SetOwner(ply)
 			totem:Spawn()
 
-			ply:SetNWBool("CanSpawnTotem",false)
-			ply:SetNWBool("PlacedTotem", true)
+			ply.CanSpawnTotem = false
+			ply.PlacedTotem = true
 			ply:SetNWEntity("Totem",totem)
 			net.Start("TTTTotem")
 			net.WriteInt(3,8)
 			net.Send(ply)
-			TTTGF.TotemUpdate()
+			TotemUpdate()
 		end
 	end
 end
 
-function TTTGF.HasTotem(ply)
-	return IsValid(ply:GetNWEntity("Totem", NULL))
+local function DestroyAllTotems()
+	for k,v in pairs(ents.FindByClass("ttt_totem")) do
+		v:FakeDestroy()
+	end
+	for k,v in pairs(player.GetAll()) do
+		v.CanSpawnTotem = false
+	end
+	TotemUpdate()
 end
 
-function TTTGF.TotemUpdate()
+local function DestroyTotem(ply)
+	if GetRoundState() == ROUND_ACTIVE then
+		ply.CanSpawnTotem = false
+		ply.TotemSuffer = 0
+		TotemUpdate()
+	end
+end
+
+function TotemUpdate()
 	if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
 
 		TTTGF.totems = {}
 		for k,v in pairs(player.GetAll()) do
-			if (v:IsTerror() or !v:Alive()) and (TTTGF.HasTotem(v) or v:GetNWBool("CanSpawnTotem", false)) then
+			if (v:IsTerror() or !v:Alive()) and (v:HasTotem() or v.CanSpawnTotem) then
 				table.insert(TTTGF.totems, v)
 			end
 		end
@@ -69,25 +83,15 @@ function TTTGF.TotemUpdate()
 		end
 
 		if TTTGF.AnyTotems and #TTTGF.innototems == 0 then
-			TTTGF.DestroyAllTotems()
+			DestroyAllTotems()
 		end
 	end
 end
 
-function TTTGF.DestroyAllTotems()
-	for k,v in pairs(ents.FindByClass("ttt_totem")) do
-		v:FakeDestroy()
-	end
-	for k,v in pairs(player.GetAll()) do
-		v:SetNWBool("CanSpawnTotem", false)
-	end
-	TTTGF.TotemUpdate()
- end
-
-function TTTGF.TotemSuffer()
+local function TotemSuffer()
 	if GetRoundState() == ROUND_ACTIVE and TTTGF.AnyTotems then
 		for k,v in pairs(player.GetAll()) do
-			if v:IsTerror() and !v:GetNWBool("PlacedTotem", false) and v.TotemSuffer then
+			if v:IsTerror() and !v.PlacedTotem and v.TotemSuffer then
 				if v.TotemSuffer == 0 then
 					v.TotemSuffer = CurTime() + 10
 					v.DamageNotified = false
@@ -101,7 +105,7 @@ function TTTGF.TotemSuffer()
 					v:TakeDamage(1,v,v)
 					v.TotemSuffer = CurTime() + 0.2
 				end
-			elseif v:IsTerror() and (v:GetNWBool("PlacedTotem", true) or !v.TotemSuffer) then
+			elseif v:IsTerror() and (v.PlacedTotem or !v.TotemSuffer) then
 				v.TotemSuffer = 0
 				v.DamageNotified = false
 			end
@@ -109,15 +113,15 @@ function TTTGF.TotemSuffer()
 	end
 end
 
-function TTTGF.GiveTotemHunterCredits(ply,totem)
+function GiveTotemHunterCredits(ply,totem)
 	LANG.Msg(ply, "credit_h_all", {num = 1})
 	ply:AddCredits(1)
 end
 
-function TTTGF.ResetTotems()
+local function ResetTotems()
 	for k,v in pairs(player.GetAll()) do
-		v:SetNWBool("CanSpawnTotem", true)
-		v:SetNWBool("PlacedTotem", false)
+		v.CanSpawnTotem = true
+		v.PlacedTotem = false
 		v:SetNWEntity("Totem", NULL)
 		v.TotemSuffer = 0
 		v.DamageNotified = false
@@ -126,23 +130,15 @@ function TTTGF.ResetTotems()
 	TTTGF.AnyTotems = true
 end
 
-function TTTGF.ResetSuffer()
+local function ResetSuffer()
 	for k,v in pairs(player.GetAll()) do
 		v.TotemSuffer = 0
 	end
 end
 
-function TTTGF.DestroyTotem(ply)
-	if GetRoundState() == ROUND_ACTIVE then
-		ply:SetNWBool("CanSpawnTotem", false)
-		ply.TotemSuffer = 0
-		TTTGF.TotemUpdate()
-	end
-end
-
-function TTTGF.TotemInit(ply)
-		ply:SetNWBool("CanSpawnTotem", true)
-		ply:SetNWBool("PlacedTotem", false)
+local function TotemInit(ply)
+		ply.CanSpawnTotem = true
+		ply.PlacedTotem = false
 		ply:SetNWEntity("Totem", NULL)
 		ply.TotemSuffer = 0
 		ply.DamageNotified = false
@@ -150,11 +146,11 @@ function TTTGF.TotemInit(ply)
 end
 
 
-hook.Add("PlayerInitialSpawn", "TTTTotemInit", TTTGF.TotemInit)
-net.Receive("TTTVotePlaceTotem", TTTGF.PlaceTotem)
-hook.Add("TTTPrepareRound", "ResetValues", TTTGF.ResetTotems)
-hook.Add("PlayerDeath", "TTTDestroyTotem", TTTGF.DestroyTotem)
-hook.Add("Think", "TotemSuffer", TTTGF.TotemSuffer)
-hook.Add("TTTBeginRound", "TTTTotemSync", TTTGF.TotemUpdate)
-hook.Add("TTTBeginRound", "TTTTotemResetSuffer", TTTGF.ResetSuffer)
-hook.Add("PlayerDisconnected", "TTTTotemSync", TTTGF.TotemUpdate)
+hook.Add("PlayerInitialSpawn", "TTTTotemInit", TotemInit)
+net.Receive("TTTVotePlaceTotem", PlaceTotem)
+hook.Add("TTTPrepareRound", "ResetValues", ResetTotems)
+hook.Add("PlayerDeath", "TTTDestroyTotem", DestroyTotem)
+hook.Add("Think", "TotemSuffer", TotemSuffer)
+hook.Add("TTTBeginRound", "TTTTotemSync", TotemUpdate)
+hook.Add("TTTBeginRound", "TTTTotemResetSuffer", ResetSuffer)
+hook.Add("PlayerDisconnected", "TTTTotemSync", TotemUpdate)

@@ -6,20 +6,7 @@ surface.CreateFont("TTTVotefont", {
     antialias = false
   })
 
-net.Receive("TTTVoteMessage",function()
-    local sender = net.ReadEntity()
-    local target = net.ReadEntity()
-    local totalvotes = net.ReadInt(16)
-    if totalvotes < 3 then
-      chat.AddText("TTT Vote: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " votet auf den verdächtigen ", COLOR_RED, target:Nick(), COLOR_WHITE, "! (" .. totalvotes .. "/3)")
-    else
-      chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
-      TTTGF.PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
-    end
-    chat.PlaySound()
-  end)
-
-function TTTGF.PrintCenteredKOSText(txt,delay,color)
+local function PrintCenteredKOSText(txt,delay,color)
   if hook.GetTable()["TTTVoteKOS"] then
     hook.Remove("HUDPaint", "TTTVoteKOS")
     hook.Add("HUDPaint", "TTTVoteKOS", function() draw.SimpleText(txt,"TTTVotefont",ScrW() / 2,ScrH() / 4 ,color,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER) end)
@@ -32,6 +19,19 @@ function TTTGF.PrintCenteredKOSText(txt,delay,color)
   end
 end
 
+net.Receive("TTTVoteMessage",function()
+    local sender = net.ReadEntity()
+    local target = net.ReadEntity()
+    local totalvotes = net.ReadInt(16)
+    if totalvotes < 3 then
+      chat.AddText("TTT Vote: ", COLOR_GREEN, sender:Nick(), COLOR_WHITE, " votet auf den verdächtigen ", COLOR_RED, target:Nick(), COLOR_WHITE, "! (" .. totalvotes .. "/3)")
+    else
+      chat.AddText("TTT Vote: ", COLOR_RED, target:Nick(), COLOR_WHITE, " ist nun frei zum Abschuss, da " , COLOR_GREEN, sender:Nick(), COLOR_WHITE, " ihm die letzte Stimme gegeben hat!")
+      PrintCenteredKOSText(target:Nick() .. " ist nun frei zum Abschuss!",5,Color( 255, 50, 50 ))
+    end
+    chat.PlaySound()
+  end)
+
 net.Receive("TTTResetVote",function()
     local all = net.ReadBool()
     if all then
@@ -42,17 +42,15 @@ net.Receive("TTTResetVote",function()
     chat.PlaySound()
   end)
 
-function TTTGF.VoteFailure()
-	local ply = net.ReadEntity()
-	  chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
-    chat.PlaySound()
+local function VoteFailure()
+  local ply = net.ReadEntity()
+  chat.AddText("TTT Vote: ", COLOR_RED, ply:Nick(), COLOR_WHITE, " ist schon frei zum Abschuss!")
+  chat.PlaySound()
 end
 
-net.Receive("TTTVoteFailure", TTTGF.VoteFailure)
-net.Receive("TTTVoteMenu",TTTGF.LookUpVoteMenu)
-net.Receive("TTTVoteCurse",TTTGF.Curse)
+net.Receive("TTTVoteFailure", VoteFailure)
 
-function TTTGF.TotemMessage()
+local function TotemMessage()
   local bool = net.ReadInt(8)
   if bool == 1 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast schon ein Totem platziert!")
@@ -67,11 +65,11 @@ function TTTGF.TotemMessage()
   elseif bool == 6 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Du verlierst nun leben weil du kein Totem platziert hast!")
   elseif bool == 7 then
-	chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem schon 2 mal aufgehoben!")
+    chat.AddText("TTT Totem: ", COLOR_WHITE, "Du hast dein Totem schon 2 mal aufgehoben!")
   elseif bool == 8 then
     chat.AddText("TTT Totem: ", COLOR_WHITE, "Alle Totems wurden zerstört!")
   end
   chat.PlaySound()
 end
 
-net.Receive("TTTTotem",TTTGF.TotemMessage)
+net.Receive("TTTTotem", TotemMessage)

@@ -43,3 +43,7 @@ end
 function plymeta:GetTotem()
   return self:GetNWEntity("Totem", NULL)
 end
+
+function plymeta:HasTotem()
+  return IsValid(self:GetTotem())
+end

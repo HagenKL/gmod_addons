@@ -1,20 +1,20 @@
 if SERVER then
 
-	function TTTGF.GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
+	local function GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
 		local msg = string.lower(text)
 		if string.sub(msg,1,8) == "!prozent" then
 			net.Start("TTTVoteMenu")
 			net.Send(sender)
 			return false
 		elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
-			TTTGF.PlaceTotem(nil, sender)
+			PlaceTotem(nil, sender)
 			return false
 		end
 	end
 
-	function TTTGF.AdjustSpeed(ply)
+	local function AdjustSpeed(ply)
 		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
-			local Totem = ply:GetNWEntity("Totem", NULL)
+			local Totem = ply:GetTotem()
 			if IsValid(Totem) then
 				local distance = Totem:GetPos():Distance(ply:GetPos())
 				if distance >= 2500 then
@@ -31,11 +31,11 @@ if SERVER then
 		return 1
 	end
 
-	function TTTGF.Overrides() --Overriding functions that dont have hooks to modify
+	local function SpeedOverride() --Overriding functions that dont have hooks to modify
 
 		local plymeta = FindMetaTable("Player")
 		function plymeta:SetSpeed(slowed)
-			local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or TTTGF.AdjustSpeed(self)
+			local mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) or AdjustSpeed(self)
 
 			-- if mul >= 1 and hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed) then
 			-- 	mul = hook.Call("TTTPlayerSpeed", GAMEMODE, self, slowed)
@@ -56,11 +56,11 @@ if SERVER then
 	end
 
 	-- if TotemEnabled() then
-		hook.Add("Initialize", "TTTTotemOverrideFunction", TTTGF.Overrides)
+		hook.Add("Initialize", "TTTTotemOverrideFunction", SpeedOverride)
 	-- end
-	hook.Add("PlayerSay","TTTVote", TTTGF.GetVoteMessage)
+	hook.Add("PlayerSay","TTTVote", GetVoteMessage)
 else
-	function TTTGF.VoteMakeCounter(pnl)
+	local function VoteMakeCounter(pnl)
 		pnl:AddColumn("Votes", function(ply)
 			if ply:GetNWInt("VoteCounter",0) < 3 then
 				return ply:GetNWInt("VoteCounter",0)
@@ -70,13 +70,13 @@ else
 		end)
 	end
 
-	function TTTGF.MakeVoteScoreBoardColor(ply)
+	local function MakeVoteScoreBoardColor(ply)
 		if ply:GetNWInt("VoteCounter",0) >= 3 then
 			return Color(0,120,0)
 		end
 	end
 	-- if VoteEnabled() then
-		hook.Add("TTTScoreboardRowColorForPlayer", "TTTVoteColorScoreboard", TTTGF.MakeVoteScoreBoardColor)
-		hook.Add("TTTScoreboardColumns", "TTTVoteCounteronScoreboard", TTTGF.VoteMakeCounter)
+		hook.Add("TTTScoreboardRowColorForPlayer", "TTTVoteColorScoreboard", MakeVoteScoreBoardColor)
+		hook.Add("TTTScoreboardColumns", "TTTVoteCounteronScoreboard", VoteMakeCounter)
 	-- end
 end

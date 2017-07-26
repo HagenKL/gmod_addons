@@ -14,6 +14,13 @@ This is the Changelog for Gamefreaks Addons! (Started Documenting 05/26/2017)<br
 This will only get shown once a day! <br>
 It will get updated every time I have time to change something!<br>
 
+<h2>Version 1.1 (26/07/2017):</h2>
+
+- Added new Passive: <b> Deathgrip </b> <br>
+<div style=" text-align: left; margin-left: 15px;"> - Randomly gets distributed to two players in a round with a chance of 50% <br>
+- If one of the two players die the other one dies too <br>
+- When only the two players are alive the perk gets broken <br> </div>
+
 <h2>Version 1.0.2 (03/06/2017):</h2>
 
 - Updated Door Buster to work with more doors <br>

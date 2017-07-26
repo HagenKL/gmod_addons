@@ -1,17 +1,6 @@
 -- if !VoteEnabled() then print("TTT Vote is not enabled on this Server, set ttt_vote to 1 to activate!") return end
 
-function TTTGF.ReceiveVotes(len, sender)
-  local target = net.ReadEntity()
-  if target:GetNWInt("VoteCounter") < 3 and sender:GetCurrentVotes() >= 1 and sender:GetNWInt("UsedVotes",0) <= 0  then
-	  TTTGF.CalculateVotes(sender, target, sender)
-  else
-  	net.Start("TTTVoteFailure")
-  	net.WriteEntity(target)
-  	net.Send(sender)
-  end
-end
-
-function TTTGF.SendVoteNotify(sender, target, totalvotes)
+local function SendVoteNotify(sender, target, totalvotes)
   net.Start("TTTVoteMessage")
   net.WriteEntity(sender)
   net.WriteEntity(target)
@@ -19,9 +8,9 @@ function TTTGF.SendVoteNotify(sender, target, totalvotes)
   net.Broadcast()
 end
 
-function TTTGF.CalculateVotes(ply, target, sender)
+local function CalculateVotes(ply, target, sender)
   target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
-  TTTGF.votebetters[target:SteamID()] = TTTGF.votebetters[target:SteamID()] or {}
+  votebetters[target:SteamID()] = TTTGF.votebetters[target:SteamID()] or {}
   table.insert(TTTGF.votebetters[target:SteamID()], ply)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes",0) + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
@@ -29,19 +18,30 @@ function TTTGF.CalculateVotes(ply, target, sender)
     for k,v in pairs(TTTGF.votebetters[target:SteamID()]) do
       v:UsedVote()
       if target:GetGood() and v:GetGood() then
-        v:SetNWBool("TTTVotePunishment", true)
+        v.VotePunishment = true
       end
     end
     table.Empty(TTTGF.votebetters[target:SteamID()])
   end
-  TTTGF.SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
+  SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
 end
 
-function TTTGF.ResetVotes(ply)
+local function ReceiveVotes(len, sender)
+  local target = net.ReadEntity()
+  if target:GetNWInt("VoteCounter") < 3 and sender:GetCurrentVotes() >= 1 and sender:GetNWInt("UsedVotes",0) <= 0  then
+    CalculateVotes(sender, target, sender)
+  else
+  	net.Start("TTTVoteFailure")
+  	net.WriteEntity(target)
+  	net.Send(sender)
+  end
+end
+
+local function ResetVote(ply)
   ply:ResetVotes()
   ply:SetNWInt("VoteCounter",0)
   ply:SetNWInt("UsedVotes", 0)
-  ply:SetNWBool("TTTVotePunishment", false)
+  ply.VotePunishment = false
   -- if VoteEnabled() then
 
     local totem = ply:GetNWEntity("Totem")
@@ -51,15 +51,12 @@ function TTTGF.ResetVotes(ply)
     ply.totemuses = 0
 
     ply:SetNWEntity("Totem",NULL)
-    ply:SetNWBool("PlacedTotem", false)
-    ply:SetNWBool("CanSpawnTotem", true)
+    ply.PlacedTotem = false
+    ply.CanSpawnTotem = true
     ply.DamageNotified = false
     ply.TotemSuffer = 0
   -- end
 
-  for key,v in pairs(player.GetAll()) do
-    ply:SetNWInt("UsedVotesontarget " .. v:SteamID(), 0)
-  end
   if SERVER and TTTGF.votebetters[ply:SteamID()] and istable(TTTGF.votebetters[ply:SteamID()]) then
     table.Empty(TTTGF.votebetters[ply:SteamID()])
   end
@@ -71,37 +68,37 @@ local function OpenChangelogMenu(ply)
   net.Send(ply)
 end
 
-function TTTGF.InitVote(ply)
-  if IsValid(ply) then
-    local currentdate = os.date("%d/%m/%Y",os.time())
-    if ply:GetPData("vote_stored_date") == nil then
-      TTTGF.SetDate(ply , currentdate)
-      TTTGF.ResetVotes(ply)
-      OpenChangelogMenu(ply)
-    end
-    TTTGF.InitVoteviaDate(ply, ply:GetPData("vote_stored_date"))
-  end
+local function SetVoteDate(ply , date)
+  ply:SetPData("vote_stored_date", date)
 end
 
-function TTTGF.InitVoteviaDate(ply, date)
+local function InitVoteviaDate(ply, date)
   local currentdate = os.date("%d/%m/%Y",os.time())
   if date != currentdate then
-    TTTGF.SetDate(ply , currentdate)
-    TTTGF.ResetVotes(ply)
+    SetVoteDate(ply , currentdate)
+    ResetVote(ply)
     OpenChangelogMenu(ply)
   else
     ply:SetVotes(ply:GetPData("vote_stored"))
   end
 end
 
-function TTTGF.SetDate(ply , date)
-  ply:SetPData("vote_stored_date", date)
+local function InitVote(ply)
+  if IsValid(ply) then
+    local currentdate = os.date("%d/%m/%Y",os.time())
+    if ply:GetPData("vote_stored_date") == nil then
+      SetDate(ply , currentdate)
+      ResetVote(ply)
+      OpenChangelogMenu(ply)
+    end
+    InitVoteviaDate(ply, ply:GetPData("vote_stored_date"))
+  end
 end
 
-function TTTGF.ResetVoteforEveryOne( ply, cmd, args )
+function ResetVoteforEveryOne( ply, cmd, args )
   if (!IsValid(ply)) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0) then
     for k,v in pairs(player.GetAll()) do
-      TTTGF.ResetVotes(v)
+      ResetVote(v)
     end
     TTTGF.AnyTotems = true
     net.Start("TTTResetVote")
@@ -110,7 +107,7 @@ function TTTGF.ResetVoteforEveryOne( ply, cmd, args )
   end
 end
 
-function TTTGF.ResetVoteforOnePlayer(ply, cmd, args)
+local function ResetVoteforOnePlayer(ply, cmd, args)
   if (!IsValid(ply) or ply:IsAdmin() or ply:IsSuperAdmin() or cvars.Bool("sv_cheats", 0)) and args[1] != nil then
     local _match = NULL;
     for k, v in pairs( player.GetAll( ) ) do
@@ -124,7 +121,7 @@ function TTTGF.ResetVoteforOnePlayer(ply, cmd, args)
     end
     local pl = _match
     if IsValid(pl) then
-      TTTGF.ResetVotes(pl)
+      ResetVote(pl)
       net.Start("TTTResetVote")
       net.WriteBool(false)
       net.Send(pl)
@@ -132,31 +129,28 @@ function TTTGF.ResetVoteforOnePlayer(ply, cmd, args)
   end
 end
 
-function TTTGF.SaveVote(ply)
+local function SaveVote(ply)
   if IsValid(ply) then
     util.SetPData(ply:SteamID(),"vote_stored", ply:GetVotes() )
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWInt("VoteCounter", 0)
-    ply:SetNWBool("TTTVotePunishment", false)
+    ply.VotePunishment = false
   end
 end
 
-function TTTGF.SaveVoteAll()
+local function SaveVoteAll()
   for k, ply in pairs(player.GetAll()) do
     util.SetPData(ply:SteamID(),"vote_stored", ply:GetVotes() )
     ply:SetNWInt("UsedVotes", 0)
     ply:SetNWInt("VoteCounter", 0)
-    ply:SetNWBool("TTTVotePunishment", false)
+    ply.VotePunishment = false
   end
 end
 
-function TTTGF.CalculateVoteRoundstart()
+local function CalculateVoteRoundstart()
   for k,v in pairs(player.GetAll()) do
     v:SetNWInt("VoteCounter", 0)
     v:SetNWInt("UsedVotes",0)
-    for key,ply in pairs(player.GetAll()) do
-      v:SetNWInt("UsedVotesontarget " .. ply:SteamID(), 0)
-    end
   end
 end
 
@@ -180,26 +174,22 @@ local function AutoCompleteVote( cmd, stringargs )
   return tbl
 end
 
-function TTTGF.PunishtheInnocents()
+local function PunishtheInnocents()
   for k,v in pairs(player.GetAll()) do
-    if v:IsTerror() and v:GetNWBool("TTTVotePunishment",false) then
+    if v:IsTerror() and v.VotePunishment then
       v:SetHealth(v:GetMaxHealth() - 10)
-      v:SetNWBool("TTTVotePunishment",false)
+      v.VotePunishment = false
     end
   end
 end
 
-function TTTGF.IsEven(number)
-  return number % 2 == 0
-end
-
 concommand.Add("ttt_votechangelog", OpenChangelogMenu)
-concommand.Add("ttt_resetallvotes", TTTGF.ResetVoteforEveryOne)
-concommand.Add("ttt_resetvotes",TTTGF.ResetVoteforOnePlayer, AutoCompleteVote)
-hook.Add("PlayerInitialSpawn", "InitialVote", TTTGF.InitVote)
-net.Receive("TTTPlacedVote", TTTGF.ReceiveVotes)
-hook.Add("PlayerDisconnected","TTTSavevote", TTTGF.SaveVote)
-hook.Add("TTTPrepareRound", "ResetVotes", TTTGF.CalculateVoteRoundstart)
-hook.Add("TTTBeginRound", "PunishtheInnocents", TTTGF.PunishtheInnocents)
-hook.Add("TTTEndRound", "ResetVotes", TTTGF.CalculateVoteRoundstart)
-hook.Add("ShutDown", "TTTSaveVotes", TTTGF.SaveVoteAll)
+concommand.Add("ttt_resetallvotes", ResetVoteforEveryOne)
+concommand.Add("ttt_resetvotes", ResetVoteforOnePlayer, AutoCompleteVote)
+hook.Add("PlayerInitialSpawn", "InitialVote", InitVote)
+net.Receive("TTTPlacedVote", ReceiveVotes)
+hook.Add("PlayerDisconnected","TTTSavevote", SaveVote)
+hook.Add("TTTPrepareRound", "ResetVotes", CalculateVoteRoundstart)
+hook.Add("TTTBeginRound", "PunishtheInnocents", PunishtheInnocents)
+hook.Add("TTTEndRound", "ResetVotes", CalculateVoteRoundstart)
+hook.Add("ShutDown", "TTTSaveVotes", SaveVoteAll)
