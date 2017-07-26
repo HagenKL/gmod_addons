@@ -54,8 +54,8 @@ local function DeathGripHUD() // similar to TTT Code
   PaintBar(x + 10, y + 45, width - (10*2), 25, health_colors)
 
   x = x + 80
-  draw.SimpleText("Deathgrip", "TraitorState", x+2, y+17, COLOR_BLACK, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-  draw.SimpleText("Deathgrip", "TraitorState", x, y+15, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+  draw.SimpleText("Death Grip", "TraitorState", x+2, y+16, COLOR_BLACK, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+  draw.SimpleText("Death Grip", "TraitorState", x, y+14, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
   local str = LocalPlayer().DeathGrip:Nick()
 
@@ -80,7 +80,7 @@ local function ResetDeathGrip()
 end
 
 local function DeathGripMessage()
-  chat.AddText("TTT Deathgrip: ", COLOR_WHITE, "Your Deathgrip partner died, therefore you die too!")
+  chat.AddText("TTT Death Grip: ", COLOR_WHITE, "Your Death Grip partner died, therefore you die too!")
   chat.PlaySound()
 end
 
@@ -88,3 +88,4 @@ hook.Add("TTTPrepareRound", "TTTDeathGrip", ResetDeathGrip)
 net.Receive("TTTDeathGrip", DeathGripCL)
 net.Receive("TTTDeathGripReset", ResetDeathGrip)
 net.Receive("TTTDeathGripMessage", DeathGripMessage)
+LocalPlayer().DeathGrip = LocalPlayer()

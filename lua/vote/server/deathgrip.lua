@@ -15,7 +15,7 @@ local function SendDeathGripMessage(ply)
 end
 
 local function SelectDeathGripPlayers()
-  if math.random(0,1) > 0.5 and #util.GetAlivePlayers() > 2 then
+  if math.random(0,1) < 0.75 and #util.GetAlivePlayers() > 2 then
     local players = util.GetAlivePlayers() // All alive people
 
     local index = math.random(1, #players)
@@ -41,7 +41,11 @@ local function DeathGrip(ply, inflictor, attacker)
     SendDeathGripReset(ply.DeathGrip)
     ply.DeathGrip.DeathGrip = nil
     ply.DeathGrip = nil
-    temp:TakeDamage(1000, attacker, inflictor) // kill the other guy
+    local dmginfo = DamageInfo()
+    dmginfo:SetDamage(10000)
+    dmginfo:SetAttacker(game.GetWorld())
+    dmginfo:SetDamageType(DMG_GENERIC)
+    temp:TakeDamageInfo(dmginfo) // kill the other guy
     SendDeathGripMessage(temp)
   end
 end
