@@ -83,10 +83,10 @@ local function DeathGrip(ply, inflictor, attacker)
   end
 end
 
-local function RemoveCorpse(ply) -- From TTT Ulx Commands, sorry
+local function FindCorpse(ply) -- From TTT Ulx Commands, sorry
   for _, ent in pairs( ents.FindByClass( "prop_ragdoll" )) do
     if IsValid(ent) and ent.sid == ply:SteamID() then
-      ent:Remove()
+      return ent or false
     end
   end
 end
@@ -94,7 +94,9 @@ end
 local function BreakDeathGrip(ply)
   if ply:GetShinigami() then
     timer.Simple(0.15, function()
-      RemoveCorpse(ply)
+      local corpse = FindCorpse(ply)
+      CORPSE.SetFound(corpse, true)
+      corpse:Remove()
     end)
     if !ply.ShinigamiRespawned then
       SendShinigamiInfo(ply)
