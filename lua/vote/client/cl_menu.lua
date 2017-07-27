@@ -70,7 +70,7 @@ local function OpenVoteMenu()
 end
 
 local function LookUpVoteMenu(ply, cmd, args, argStr)
-  -- if !VoteEnabled() then return end
+  if !VoteEnabled() then return end
   if votemenu and IsValid(votemenu) then votemenu:Close() return end
   if GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
     if LocalPlayer():GetCurrentVotes() >= 1 then
@@ -91,7 +91,7 @@ local function LookUpVoteMenu(ply, cmd, args, argStr)
 end
 
 local function LookUpTotem(ply, cmd, args, argStr)
-  -- if !TotemEnabled() then return end
+  if !TotemEnabled() then return end
   if GetRoundState() != ROUND_WAIT and LocalPlayer():IsTerror() then
     net.Start("TTTVotePlaceTotem")
     net.SendToServer()

@@ -23,29 +23,29 @@ local function AddHunter()
 		RepeatingCredits = false,
 		DefaultEquip = EQUIP_RADAR,
     DefaultWeapon = "weapon_ttt_totemknife",
-    -- CustomRadar = function(targets) -- Custom Radar function
-    --   scan_ents = ents.FindByClass("ttt_totem")
-    --   for k,t in pairs(scan_ents) do
-    --     local pos = t:LocalToWorld(t:OBBCenter())
-    --
-    --     pos.x = math.Round(pos.x)
-    --     pos.y = math.Round(pos.y)
-    --     pos.z = math.Round(pos.z) - 100
-    --
-    --     local owner = t:GetOwner()
-    --     if owner != ply and !owner:IsEvil() then
-    --       table.insert(targets, {role= 16, pos=pos})
-    --     end
-    --     return targets
-    --   end
-    -- end,
+    CustomRadar = function(ply) -- Custom Radar function
+			if TTTGF.AnyTotems then
+				local targets = {}
+	      local scan_ents = ents.FindByClass("ttt_totem")
+	      for k,t in pairs(scan_ents) do
+	        local pos = t:LocalToWorld(t:OBBCenter())
+
+	        pos.x = math.Round(pos.x)
+	        pos.y = math.Round(pos.y)
+	        pos.z = math.Round(pos.z) - 100
+	
+	        local owner = t:GetOwner()
+	        if owner != ply and !owner:IsEvil() then
+	          table.insert(targets, {role= 16, pos=pos})
+	        end
+	      end
+				return targets
+			else
+				return false
+			end
+    end,
 	}
-  -- if !TotemEnabled() then
-  --   CreateConVar("ttt_" .. Hunter.String .. "_enabled","1", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY})
-  --   print("The " .. Hunter.Rolename .. " Role is disabled, set ttt_" .. Hunter.String .. "_enabled to 1 and ttt_totem to 1 to enable!")
-  --   return
-  -- end
-	AddNewRole("HUNTER", Hunter)
+	GAMEMODE:AddNewRole("HUNTER", Hunter)
 end
 
 hook.Add("PostGamemodeLoaded", "AddHunter", AddHunter)

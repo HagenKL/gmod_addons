@@ -34,7 +34,7 @@ local function AddJackal()
 		Chanceperround = 0.5,
 		DefaultEquip = EQUIP_ARMOR
 	}
-	AddNewRole("JACKAL", Jackal)
+	GAMEMODE:AddNewRole("JACKAL", Jackal)
 end
 
 hook.Add("PostGamemodeLoaded", "AddJackal", AddJackal)

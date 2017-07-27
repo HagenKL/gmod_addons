@@ -110,6 +110,8 @@ end
 
 function plymeta:GetBaseKarma() return self:GetNWFloat("karma", 1000) end
 
+function plymeta:GetRoleTable() return GetRoleTableByID(self:GetRole()) end
+
 function plymeta:HasEquipmentWeapon()
    for _, wep in pairs(self:GetWeapons()) do
       if IsValid(wep) and wep:IsEquipment() then

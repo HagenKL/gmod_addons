@@ -2,11 +2,11 @@ if SERVER then
 
 	local function GetVoteMessage(sender, text, teamchat) -- for backwards compatibility reasons
 		local msg = string.lower(text)
-		if string.sub(msg,1,8) == "!prozent" then
+		if string.sub(msg,1,8) == "!prozent" and VoteEnabled() then
 			net.Start("TTTVoteMenu")
 			net.Send(sender)
 			return false
-		elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() then
+		elseif string.sub(msg,1,11) == "!votebeacon" and GetRoundState() != ROUND_WAIT and sender:IsTerror() and TotemEnabled() then
 			PlaceTotem(nil, sender)
 			return false
 		end
@@ -55,9 +55,9 @@ if SERVER then
 		end
 	end
 
-	-- if TotemEnabled() then
+	if TotemEnabled() then
 		hook.Add("Initialize", "TTTTotemOverrideFunction", SpeedOverride)
-	-- end
+	end
 	hook.Add("PlayerSay","TTTVote", GetVoteMessage)
 else
 	local function VoteMakeCounter(pnl)
@@ -75,8 +75,8 @@ else
 			return Color(0,120,0)
 		end
 	end
-	-- if VoteEnabled() then
+	if VoteEnabled() then
 		hook.Add("TTTScoreboardRowColorForPlayer", "TTTVoteColorScoreboard", MakeVoteScoreBoardColor)
 		hook.Add("TTTScoreboardColumns", "TTTVoteCounteronScoreboard", VoteMakeCounter)
-	-- end
+	end
 end

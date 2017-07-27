@@ -180,7 +180,7 @@ function IsRoleDefault(role)
   return GetRoleTableByID(role).IsDefault
 end
 
-function AddNewRole(RoleName,Role)
+function GM:AddNewRole(RoleName,Role)
   local rolestring = "ROLE_" .. RoleName
   if _G[rolestring] then error("Role of name '" .. RoleName .. "' already exists!") return end
   _G[rolestring] = ROLE_COUNT
@@ -188,6 +188,8 @@ function AddNewRole(RoleName,Role)
   Role.ID = _G[rolestring]
 
   TTTRoles[Role.ID] = Role
+
+  CreateConVar("ttt_" .. Role.String .. "_enabled","1", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY})
 
   if Role.newteam then
     local winstring = "WIN_" .. string.upper(Role.String)

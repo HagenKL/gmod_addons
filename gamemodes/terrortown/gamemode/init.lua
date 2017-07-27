@@ -301,11 +301,10 @@ function WaitForPlayers()
 end
 
 function AddRoleOnServer(Role)
-  CreateConVar("ttt_" .. Role.String .. "_pct", Role.DefaultPct, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
-  CreateConVar("ttt_" .. Role.String .. "_max", Role.DefaultMax, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
-  CreateConVar("ttt_" .. Role.String .. "_min_players", Role.DefaultMin, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
-  CreateConVar("ttt_" .. Role.String .. "_credits_starting",Role.DefaultCredits, FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
-  -- CreateConVar("ttt_" .. Role.String .. "_enabled","1", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY})
+  CreateConVar("ttt_" .. Role.String .. "_pct", Role.DefaultPct, FCVAR_ARCHIVE + FCVAR_NOTIFY)
+  CreateConVar("ttt_" .. Role.String .. "_max", Role.DefaultMax, FCVAR_ARCHIVE + FCVAR_NOTIFY)
+  CreateConVar("ttt_" .. Role.String .. "_min_players", Role.DefaultMin, FCVAR_ARCHIVE + FCVAR_NOTIFY)
+  CreateConVar("ttt_" .. Role.String .. "_credits_starting",Role.DefaultCredits, FCVAR_ARCHIVE + FCVAR_NOTIFY)
 end
 
 
@@ -934,7 +933,15 @@ function SelectRoles()
 
    for k,v in pairs(TTTRoles) do
      if not v.IsDefault then
-       if v.Chanceperround and v.Chanceperround > math.random(0,1) and !v.RoleForce then
+       if v.String == "hunter" and GetConVar("ttt_" .. v.String .. "_enabled", false):GetBool() and not TotemEnabled() then  -- special for hunter
+         print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 and ttt_totem to 1 to enable!(requires restart or map change)")
+         continue
+       end
+       if not GetConVar("ttt_" .. v.String .. "_enabled", false):GetBool() then
+         print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 to enable!")
+         continue
+       end
+       if v.Chanceperround and v.Chanceperround > math.random(0,1) and not v.RoleForce then
           continue
        end
        if v.IsGoodReplacement and (choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() or v.RoleForce) and #goodtbl <= det_count then

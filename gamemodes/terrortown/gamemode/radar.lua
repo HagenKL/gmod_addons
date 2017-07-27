@@ -7,84 +7,74 @@ local chargetime = 30
 local math = math
 
 local function RadarScan(ply, cmd, args)
-   if IsValid(ply) and ply:IsTerror() then
-      if ply:HasEquipmentItem(EQUIP_RADAR) then
+	 if IsValid(ply) and ply:IsTerror() then
+			if ply:HasEquipmentItem(EQUIP_RADAR) then
 
-         if ply.radar_charge > CurTime() then
-            LANG.Msg(ply, "radar_charging")
-            return
-         end
+				 if ply.radar_charge > CurTime() then
+						LANG.Msg(ply, "radar_charging")
+						return
+				 end
 
-         ply.radar_charge =  CurTime() + chargetime
+				 ply.radar_charge =  CurTime() + chargetime
 
-         local scan_ents
-		 local targets
-		 if !ply:IsHunter() or (!TTTGF.AnyTotems and ply:IsHunter()) then
-			 scan_ents = player.GetAll()
-			 table.Add(scan_ents, ents.FindByClass("ttt_decoy"))
-
-			 targets = {}
-			 for k, p in pairs(scan_ents) do
-				if ply == p or (not IsValid(p)) then continue end
-
-				if p:IsPlayer() then
-				   if not p:IsTerror() then continue end
-				   if p:GetNWBool("disguised", false) and (not ply:IsEvil()) then continue end
-				end
-
-				local pos = p:LocalToWorld(p:OBBCenter())
-
-				-- Round off, easier to send and inaccuracy does not matter
-				pos.x = math.Round(pos.x)
-				pos.y = math.Round(pos.y)
-				pos.z = math.Round(pos.z)
-
-				local role = p:IsPlayer() and p:GetRole() or -1
-
-				if not p:IsPlayer() then
-				   -- Decoys appear as innocents for non-traitors
-				   if not ply:IsEvil() then
-					  role = ROLE_INNOCENT
-				   end
-				elseif role != ROLE_INNOCENT and (ply:GetTeam() ~= p:GetTeam()) then
-				   -- Detectives/Traitors can see who has their role, but not who
-				   -- has the opposite role.
-				   role = ROLE_INNOCENT
-				end
-
-				table.insert(targets, {role=role, pos=pos})
-			 end
-		 elseif ply:IsHunter() and TTTGF.AnyTotems then
-			scan_ents = ents.FindByClass("ttt_totem")
-			targets = {}
-			for k,t in pairs(scan_ents) do
-				local pos = t:LocalToWorld(t:OBBCenter())
-
-				pos.x = math.Round(pos.x)
-				pos.y = math.Round(pos.y)
-				pos.z = math.Round(pos.z) - 100
-
-				local owner = t:GetOwner()
-				if owner != ply and !owner:IsEvil() then
-					table.insert(targets, {role= 16, pos=pos})
-				end
+			local targets
+			local customradar
+			if ply:GetRoleTable().CustomRadar then
+				customradar = ply:GetRoleTable().CustomRadar(ply)
 			end
-		 end
+			if istable(customradar) then
+				 targets = table.Copy(customradar)
+			else -- if we get no value we use default radar
+				 targets = {}
+				 local scan_ents = player.GetAll()
+				 table.Add(scan_ents, ents.FindByClass("ttt_decoy"))
 
-         net.Start("TTT_Radar")
-            net.WriteUInt(#targets, 8)
-            for k, tgt in pairs(targets) do
-			   net.WriteUInt(tgt.role, 8)
+					for k, p in pairs(scan_ents) do
+					 if ply == p or (not IsValid(p)) then continue end
 
-               net.WriteInt(tgt.pos.x, 32)
-               net.WriteInt(tgt.pos.y, 32)
-			   net.WriteInt(tgt.pos.z, 32)
-            end
-         net.Send(ply)
+					 if p:IsPlayer() then
+							if not p:IsTerror() then continue end
+							if p:GetNWBool("disguised", false) and (not ply:IsEvil()) then continue end
+					 end
 
-      else
-         LANG.Msg(ply, "radar_not_owned")
-      end
-   end
+					 local pos = p:LocalToWorld(p:OBBCenter())
+
+					 -- Round off, easier to send and inaccuracy does not matter
+					 pos.x = math.Round(pos.x)
+					 pos.y = math.Round(pos.y)
+					 pos.z = math.Round(pos.z)
+
+					 local role = p:IsPlayer() and p:GetRole() or -1
+
+					 if not p:IsPlayer() then
+							-- Decoys appear as innocents for non-traitors
+							if not ply:IsEvil() then
+							 role = ROLE_INNOCENT
+							end
+					 elseif role != ROLE_INNOCENT and (ply:GetTeam() ~= p:GetTeam()) then
+							-- Detectives/Traitors can see who has their role, but not who
+							-- has the opposite role.
+							role = ROLE_INNOCENT
+					 end
+
+					 table.insert(targets, {role=role, pos=pos})
+					end
+				end
+
+				 net.Start("TTT_Radar")
+				 net.WriteUInt(#targets, 8)
+				 for k, tgt in pairs(targets) do
+				 		net.WriteUInt(tgt.role, 8)
+
+						net.WriteInt(tgt.pos.x, 32)
+						net.WriteInt(tgt.pos.y, 32)
+				 		net.WriteInt(tgt.pos.z, 32)
+				 end
+				 net.Send(ply)
+
+			else
+				 LANG.Msg(ply, "radar_not_owned")
+			end
+	 end
 end
 concommand.Add("ttt_radar_scan", RadarScan)
