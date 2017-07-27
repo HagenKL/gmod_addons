@@ -15,7 +15,7 @@ function CountTraitors() return #GetTraitors() end
 local function SendPlayerRoles()
    for k, v in pairs(player.GetAll()) do
       net.Start("TTT_Role")
-        if v:GetRoleTable().HideRole then
+        if v:GetRoleTable().HideRole and !v.ShinigamiRespawned then
           net.WriteUInt(v:GetRoleTable().HideRole,4)
         else
          net.WriteUInt(v:GetRole(), 4)
@@ -26,7 +26,7 @@ end
 
 local function SendPlayerRole(ply)
     net.Start("TTT_Role")
-      if ply:GetRoleTable().HideRole then
+      if ply:GetRoleTable().HideRole and !v.ShinigamiRespawned then
         net.WriteUInt(ply:GetRoleTable().HideRole,4)
       else
        net.WriteUInt(ply:GetRole(), 4)
@@ -79,7 +79,7 @@ function SendInnocentList(ply_or_rf)
    local traitor_ids = {}
    local neutral_ids = {}
    for k, v in pairs(player.GetAll()) do
-      if v:IsGood() and !v:GetRoleTable().ShowRole then
+      if v:IsGood() and !v:GetRoleTable().ShowRole and !v.ShinigamiRespawned then
          table.insert(inno_ids, v:EntIndex())
       elseif v:IsEvil() then
          table.insert(traitor_ids, v:EntIndex())

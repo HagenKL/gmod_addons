@@ -13,7 +13,7 @@ if SERVER then
 	end
 
 	local function AdjustSpeed(ply)
-		if ply:GetShinigami() and ply.ShinigamiRespawned then return 2 end
+		if ply:GetShinigami() and ply.ShinigamiRespawned then return 2.5 end
 		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
 			local Totem = ply:GetTotem()
 			if IsValid(Totem) then

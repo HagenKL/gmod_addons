@@ -8,7 +8,7 @@ local GetPTranslation = LANG.GetParamTranslation
 local function GetTextForRole(role)
    local menukey = Key("+menu_context", "C")
 
-   if role == ROLE_INNOCENT then
+   if role == ROLE_INNOCENT or role == ROLE_SHINIGAMI then
       return GetTranslation("info_popup_innocent")
 
    elseif role == ROLE_DETECTIVE then

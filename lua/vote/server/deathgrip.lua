@@ -92,17 +92,21 @@ local function RemoveCorpse(ply) -- From TTT Ulx Commands, sorry
 end
 
 local function BreakDeathGrip(ply)
-  if ply:GetShinigami() and !ply.ShinigamiRespawned then
-    SendShinigamiInfo(ply)
-    ply:SpawnForRound(true)
+  if ply:GetShinigami() then
     timer.Simple(0.15, function()
       RemoveCorpse(ply)
-      ply:Give("weapon_ttt_shinigamiknife")
-      ply:SelectWeapon("weapon_ttt_shinigamiknife")
     end)
-    ply.ShinigamiRespawned = true
-    ply.ShiniDamage = 1
-    return
+    if !ply.ShinigamiRespawned then
+      SendShinigamiInfo(ply)
+      ply:SpawnForRound(true)
+      timer.Simple(0.15, function()
+        ply:Give("weapon_ttt_shinigamiknife")
+        ply:SelectWeapon("weapon_ttt_shinigamiknife")
+      end)
+      ply.ShinigamiRespawned = true
+      ply.ShiniDamage = 1
+      return
+    end
   end
   if ply.NOWINASC then return end
   if #util.GetAlivePlayers() < 4 then
