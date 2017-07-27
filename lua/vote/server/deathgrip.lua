@@ -101,6 +101,7 @@ local function BreakDeathGrip(ply)
       ply:SelectWeapon("weapon_ttt_shinigamiknife")
     end)
     ply.ShinigamiRespawned = true
+    ply.ShiniDamage = 1
     return
   end
   if ply.NOWINASC then return end
@@ -137,18 +138,31 @@ local function TTTRemoveDeathGrip(ply)
   end
 end
 
-local function TTTResetShinigami(ply)
+local function TTTSetShinigami(ply)
   if ply:GetShinigami() then
-    ply.ShinigamiRespawned = false
+    if ply.ShinigamiRespawned then
+      ply.ShinigamiRespawned = false
+    end
     net.Start("TTT_RoleList")
-    net.WriteUInt(ROLE_INNOCENT,4)
+    net.WriteUInt(ROLE_SHINIGAMI,4)
     net.WriteUInt(1,8)
     net.WriteUInt(ply:EntIndex() - 1,7)
     net.Broadcast()
   end
 end
 
-hook.Add("PlayerSpawn", "TTTResetShinigami", TTTResetShinigami)
+local function ShinigamiDamage()
+	if GetRoundState() == ROUND_ACTIVE then
+		for k,v in pairs(player.GetAll()) do
+			if v:IsTerror() and v:IsShinigami() and v.ShinigamiRespawned and v.ShiniDamage <= CurTime() then
+				v:TakeDamage(2)
+				v.ShiniDamage = CurTime() + 1
+			end
+		end
+	end
+end
+
+hook.Add("PlayerSpawn", "TTTSetShinigami", TTTSetShinigami)
 hook.Add("PlayerDisconnected", "TTTRemoveDeathGrip", TTTRemoveDeathGrip)
 hook.Add("PlayerCanPickupWeapon", "TTTShinigamiPrevent", PreventShinigamiPickUp)
 hook.Add("PostPlayerDeath","TTTDeathGrip", BreakDeathGrip)
@@ -156,3 +170,4 @@ hook.Add("PlayerDeath", "TTTDeathGrip", DeathGrip)
 hook.Add("TTTBeginRound", "TTTDeathGrip", SelectDeathGripPlayers)
 hook.Add("TTTPrepareRound", "TTTDeathGrip", ResetDeathGrips)
 hook.Add("TTTCheckForWin", "TTTShinigamiWin", ShinigamiPreventWin)
+hook.Add("Think", "TTTShinigamiDamage", ShinigamiDamage)

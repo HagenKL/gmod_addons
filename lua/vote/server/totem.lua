@@ -102,7 +102,7 @@ local function TotemSuffer()
 						net.Send(v)
 						v.DamageNotified = true
 					end
-					v:TakeDamage(1,v,v)
+					v:TakeDamage(1)
 					v.TotemSuffer = CurTime() + 0.2
 				end
 			elseif v:IsTerror() and (v.PlacedTotem or !v.TotemSuffer) then
