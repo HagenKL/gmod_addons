@@ -17,9 +17,15 @@ It will get updated every time I have time to change something!<br>
 <h2>Version 1.1 (26/07/2017):</h2>
 
 - Added new Passive: <b> Deathgrip </b> <br>
-<div style=" text-align: left; margin-left: 15px;"> - Randomly gets distributed to two players in a round with a chance of 50% <br>
+<div style=" text-align: left; margin-left: 15px;"> - Randomly gets distributed to two players in a round with a chance of 66,6% <br>
 - If one of the two players die the other one dies too <br>
-- When only the two players are alive the perk gets broken <br> </div>
+- When only the three players are alive the perk gets broken <br> </div>
+
+- Added new Role: <b> Shinigami </b> <br>
+<div style=" text-align: left; margin-left: 15px;"> - Will only get selected if there is a Death Grip <br>
+- If he dies he respawn with a movement speed of 200% and an onehit knife <br>
+- Does fight for the innocent and does not even know himself that he is the Shinigami <br> </div>
+
 
 <h2>Version 1.0.2 (03/06/2017):</h2>
 

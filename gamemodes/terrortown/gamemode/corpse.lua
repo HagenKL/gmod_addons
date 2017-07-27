@@ -83,10 +83,8 @@ local function IdentifyBody(ply, rag)
       if deadply then
          deadply:SetNWBool("body_found", true)
 
-         if traitor or neutral then
-            -- update innocent's list of traitors
-            SendConfirmedPlayers()
-         end
+         -- update innocent's list of traitors
+         SendConfirmedPlayers()
          SCORE:HandleBodyFound(ply, deadply)
       end
       hook.Call( "TTTBodyFound", GAMEMODE, ply, deadply, rag )

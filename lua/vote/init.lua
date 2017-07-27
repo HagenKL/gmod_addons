@@ -18,6 +18,7 @@ if not TTTGF then
 	resource.AddFile("materials/vgui/ttt/icon_hunter.vmt")
 	resource.AddFile("materials/vgui/ttt/sprite_hunter.vmt")
 	resource.AddFile("materials/vgui/ttt/icon_jackal.vmt")
+	resource.AddFile("materials/vgui/ttt/icon_shini.vmt")
 
 	// Convars
 	CreateConVar("ttt_startvotes","5",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Vote mit der jeder startet.")
@@ -79,6 +80,8 @@ if not TTTGF then
 		util.AddNetworkString("TTTDeathGrip")
 		util.AddNetworkString("TTTDeathGripReset")
 		util.AddNetworkString("TTTDeathGripMessage")
+		util.AddNetworkString("TTTShinigamiInfo")
+		util.AddNetworkString("TTTDeathGripInfo")
 	end
 
 	if TotemEnabled() then

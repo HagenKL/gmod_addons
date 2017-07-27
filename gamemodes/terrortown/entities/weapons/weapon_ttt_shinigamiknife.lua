@@ -3,7 +3,7 @@ AddCSLuaFile()
 SWEP.HoldType               = "knife"
 
 if CLIENT then
-   SWEP.PrintName           = "Totemhunter's Knife"
+   SWEP.PrintName           = "Shinigami's Knife"
    SWEP.Slot                = 8
 
    SWEP.ViewModelFlip       = false
@@ -31,7 +31,6 @@ SWEP.Secondary.Ammo         = "none"
 SWEP.Secondary.Delay        = 1.4
 
 SWEP.Kind                   = WEAPON_ROLE
-SWEP.InLoadoutFor           = {ROLE_HUNTER}
 SWEP.IsSilent               = true
 SWEP.AllowDrop 				= false
 SWEP.NoSights 				= true
@@ -56,7 +55,7 @@ function SWEP:PrimaryAttack()
    local tr = util.TraceHull({start=spos, endpos=sdest, filter=self.Owner, mask=MASK_SHOT_HULL, mins=kmins, maxs=kmaxs})
 
    -- Hull might hit environment stuff that line does not hit
-   if not IsValid(tr.Entity) or tr.Entity:GetClass() != "ttt_totem" then
+   if not IsValid(tr.Entity) then
       tr = util.TraceLine({start=spos, endpos=sdest, filter=self.Owner, mask=MASK_SHOT_HULL})
    end
 
@@ -72,6 +71,9 @@ function SWEP:PrimaryAttack()
       edata:SetNormal(tr.Normal)
       edata:SetEntity(hitEnt)
 
+      if hitEnt:IsPlayer() or hitEnt:GetClass() == "prop_ragdoll" then
+         util.Effect("BloodImpact", edata)
+      end
    else
       self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
    end
@@ -81,8 +83,7 @@ function SWEP:PrimaryAttack()
    end
 
 
-   if SERVER and tr.Hit and tr.HitNonWorld and IsValid(hitEnt) then
-      if hitEnt:GetClass() == "ttt_totem" then
+   if SERVER and tr.Hit and tr.HitNonWorld and IsValid(hitEnt) and hitEnt:IsPlayer() then
         local dmg = DamageInfo()
         dmg:SetDamage(self.Primary.Damage)
         dmg:SetAttacker(self.Owner)
@@ -92,20 +93,14 @@ function SWEP:PrimaryAttack()
         dmg:SetDamageType(DMG_SLASH)
 
         hitEnt:DispatchTraceAttack(dmg, spos + (self.Owner:GetAimVector() * 3), sdest)
-      end
    end
 
    self.Owner:LagCompensation(false)
 end
 
-function SWEP:OnDrop()
-	self:Remove()
-end
-
-
 function SWEP:Equip()
-   self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-   self.Weapon:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+   self.Weapon:SetNextPrimaryFire( CurTime() + (self.Primary.Delay * 1.5) )
+   self.Weapon:SetNextSecondaryFire( CurTime() + (self.Secondary.Delay * 1.5) )
 end
 
 function SWEP:OnRemove()
@@ -114,11 +109,15 @@ function SWEP:OnRemove()
    end
 end
 
+function SWEP:OnDrop()
+	self:Remove()
+end
+
 if CLIENT then
    function SWEP:DrawHUD()
       local tr = self.Owner:GetEyeTrace(MASK_SHOT)
 
-      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:GetClass() == "ttt_totem" and !tr.Entity:GetOwner():IsEvil() then
+      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:IsPlayer() then
 
          local x = ScrW() / 2.0
          local y = ScrH() / 2.0
@@ -133,7 +132,7 @@ if CLIENT then
          surface.DrawLine(x - outer, y + outer, x - inner, y + inner)
          surface.DrawLine(x + outer, y - outer, x + inner, y - inner)
 
-         draw.SimpleText("DESTROY TOTEM", "TabLarge", x, y - 30, COLOR_RED, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+         draw.SimpleText("INSTANT KILL", "TabLarge", x, y - 30, COLOR_RED, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
       end
 
       return self.BaseClass.DrawHUD(self)

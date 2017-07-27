@@ -80,7 +80,28 @@ local function ResetDeathGrip()
 end
 
 local function DeathGripMessage()
-  chat.AddText("TTT Death Grip: ", COLOR_WHITE, "Your Death Grip partner died, therefore you die too!")
+  chat.AddText("TTT Death Grip: ", COLOR_WHITE, "The Death Grip got broken, two players are dead!")
+  chat.PlaySound()
+end
+
+local function ShinigamiInfo()
+  local num = net.ReadUInt(8)
+  local str = {"A dark voice whispers: ", COLOR_WHITE, "The Traitors are ",}
+  for i=1, num do
+    table.insert(str, COLOR_RED)
+    table.insert(str, net.ReadString())
+    table.insert(str, COLOR_WHITE)
+    table.insert(str, ", ")
+  end
+  table.insert(str, COLOR_WHITE)
+  table.insert(str, "get them!")
+
+  chat.AddText(unpack(str))
+  chat.PlaySound()
+end
+
+local function DeathGripInfo()
+  chat.AddText("A dark voice whispers: ", COLOR_WHITE, "The Shinigami is here, waiting...")
   chat.PlaySound()
 end
 
@@ -88,3 +109,5 @@ hook.Add("TTTPrepareRound", "TTTDeathGrip", ResetDeathGrip)
 net.Receive("TTTDeathGrip", DeathGripCL)
 net.Receive("TTTDeathGripReset", ResetDeathGrip)
 net.Receive("TTTDeathGripMessage", DeathGripMessage)
+net.Receive("TTTShinigamiInfo", ShinigamiInfo)
+net.Receive("TTTDeathGripInfo", DeathGripInfo)

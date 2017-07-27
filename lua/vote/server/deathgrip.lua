@@ -11,31 +11,64 @@ end
 
 local function SendDeathGripMessage(ply)
   net.Start("TTTDeathGripMessage")
+  net.Broadcast()
+end
+
+local function SendDeathGripInfo()
+  net.Start("TTTDeathGripInfo")
+  net.Broadcast()
+end
+
+local function SendShinigamiInfo(ply)
+  local tbl = {}
+  for k,v in pairs(player.GetAll()) do
+    if v:GetEvil() then
+      table.insert(tbl,v:Nick())
+    end
+  end
+  net.Start("TTTShinigamiInfo")
+  net.WriteUInt(#tbl,8)
+  for k,v in pairs(tbl) do
+    net.WriteString(v)
+  end
   net.Send(ply)
 end
 
 local function SelectDeathGripPlayers()
-  if math.random(0,1) < 0.75 and #util.GetAlivePlayers() > 2 then
-    local players = util.GetAlivePlayers() // All alive people
+  timer.Simple(0.1, function()
+    local aliveplayers = util.GetAlivePlayers()
+    if #aliveplayers > 2 then
+      local val = false
+      for k,v in pairs(aliveplayers) do
+        if v:GetShinigami() then
+          v.ShinigamiRespawned = false
+          val = true
+          table.remove(aliveplayers,k)
+          break
+        end
+      end
+      if val then
+        local index = math.random(1, #aliveplayers)
+        local pick = aliveplayers[index]
+        table.remove(aliveplayers, index)
 
-    local index = math.random(1, #players)
-    local pick = players[index]
-    table.remove(players, index)
+        local index2 = math.random(1, #aliveplayers)
+        local pick2 = aliveplayers[index2]
+        table.remove(aliveplayers, index2) // Pick two random
 
-    local index2 = math.random(1, #players)
-    local pick2 = players[index2]
-    table.remove(players, index2) // Pick two random
+        pick.DeathGrip = pick2
+        pick2.DeathGrip = pick // assign them to each other
 
-    pick.DeathGrip = pick2
-    pick2.DeathGrip = pick // assign them to each other
-
-    SendDeathGrip(pick)
-    SendDeathGrip(pick2)
-  end
+        SendDeathGrip(pick)
+        SendDeathGrip(pick2)
+        SendDeathGripInfo()
+      end
+    end
+  end)
 end
 
 local function DeathGrip(ply, inflictor, attacker)
-  if ply.DeathGrip and IsValid(ply.DeathGrip) and ply.DeathGrip:IsTerror() then
+  if ply.DeathGrip and IsValid(ply.DeathGrip) and ply.DeathGrip:IsTerror() and (attacker:IsPlayer() or inflictor:IsPlayer()) and attacker != ply and inflictor != ply then
     local temp = ply.DeathGrip // prevent infinite loop
     SendDeathGripReset(ply)
     SendDeathGripReset(ply.DeathGrip)
@@ -46,12 +79,32 @@ local function DeathGrip(ply, inflictor, attacker)
     dmginfo:SetAttacker(game.GetWorld())
     dmginfo:SetDamageType(DMG_GENERIC)
     temp:TakeDamageInfo(dmginfo) // kill the other guy
-    SendDeathGripMessage(temp)
+    SendDeathGripMessage()
+  end
+end
+
+local function RemoveCorpse(ply) -- From TTT Ulx Commands, sorry
+  for _, ent in pairs( ents.FindByClass( "prop_ragdoll" )) do
+    if IsValid(ent) and ent.sid == ply:SteamID() then
+      ent:Remove()
+    end
   end
 end
 
 local function BreakDeathGrip(ply)
-  if #util.GetAlivePlayers() < 3 then
+  if ply:GetShinigami() and !ply.ShinigamiRespawned then
+    SendShinigamiInfo(ply)
+    ply:SpawnForRound(true)
+    timer.Simple(0.15, function()
+      RemoveCorpse(ply)
+      ply:Give("weapon_ttt_shinigamiknife")
+      ply:SelectWeapon("weapon_ttt_shinigamiknife")
+    end)
+    ply.ShinigamiRespawned = true
+    return
+  end
+  if ply.NOWINASC then return end
+  if #util.GetAlivePlayers() < 4 then
     for k,v in pairs(player.GetAll()) do
       v.DeathGrip = nil
       SendDeathGripReset(v)
@@ -62,10 +115,44 @@ end
 local function ResetDeathGrips()
   for k,v in pairs(player.GetAll()) do
     v.DeathGrip = nil // Reset
+    v.ShinigamiRespawned = false
   end
 end
 
+local function ShinigamiPreventWin()
+  for k,v in pairs(player.GetAll()) do
+    if v:GetShinigami() and !v.ShinigamiRespawned and !v:IsTerror() then return WIN_NONE end
+  end
+end
+
+local function PreventShinigamiPickUp(ply, wep)
+  if ply:GetShinigami() and ply.ShinigamiRespawned and wep:GetClass() != "weapon_ttt_shinigamiknife" then
+    return false
+  end
+end
+
+local function TTTRemoveDeathGrip(ply)
+  if ply.DeathGrip then
+    SendDeathGripReset(ply.DeathGrip)
+  end
+end
+
+local function TTTResetShinigami(ply)
+  if ply:GetShinigami() then
+    ply.ShinigamiRespawned = false
+    net.Start("TTT_RoleList")
+    net.WriteUInt(ROLE_INNOCENT,4)
+    net.WriteUInt(1,8)
+    net.WriteUInt(ply:EntIndex() - 1,7)
+    net.Broadcast()
+  end
+end
+
+hook.Add("PlayerSpawn", "TTTResetShinigami", TTTResetShinigami)
+hook.Add("PlayerDisconnected", "TTTRemoveDeathGrip", TTTRemoveDeathGrip)
+hook.Add("PlayerCanPickupWeapon", "TTTShinigamiPrevent", PreventShinigamiPickUp)
 hook.Add("PostPlayerDeath","TTTDeathGrip", BreakDeathGrip)
 hook.Add("PlayerDeath", "TTTDeathGrip", DeathGrip)
 hook.Add("TTTBeginRound", "TTTDeathGrip", SelectDeathGripPlayers)
 hook.Add("TTTPrepareRound", "TTTDeathGrip", ResetDeathGrips)
+hook.Add("TTTCheckForWin", "TTTShinigamiWin", ShinigamiPreventWin)

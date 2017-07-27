@@ -937,11 +937,15 @@ function SelectRoles()
          print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 and ttt_totem to 1 to enable!(requires restart or map change)")
          continue
        end
+       if v.String == "shinigami" and GetConVar("ttt_" .. v.String .. "_enabled", false):GetBool() and not DeathGripEnabled() then  -- special for shini
+         print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 and ttt_deathgrip to 1 to enable!(requires restart or map change)")
+         continue
+       end
        if not GetConVar("ttt_" .. v.String .. "_enabled", false):GetBool() then
          print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 to enable!")
          continue
        end
-       if v.Chanceperround and v.Chanceperround > math.random(0,1) and not v.RoleForce then
+       if v.Chanceperround and v.Chanceperround < math.random(0,1) and not v.RoleForce then
           continue
        end
        if v.IsGoodReplacement and (choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() or v.RoleForce) and #goodtbl <= det_count then

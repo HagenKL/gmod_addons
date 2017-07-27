@@ -16,7 +16,6 @@ if not TTTGF then
     SetGlobalBool("ttt_deathgrip", net.ReadBool())
     SetGlobalBool("ttt_totem", net.ReadBool())
 
-    print(DeathGripEnabled())
     if DeathGripEnabled() then
       include("vote/client/cl_deathgrip.lua")
     end

@@ -15,14 +15,22 @@ function CountTraitors() return #GetTraitors() end
 local function SendPlayerRoles()
    for k, v in pairs(player.GetAll()) do
       net.Start("TTT_Role")
+        if v:GetRoleTable().HideRole then
+          net.WriteUInt(v:GetRoleTable().HideRole,4)
+        else
          net.WriteUInt(v:GetRole(), 4)
+        end
       net.Send(v)
    end
 end
 
 local function SendPlayerRole(ply)
     net.Start("TTT_Role")
+      if ply:GetRoleTable().HideRole then
+        net.WriteUInt(ply:GetRoleTable().HideRole,4)
+      else
        net.WriteUInt(ply:GetRole(), 4)
+      end
     net.Send(ply)
 end
 
@@ -71,7 +79,7 @@ function SendInnocentList(ply_or_rf)
    local traitor_ids = {}
    local neutral_ids = {}
    for k, v in pairs(player.GetAll()) do
-      if v:IsRole(ROLE_INNOCENT) then
+      if v:IsGood() and !v:GetRoleTable().ShowRole then
          table.insert(inno_ids, v:EntIndex())
       elseif v:IsEvil() then
          table.insert(traitor_ids, v:EntIndex())
@@ -96,16 +104,16 @@ function SendInnocentList(ply_or_rf)
    SendRoleListMessage(ROLE_INNOCENT, inno_ids, GetGoodFilter())
 end
 
-function SendConfirmedPlayers(ply_or_rf)
-  SendConfirmedTraitors(GetGoodFilter())
-  SendConfirmedTraitors(GetNeutralFilter())
-  SendConfirmedNeutrals(GetGoodFilter())
-  SendConfirmedNeutrals(GetEvilFilter())
+function SendConfirmedPlayers()
+  SendConfirmedTraitors(player.GetAll())
+  SendConfirmedNeutrals(player.GetAll())
+  SendConfirmedGoods(player.GetAll())
 end
 
 function SendConfirmedSinglePlayer(ply_or_rf)
   SendConfirmedTraitors(ply_or_rf)
   SendConfirmedNeutrals(ply_or_rf)
+  SendConfirmedGoods(ply_or_rf)
 end
 
 
@@ -115,6 +123,10 @@ end
 
 function SendConfirmedNeutrals(ply_or_rf)
    SendNeutralList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
+end
+
+function SendConfirmedGoods(ply_or_rf)
+   SendGoodList(ply_or_rf, function(p) return p:GetNWBool("body_found") end)
 end
 
 function SendFullStateUpdate()
@@ -152,12 +164,7 @@ local function request_rolelist(ply)
       SendPlayerRole(ply)
       SendDetectiveList(ply)
 
-      if ply:IsEvil() then
-         SendEvilList(ply)
-         SendConfirmedNeutrals(ply)
-      else
-         SendConfirmedSinglePlayer(ply)
-      end
+      SendConfirmedSinglePlayer(ply)
    end
 end
 concommand.Add("_ttt_request_rolelist", request_rolelist)

@@ -140,7 +140,8 @@ TTTRoles = TTTRoles or {
     drawtargetidcircle = true,
     targetidcolor = COLOR_BLUE,
     AllowTeamChat = true,
-    RepeatingCredits = false
+    RepeatingCredits = false,
+    ShowRole = true
   }
 }
 
