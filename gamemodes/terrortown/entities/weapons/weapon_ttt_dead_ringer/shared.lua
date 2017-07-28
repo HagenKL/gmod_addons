@@ -135,10 +135,11 @@ if SERVER then
           net.Send(ply)
         end
       elseif ply:IsValid() and ply:IsFakeDead() and ply:GetNWInt("DRStatus") == 3 then
+		ply:DrawWorldModel(false)
         for k,v in pairs(ply:GetWeapons()) do
 					v:SetNextPrimaryFire(CurTime() + 0.2)
 					v:SetNextSecondaryFire(CurTime() + 0.2)
-				end
+		end
         if ply:GetNWInt("DRCharge") <= 8 and ply:GetNWInt("DRCharge") > 0 then
           ply.cltimer = ply.cltimer or CurTime() + 2
           if CurTime() > ply.cltimer then
@@ -304,7 +305,6 @@ if SERVER then
     if ownerwep.Base == "weapon_tttbase" then
       ownerwep:SetIronsights(false)
     end
-    self:DrawWorldModel(false) // no longer needed?
 
     DamageLog("DeadRinger: " .. self:Nick() .. " has faked his death.")
 
