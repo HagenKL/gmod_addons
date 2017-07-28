@@ -14,7 +14,7 @@ if SERVER then
 
 	local function AdjustSpeed(ply)
 		if ply:GetShinigami() and ply.ShinigamiRespawned then return 2.5 end
-		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
+		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
 			local Totem = ply:GetTotem()
 			if IsValid(Totem) then
 				local distance = Totem:GetPos():Distance(ply:GetPos())

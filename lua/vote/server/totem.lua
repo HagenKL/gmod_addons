@@ -55,41 +55,41 @@ local function DestroyTotem(ply)
 end
 
 function TotemUpdate()
-	if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTGF.AnyTotems then
+	if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
 
-		TTTGF.totems = {}
+		local totems = {}
 		for k,v in pairs(player.GetAll()) do
 			if (v:IsTerror() or !v:Alive()) and (v:HasTotem() or v.CanSpawnTotem) then
-				table.insert(TTTGF.totems, v)
+				table.insert(totems, v)
 			end
 		end
 
-		if #TTTGF.totems >= 1 then
-			TTTGF.AnyTotems = true
+		if #totems >= 1 then
+			TTTVote.AnyTotems = true
 		else
-			TTTGF.AnyTotems = false
+			TTTVote.AnyTotems = false
 			net.Start("TTTTotem")
 			net.WriteInt(8,8)
 			net.Broadcast()
 			return
 		end
 
-		TTTGF.innototems = {}
+		local innototems = {}
 
-		for k,v in pairs(TTTGF.totems) do
+		for k,v in pairs(totems) do
 			if !v:GetEvil() then
-				table.insert(TTTGF.innototems, v)
+				table.insert(innototems, v)
 			end
 		end
 
-		if TTTGF.AnyTotems and #TTTGF.innototems == 0 then
+		if TTTVote.AnyTotems and #innototems == 0 then
 			DestroyAllTotems()
 		end
 	end
 end
 
 local function TotemSuffer()
-	if GetRoundState() == ROUND_ACTIVE and TTTGF.AnyTotems then
+	if GetRoundState() == ROUND_ACTIVE and TTTVote.AnyTotems then
 		for k,v in pairs(player.GetAll()) do
 			if v:IsTerror() and !v.PlacedTotem and v.TotemSuffer then
 				if v.TotemSuffer == 0 then
@@ -127,7 +127,7 @@ local function ResetTotems()
 		v.DamageNotified = false
 		v.totemuses = 0
 	end
-	TTTGF.AnyTotems = true
+	TTTVote.AnyTotems = true
 end
 
 local function ResetSuffer()

@@ -10,18 +10,18 @@ end
 
 local function CalculateVotes(ply, target, sender)
   target:SetNWInt("VoteCounter", target:GetNWInt("VoteCounter") + 1)
-  votebetters[target:SteamID()] = TTTGF.votebetters[target:SteamID()] or {}
-  table.insert(TTTGF.votebetters[target:SteamID()], ply)
+  TTTVote.VoteBetters[target:SteamID()] = TTTVote.VoteBetters[target:SteamID()] or {}
+  table.insert(TTTVote.VoteBetters[target:SteamID()], ply)
   ply:SetNWInt("UsedVotes", ply:GetNWInt("UsedVotes",0) + 1 )
   if target:GetNWInt("VoteCounter",0) >= 3 then
     target:SetNWInt("VoteCounter", 3)
-    for k,v in pairs(TTTGF.votebetters[target:SteamID()]) do
+    for k,v in pairs(TTTVote.VoteBetters[target:SteamID()]) do
       v:UsedVote()
       if target:GetGood() and v:GetGood() then
         v.VotePunishment = true
       end
     end
-    table.Empty(TTTGF.votebetters[target:SteamID()])
+    table.Empty(TTTVote.VoteBetters[target:SteamID()])
   end
   SendVoteNotify(sender, target, target:GetNWInt("VoteCounter",0))
 end
@@ -57,8 +57,8 @@ local function ResetVote(ply)
     ply.TotemSuffer = 0
   -- end
 
-  if SERVER and TTTGF.votebetters[ply:SteamID()] and istable(TTTGF.votebetters[ply:SteamID()]) then
-    table.Empty(TTTGF.votebetters[ply:SteamID()])
+  if SERVER and TTTVote.VoteBetters[ply:SteamID()] and istable(TTTVote.VoteBetters[ply:SteamID()]) then
+    table.Empty(TTTVote.VoteBetters[ply:SteamID()])
   end
 end
 
@@ -87,7 +87,7 @@ local function InitVote(ply)
   if IsValid(ply) then
     local currentdate = os.date("%d/%m/%Y",os.time())
     if ply:GetPData("vote_stored_date") == nil then
-      SetDate(ply , currentdate)
+      SetVoteDate(ply , currentdate)
       ResetVote(ply)
       OpenChangelogMenu(ply)
     end
@@ -100,7 +100,7 @@ function ResetVoteforEveryOne( ply, cmd, args )
     for k,v in pairs(player.GetAll()) do
       ResetVote(v)
     end
-    TTTGF.AnyTotems = true
+    TTTVote.AnyTotems = true
     net.Start("TTTResetVote")
     net.WriteBool(true)
     net.Broadcast()

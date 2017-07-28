@@ -24,7 +24,7 @@ local function AddHunter()
 		DefaultEquip = EQUIP_RADAR,
     DefaultWeapon = "weapon_ttt_totemknife",
     CustomRadar = function(ply) -- Custom Radar function
-			if TTTGF.AnyTotems then
+			if TTTVote.AnyTotems then
 				local targets = {}
 	      local scan_ents = ents.FindByClass("ttt_totem")
 	      for k,t in pairs(scan_ents) do

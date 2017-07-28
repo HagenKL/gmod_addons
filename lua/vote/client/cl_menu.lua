@@ -98,12 +98,12 @@ local function LookUpTotem(ply, cmd, args, argStr)
   end
 end
 
-/*function TTTGF.CloseVoteMenu(ply, cmd, args, argStr)
+/*function TTTVote.CloseVoteMenu(ply, cmd, args, argStr)
   if votemenu and IsValid(votemenu) then votemenu:Close() end
 end*/
 
---concommand.Add("+votemenu", TTTGF.LookUpVoteMenu,nil,"Opens the vote menu", { FCVAR_DONTRECORD })
---concommand.Add("-votemenu", TTTGF.CloseVoteMenu,nil,"Closes the vote menu", { FCVAR_DONTRECORD })
+--concommand.Add("+votemenu", TTTVote.LookUpVoteMenu,nil,"Opens the vote menu", { FCVAR_DONTRECORD })
+--concommand.Add("-votemenu", TTTVote.CloseVoteMenu,nil,"Closes the vote menu", { FCVAR_DONTRECORD })
 
 concommand.Add("votemenu", LookUpVoteMenu,nil,"Opens / Closes the vote menu", { FCVAR_DONTRECORD })
 net.Receive("TTTVoteMenu", LookUpVoteMenu)

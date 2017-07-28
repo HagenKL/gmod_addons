@@ -1,5 +1,5 @@
-if not TTTGF then
-	TTTGF = {}
+if not TTTVote then
+	TTTVote = {}
 	file.CreateDir( "vote" )
 
 	AddCSLuaFile("vote/shared/vote_overrides_shd.lua")
@@ -57,10 +57,10 @@ if not TTTGF then
 
 	// Tables and vars
 	if VoteEnabled() then
-		TTTGF.votebetters = {}
+		TTTVote.VoteBetters = {}
 	end
 	if TotemEnabled() then
-		TTTGF.AnyBeacons = true
+		TTTVote.AnyTotems = true
 	end
 
 	// NetworkStrings
