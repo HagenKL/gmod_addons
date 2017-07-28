@@ -50,12 +50,12 @@ if CLIENT then
 		net.SendToServer()
 	end
 
-	concommand.Add("SlowMotion", askSM)	
+	concommand.Add("SlowMotion", askSM)
 
 
 	LANG.AddToLanguage("english", "item_SlowMotion", "SlowMotion")
-	LANG.AddToLanguage("english", "item_SlowMotion_desc", "A Killing Floor like SlowMotion,\nit slows down the game for a short time.\nCooldown is 45 Seconds.\nbind a key for 'SlowMotion' to use it.")
-	
+	LANG.AddToLanguage("english", "item_SlowMotion_desc", "A Killing Floor like SlowMotion,\nit slows down the game for a short time.\nCooldown is 20 Seconds.\nbind a key for 'SlowMotion' to use it.")
+
 	local function SlowMotionSound()
 		local enabled = net.ReadBool()
 		local str = enabled and "enter" or "exit"
@@ -127,7 +127,7 @@ if SERVER then
 			end)
 	end
 	function plymeta:ReloadSM()
-		timer.Create("SMReload" .. self:EntIndex(), 45 ,1, function()
+		timer.Create("SMReload" .. self:EntIndex(), 20 ,1, function()
 				if self:IsValid() and self:IsTerror() then
 					net.Start("SMReload")
 					net.Send(self)
@@ -171,5 +171,3 @@ else
 		chat.PlaySound()
 	end)
 end
-
-

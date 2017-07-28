@@ -6,6 +6,7 @@ if SERVER then
   util.AddNetworkString("ASCKill")
   util.AddNetworkString("ASCError")
   util.AddNetworkString("ASCRespawn")
+  util.AddNetworkString("ASCRespawned")
 end
 
 if CLIENT then
@@ -96,13 +97,21 @@ if SERVER then
       if id == EQUIP_ASC then
         ply.shouldasc = true
         if ply:GetTraitor() or (ply.IsEvil and ply:IsEvil()) then
-          ply.SecondChanceChance = math.random(15,25)
+          ply.SecondChanceChance = math.random(25,35)
         elseif ply:GetRole() == ROLE_DETECTIVE then
-          ply.SecondChanceChance = math.random(30,50)
-        elseif ply.IsNeutral and ply:IsNeutral() then
-          ply.SecondChanceChance = math.random(20,30)
+          ply.SecondChanceChance = math.random(40,60)
         else
           ply.SecondChanceChance = math.random(20,40)
+        end
+        for k,v in pairs(ply.kills) do
+          local victim = player.GetBySteamID(v)
+          if (ply:GetTraitor() or (ply.IsEvil and ply:IsEvil())) and ((victim:GetRole() == ROLE_INNOCENT or victim:GetRole() == ROLE_DETECTIVE) or (victim.GetGood and (victim:GetGood() or victim:IsNeutral()))) then
+            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(20,30), 0, 99)
+          elseif (ply:GetRole() == ROLE_DETECTIVE or (ply.GetGood and ply:GetGood())) and (victim:GetTraitor() or (victim.IsEvil and (victim:IsEvil() or victim:IsNeutral()))) then
+            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(30,40), 0, 99)
+          elseif ply.IsNeutral and ply:IsNeutral() and (victim:GetGood() or victim:GetEvil()) then
+            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(25,30), 0, 99)
+          end
         end
         net.Start("ASCBuyed")
         net.WriteInt(ply.SecondChanceChance, 8)
@@ -114,21 +123,11 @@ if SERVER then
 
   function SecondChance( victim, inflictor, attacker)
     local SecondChanceRandom = math.random(1,100)
+    SecondChanceRandom = 1
     local PlayerChance = math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99)
     if victim.shouldasc == true and SecondChanceRandom <= PlayerChance then
       victim.NOWINASC = true
-      victim:SetNWInt("ASCthetimeleft", 10)
-      timer.Create("TTTASC" .. victim:EntIndex() , 1 ,10, function()
-          if IsValid(victim) then
-            victim:SetNWInt("ASCthetimeleft", victim:GetNWInt("ASCthetimeleft") - 1)
-            if ( victim:GetNWInt("ASCthetimeleft") <= 9 ) then
-              victim:SetNWBool("ASCCanRespawn", true)
-            end
-            if ( victim:GetNWInt("ASCthetimeleft") <= 0 ) then
-              victim:ASCHandleRespawn(true)
-            end
-          end
-        end )
+      victim.ASCTimeLeft = CurTime() + 10
       net.Start("ASCRespawn")
       net.WriteBit(true)
       net.Send(victim)
@@ -138,10 +137,26 @@ if SERVER then
       --  table.Empty(victim.ASCWeapons)
       --end
       net.Start("ASCRespawn")
-      net.WriteBit(false)
+      net.WriteFloat(victim.ASCTimeLeft)
+      net.WriteBool(false)
       net.Send(victim)
     end
   end
+
+  local function ASCThink()
+    for k,ply in pairs(player.GetAll()) do
+      if ply.NOWINASC then
+        if ply.ASCTimeLeft <= CurTime() + 8 then
+          ply.ASCCanRespawn = true
+        end
+        if ply.ASCTimeLeft <= CurTime() then
+          ply:ASCHandleRespawn(true)
+        end
+      end
+    end
+  end
+
+  hook.Add("Think", "ASCThink", ASCThink)
 
   local Positions = {}
   for i = 0,360,22.5 do table.insert( Positions, Vector(math.cos(i),math.sin(i),0) ) end -- Populate Around Player
@@ -184,6 +199,7 @@ if SERVER then
   function plymeta:ASCHandleRespawn(corpse)
   if !IsValid(self) then return end
     local body = FindCorpse(self)
+    local temp = self.SecondChanceChance
 
     if !IsValid(body) or body:IsOnFire() then
       if SERVER then
@@ -194,7 +210,7 @@ if SERVER then
       self.shouldasc = false
       self.NOWINASC = false
       timer.Remove("TTTASC" .. self:EntIndex())
-	    self:SetNWBool("ASCCanRespawn", false)
+	    self.ASCCanRespawn = false
       self:SetNWInt("ASCthetimeleft", 10)
       return
     end
@@ -220,22 +236,25 @@ if SERVER then
     end
 
     self:SetMaxHealth(100)
+    self:SetHealth(temp)
     timer.Remove("TTTASC" .. self:EntIndex())
-    self:SetNWBool("ASCCanRespawn", false)
-    self:SetNWInt("ASCthetimeleft", 10)
+    self.ASCCanRespawn = false
+    self.ASCTimeLeft = 0
     self.shouldasc = false
     self.NOWINASC = false
     local credits = CORPSE.GetCredits(body, 0)
     self:SetCredits(credits)
     body:Remove()
     DamageLog("SecondChance: " .. self:Nick() .. " has been respawned.")
+    net.Start("ASCRespawned")
+    net.Send(self)
     --if keepweapons:GetBool() and istable(self.ASCWeapons) then
     --  ASCRetrieveWeapons(self)
     --end
   end
 
   hook.Add( "KeyPress", "ASCRespawn", function( ply, key )
-      if ply:GetNWBool("ASCCanRespawn") then
+      if ply.ASCCanRespawn then
         if key == IN_RELOAD then
           ply:ASCHandleRespawn(true)
         elseif key == IN_JUMP then
@@ -244,27 +263,26 @@ if SERVER then
       end
     end )
 
-  function CUSTOMWIN()
+  local function CUSTOMWIN()
     for k,v in pairs(player.GetAll()) do
       if v.NOWINASC == true then return WIN_NONE end
     end
   end
 
-  function ResettinAsc()
+  local function ResettinAsc()
     for k,v in pairs(player.GetAll()) do
       v.shouldasc = false
       v.NOWINASC = false
-      v:SetNWBool("ASCCanRespawn", false)
-      v:SetNWInt("ASCthetimeleft", 10)
+      v.ASCCanRespawn = false
+      v.ASCTimeLeft = 0
       v.SecondChanceChance = 0
-      timer.Remove("TTTASC" .. v:EntIndex())
       --if keepweapons:GetBool() and istable(v.ASCWeapons) then
       --  table.Empty(v.ASCWeapons)
       --end
     end
   end
 
-  function CheckifAsc(ply, attacker, dmg)
+  local function CheckifAsc(ply, attacker, dmg)
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
       if (attacker:GetTraitor() or (attacker.IsEvil and attacker:IsEvil())) and ((ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) or (ply.GetGood and (ply:GetGood() or ply:IsNeutral()))) then
         attacker.SecondChanceChance = math.Clamp(attacker.SecondChanceChance + math.random(10,20), 0, 99)
@@ -282,55 +300,66 @@ if SERVER then
     --  ply:StripWeapons()
     --end
   end
+
+  hook.Add("DoPlayerDeath", "ASCChance", CheckifAsc )
+  hook.Add("TTTPrepareRound", "ASCRESET", ResettinAsc )
+  hook.Add("PlayerDeath", "ASCCHANCE", SecondChance )
+  hook.Add("TTTCheckForWin", "ASCCHECKFORWIN", CUSTOMWIN)
 end
 
 if CLIENT then
-
+  local width = 300
+  local height = 100
+  local color = Color(255,80,80,255)
   function DrawASCHUD()
-    if LocalPlayer():GetNWBool("ASCCanRespawn") then
-      draw.RoundedBox( 20, ScrW() / 2-945, ScrH() / 2-440, 300 , 100 ,Color(255,80,80,255) )
+    if LocalPlayer().ASCCanRespawn and LocalPlayer().ASCTimeLeft > CurTime() then
+      local x = ScrW()/2 - width/2
+      local y = ScrH()/3 - height
+      draw.RoundedBox( 20, x, y, 300 , 100 , color)
       surface.SetDrawColor(255,255,255,255)
-      local w = LocalPlayer():GetNWInt("ASCthetimeleft") * 20
-      draw.SimpleText("Time Left: " .. LocalPlayer():GetNWInt("ASCthetimeleft"), DermaDefault, ScrW() / 2-800, ScrH() / 2-390, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-      draw.SimpleText("Press R to Respawn on your Corpse,", DermaDefault, ScrW() / 2-800, ScrH() / 2-375, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-      draw.SimpleText("Press Space to Respawn on Spawn", DermaDefault, ScrW() / 2-800, ScrH() / 2-360, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-      surface.DrawRect(ScrW() / 2-900, ScrH() / 2-420, w, 20)
+      local w = (LocalPlayer().ASCTimeLeft - CurTime()) * 20
+      draw.SimpleText("Time Left: " .. math.Round(LocalPlayer().ASCTimeLeft - CurTime(),1), DermaDefault, x + width/2, y + height/1.2, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+      draw.SimpleText("Press R to Respawn on your Corpse", DermaDefault, x + width/2, y + height/6, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+      draw.SimpleText("Press Space to Respawn on Map Spawn", DermaDefault, x + width/2, y + height/3, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+      surface.DrawRect(x + width/6, y + height/2, w, 20)
       surface.SetDrawColor(0,0,0,255)
-      surface.DrawOutlinedRect(ScrW() / 2-900, ScrH() / 2-420, 200, 20)
+      surface.DrawOutlinedRect(x + width/6, y + height/2, 200, 20)
+      if LocalPlayer().ASCTimeLeft > CurTime() + 8 then
+        surface.SetDrawColor(COLOR_RED)
+        surface.DrawLine(x, y, x + 300, y + 100)
+        surface.DrawLine(x + 300, y, x, y + 100)
+      end
     end
   end
 
   hook.Add("HUDPaint", "DrawASCHUD", DrawASCHUD)
 end
 
-hook.Add("DoPlayerDeath", "ASCChance", CheckifAsc )
-hook.Add("TTTPrepareRound", "ASCRESET", ResettinAsc )
-hook.Add("PlayerDeath", "ASCCHANCE", SecondChance )
-hook.Add("TTTCheckForWin", "ASCCHECKFORWIN", CUSTOMWIN)
-
 hook.Add("PlayerDisconnected", "ASCDisconnect", function(ply)
     if IsValid(ply) then
       ply.shouldasc = false
-      ply:SetNWInt("ASCthetimeleft", 10)
+      ply.ASCTimeLeft = 0
       ply.NOWINASC = false
       ply.SecondChanceChance = 0
-      ply:SetNWBool("ASCCanRespawn", false)
-      timer.Remove("TTTASC" .. ply:EntIndex())
+      ply.ASCCanRespawn = false
     end
   end )
 
 hook.Add("PlayerSpawn","ASCReset", function(ply)
     if IsValid(ply) and ply:IsTerror() then
       ply.shouldasc = false
-      ply:SetNWInt("ASCthetimeleft", 10)
+      ply.ASCTimeLeft = 0
       ply.NOWINASC = false
       ply.SecondChanceChance = 0
-      ply:SetNWBool("ASCCanRespawn", false)
-      timer.Remove("TTTASC" .. ply:EntIndex())
+      ply.ASCCanRespawn = false
     end
   end )
 
 if CLIENT then
+  net.Receive("ASCRespawned",function()
+    LocalPlayer().ASCCanRespawn = false
+    LocalPlayer().ASCTimeLeft = 0
+  end)
   net.Receive("ASCBuyed",function()
       local chance = net.ReadInt(8)
       chat.AddText("SecondChance: ", Color(255,255,255), "You will be revived with a chance of " .. chance .. "% !" )
@@ -342,6 +371,8 @@ if CLIENT then
       chat.PlaySound()
     end)
   net.Receive("ASCRespawn",function()
+      LocalPlayer().ASCCanRespawn = true
+      LocalPlayer().ASCTimeLeft = CurTime() + 10
       local respawn = net.ReadBool()
       if respawn then
         chat.AddText("SecondChance: ", Color(255,255,255), "Press Reload to spawn at your body. Press Space to spawn at the map spawn." )

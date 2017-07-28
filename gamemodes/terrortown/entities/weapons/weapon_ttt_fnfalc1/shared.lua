@@ -29,16 +29,16 @@ if CLIENT then
 end
 
 //Damage\\
-SWEP.Primary.Delay       = 0.13
+SWEP.Primary.Delay       = 0.12
 SWEP.Primary.Recoil      = 0.6
 SWEP.Primary.Automatic   = true
 SWEP.Primary.NumShots    = 1
-SWEP.Primary.Damage      = 17
-SWEP.Primary.Cone        = 0.0045
+SWEP.Primary.Damage      = 20
+SWEP.Primary.Cone        = 0.004
 SWEP.Primary.Ammo        = "SMG1"
-SWEP.Primary.ClipSize    = 25
+SWEP.Primary.ClipSize    = 20
 SWEP.Primary.ClipMax     = 50
-SWEP.Primary.DefaultClip = 25
+SWEP.Primary.DefaultClip = 20
 SWEP.AmmoEnt = "item_ammo_smg1_ttt"
 
 

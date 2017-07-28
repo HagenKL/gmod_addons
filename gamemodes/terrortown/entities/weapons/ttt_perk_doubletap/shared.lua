@@ -93,7 +93,7 @@ end
 
 function ApplyDoubleTap(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
-    local delay = math.Round(wep.Primary.Delay / 1.33,3)
+    local delay = math.Round(wep.Primary.Delay / 1.5,3)
     --local numshots =  math.Round(wep.Primary.NumShots * 2,3) // too OP to make the numshots higher.
     --local cone =  math.Round(wep.Primary.Cone * 1.33,3)
     --local recoil =  math.Round(wep.Primary.Recoil * 1.5,3)
@@ -225,7 +225,7 @@ function SWEP:Initialize()
         oldmat = vm:GetMaterial() or ""
         vm:SetMaterial(mat)
       end
-    end 
+    end
   end)
   return self.BaseClass.Initialize(self)
 end

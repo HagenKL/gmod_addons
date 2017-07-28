@@ -31,8 +31,8 @@ if CLIENT then
 end
 
 //Damage\\
-SWEP.Primary.Delay = 0.3
-SWEP.Primary.Recoil = 2.4
+SWEP.Primary.Delay = 0.4
+SWEP.Primary.Recoil = 2.1
 SWEP.Primary.Automatic = true
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Damage = 50

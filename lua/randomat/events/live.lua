@@ -37,4 +37,4 @@ function EVENT:End()
 	timer.Remove("RandomatLive")
 end
 
-Randomat:register("live", EVENT)
+//Randomat:register("live", EVENT)

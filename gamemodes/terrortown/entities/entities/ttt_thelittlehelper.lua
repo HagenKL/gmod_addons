@@ -5,9 +5,6 @@ if SERVER then
 	local PLAYER = FindMetaTable("Player")
 	util.AddNetworkString( "ColoredMessage" )
 	util.AddNetworkString("TLH_Ask")
-	util.AddNetworkString("TLHStart")
-	util.AddNetworkString("TLHReload")
-	util.AddNetworkString("TLHReloaded")
 	function BroadcastMsg(...)
 		local args = {...}
 		net.Start("ColoredMessage")
@@ -22,8 +19,10 @@ if SERVER then
 		net.Send(self)
 	end
 	net.Receive("TLH_Ask", function(len,ply)
-		if ply.TLH == true and ply:Alive() and ply:IsTerror() then
+		if ply:HasEquipmentItem(EQUIP_TLH) and ply.TLH and ply:IsTerror() and !ply.TLHInvincible then
 			ply:TheLittleHelper()
+		elseif ply.TLHInvincible and ply:IsTerror() then
+			ply:TLHExhausted()
 		end
 	end )
 end
@@ -67,6 +66,35 @@ if CLIENT then
 			end
 		end)
 
+		local width = 200
+		local height = 100
+		local color = Color(0,200,255,255)
+		local function TLHHUD()
+			if LocalPlayer():HasEquipmentItem(EQUIP_TLH) then
+				local x = ScrW() - width - 25
+				local y = ScrH()/2 - height
+				draw.RoundedBox( 20, x, y, width , height ,color )
+				surface.SetDrawColor(255,255,255,255)
+				local time = LocalPlayer():GetNWInt("TLHTime",0)
+				local shield = LocalPlayer():GetNWInt("TLHShield",0)
+				local w = (time/7)*133
+				local w2 = (shield/300)*133
+				draw.SimpleText("TLH Seconds: " .. math.Round(time,1), DermaDefault, x + width/2, y + height/7, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				-- draw.SimpleText("Press R to Respawn on your Corpse", DermaDefault, x + width/2, y + height/6, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				-- draw.SimpleText("Press Space to Respawn on Map Spawn", DermaDefault, x + width/2, y + height/3, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				surface.DrawRect(x + width/6, y + height/4, w, 20)
+				surface.SetDrawColor(0,0,0,255)
+				surface.DrawOutlinedRect(x + width/6, y + height/4, 133, 20)
+				draw.SimpleText("TLH Shield: " .. math.Round(shield,1), DermaDefault, x + width/2, y + height/1.8, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				surface.SetDrawColor(255,0,0,255)
+				surface.DrawRect(x + width/6, y + height/1.5, w2, 20)
+				surface.SetDrawColor(0,0,0,255)
+				surface.DrawOutlinedRect(x + width/6, y + height/1.5, 133, 20)
+			end
+		end
+
+	hook.Add("HUDPaint", "TLHHUD", TLHHUD)
+
 	local function askTLH()
 		net.Start("TLH_Ask")
 		net.SendToServer()
@@ -83,13 +111,13 @@ local TheLittleHelper = {
 	type = "item_active",
 	material = "vgui/ttt/icon_tlh",
 	name = "The Little Helper",
-	desc = "With this Item you get invincible for 7 seconds. \nBind a key to *thelittlehelper* to use it. \nCAUTION: YOU CAN�T SHOT IN THAT PERIOD OF TIME. \nIt will recharge in 20 seconds.",
+	desc = "With this item you are invincible for 7 seconds. \nBind a key to *thelittlehelper* to use it. \nCAUTION: YOU CAN�T SHOT IN THAT PERIOD OF TIME. \nIt will recharge in 35 seconds.",
 	hud = true
 }
 
 local detectiveCanUse = CreateConVar("ttt_thelittlehelper_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the The Little Helper.")
 local traitorCanUse = CreateConVar("ttt_thelittlehelper_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the The Little Helper.")
-local tlhduration = CreateConVar("ttt_thelittlehelper_duration", 7, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long the invincibility should be?")
+local tlhduration = CreateConVar("ttt_thelittlehelper_duration", 7, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long should you be invincible?")
 
 if (detectiveCanUse:GetBool()) then
 	table.insert(EquipmentItems[ROLE_DETECTIVE], TheLittleHelper)
@@ -107,8 +135,32 @@ hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, id, is_item)
 if SERVER then
 	function tlhthink()
 		for key,ply in pairs(player.GetAll()) do
+			if ply:HasEquipmentItem(EQUIP_TLH) then
+				if !ply.TLHInvincible and !ply.TLH then
+					if ply:GetNWInt("TLHTime") < 7 then
+						if CurTime() > ply.tlhtimer then
+							ply.tlhtimer = CurTime() + 5
+							ply:SetNWInt("TLHTime", ply:GetNWInt("TLHTime") + 1)
+						end
+					elseif ply:GetNWInt("TLHTime") >= 7 then
+						ply:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is ready again!")
+						ply.TLH = true
+						ply:EmitSound("gamefreak/recharged.wav")
+						ply:SetNWInt("TLHShield", 300)
+					end
+				else
+					if ply:GetNWInt("TLHTime") > 0 and ply.TLHInvincible then
+						if CurTime() > ply.cdtimer then
+							ply.cdtimer = CurTime() + 1
+							ply:SetNWInt("TLHTime", ply:GetNWInt("TLHTime") - 1)
+						end
+					elseif ply:GetNWInt("TLHTime") <= 0 and ply.TLHInvincible then
+						ply:TLHExhausted()
+					end
+				end
+			end
 			if ply.TLHInvincible then
-				for _, v in pairs(ply:GetWeapons()) do
+				for k,v in pairs(ply:GetWeapons()) do
 					v:SetNextPrimaryFire(CurTime() + 0.2)
 					v:SetNextSecondaryFire(CurTime() + 0.2)
 				end
@@ -119,43 +171,34 @@ if SERVER then
 	function plymeta:TheLittleHelper()
 		if IsValid(self) then
 			self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is now watching over you!")
-			net.Start("TLHStart")
-			net.Send(self)
+			self:EmitSound("buttons/blip1.wav")
 			self.TLHInvincible = true
 			self:Extinguish()
 			self.TLH = false
-			self:TLHReset()
+			self.cdtimer = CurTime() + 1
 		end
 	end
-	function plymeta:TLHReset()
-		timer.Create("TLHReset" .. self:EntIndex(), tlhduration:GetInt() ,1, function()
-				if self:IsValid() and self.TLHInvincible and self:IsTerror() then
-					self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is exhausted!")
-					net.Start("TLHReload")
-					net.Send(self)
-					self.TLHInvincible = false
-					self:ReloadTLH()
-				end
-			end)
-	end
-	function plymeta:ReloadTLH()
-		timer.Create("TLHReload" .. self:EntIndex(), 30 ,1, function()
-				if self:IsValid() and self:IsTerror() then
-					self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is ready again!")
-					net.Start("TLHReloaded")
-					net.Send(self)
-					self.TLH = true
-				end
-			end)
+	function plymeta:TLHExhausted()
+			if self:IsValid() and self:IsTerror() then
+				self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is exhausted!")
+				self:EmitSound("gamefreak/reload.wav")
+				self.TLHInvincible = false
+				self.tlhtimer = CurTime() + 5
+				self:SetNWInt("TLHTime", 0)
+				self:SetNWInt("TLHShield", 0)
+			end
 	end
 	function TLHOwnerGetsDamage(ent,dmginfo)
 		if ent:IsValid() and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_TLH) and ent.TLHInvincible then
+			ent:SetNWInt("TLHShield", ent:GetNWInt("TLHShield",0) - math.Round(dmginfo:GetDamage()))
+			if ent:GetNWInt("TLHShield",0) <= 0 then
+				ent:TLHExhausted()
+			end
 			return true
-			/*elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
-				ent:TheLittleHelper()
-				ent:SetHealth(1)
-				return true
-			end*/
+		-- elseif ent:IsPlayer() and math.Round(dmginfo:GetDamage()) >= ent:Health() and ent.TLH then
+		-- 	ent:TheLittleHelper()
+		-- 	ent:SetHealth(1)
+		-- 	return true
 		end
 	end
 	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)
@@ -163,15 +206,6 @@ if SERVER then
 end
 
 if CLIENT then
-	net.Receive("TLHStart", function()
-		surface.PlaySound("buttons/blip1.wav")
-	end)
-	net.Receive("TLHReload", function()
-		surface.PlaySound("gamefreak/reload.wav")
-	end)
-	net.Receive("TLHReloaded", function()
-			surface.PlaySound("gamefreak/recharged.wav")
-		end)
 
 	hook.Add("TTTBodySearchEquipment", "TLHCorpseIcon", function(search, eq)
 			search.eq_tlh = util.BitSet(eq, EQUIP_TLH)
@@ -194,17 +228,20 @@ local function ResettinTlh()
 	for k,v in pairs(player.GetAll()) do
 		v.TLH = false
 		v.TLHInvincible = false
-		timer.Remove("TLHReset" .. v:EntIndex())
-		timer.Remove("TLHReload" .. v:EntIndex())
-
+		v.tlhtimer = 0
+		v.cdtimer = 0
+		v:SetNWInt("TLHTime", 7)
+		v:SetNWInt("TLHShield", 300)
 	end
 end
 
 hook.Add("PlayerDeath", "TLHDeath", function(ply)
-		timer.Remove("TLHReset" .. ply:EntIndex())
-		timer.Remove("TLHReload" .. ply:EntIndex())
 		ply.TLH = false
 		ply.TLHInvincible = false
+		ply.tlhtimer = 0
+		ply.cdtimer = 0
+		ply:SetNWInt("TLHTime", 7)
+		ply:SetNWInt("TLHShield", 300)
 	end )
 
 hook.Add( "TTTPrepareRound", "TLHRESET", ResettinTlh )

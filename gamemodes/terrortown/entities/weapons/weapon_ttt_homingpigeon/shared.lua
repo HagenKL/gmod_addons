@@ -150,6 +150,7 @@ if CLIENT then
       net.Start("SendTargetPigeon")
       net.WriteEntity(TargetPly)
       net.SendToServer()
+      RemovePigeonModel(self)
     else
       self:SetNextPrimaryFire(CurTime() + 0.1)
     end

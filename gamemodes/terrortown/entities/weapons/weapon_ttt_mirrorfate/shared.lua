@@ -53,7 +53,7 @@ if SERVER then
   function SWEP:PrimaryAttack()
     local ply = self.Owner
     ply.fatemode = ply.fatemode + 1
-    if ply.fatemode >= 7 then
+    if ply.fatemode >= 5 then
       ply.fatemode = 1
     end
     net.Start("MFMessage")
@@ -123,16 +123,6 @@ if SERVER then
     end)
   end
 
-  local function MFOneHit(victim, killer)
-  	killer.MFOneHit = true
-  	killer.MFEnt = victim
-  end
-
-  local function MFBulletSelfDamage(victim, killer)
-  	killer.MFBullet = true
-  	killer.MFEnt = victim
-  end
-
   local function MFHeartAttack(victim, killer)
     local fate = ents.Create("weapon_ttt_mirrorfate")
     local dmginfo = DamageInfo()
@@ -194,10 +184,6 @@ if SERVER then
 		elseif mode == 3 then
 			MFExplode(victim, self)
 		elseif mode == 4 then
-			MFOneHit(victim, self)
-		elseif mode == 5 then
-			MFBulletSelfDamage(victim, self)
-		elseif mode == 6 then
 			MFHoly(victim, self)
 		else
 			MFHeartAttack(victim, self)
@@ -225,13 +211,9 @@ if SERVER then
   local function ResetMirrorFate(ply)
     timer.Remove("MirrorFatekill" .. ply:EntIndex())
     timer.Remove("BurnInHellMirrorfate" .. ply:EntIndex())
-  	timer.Remove("MFThriller" .. ply:EntIndex())
   	timer.Remove("MFHoly" .. ply:EntIndex())
     ply.fatemode = 1
     ply.fatetimemode = 30
-  	ply.MFBullet = false
-  	ply.MFOneHit = false
-  	ply.MFEnt = nil
   end
 
   hook.Add("DoPlayerDeath" , "MirrorfateKillhim" , Mirrorfate )
@@ -242,39 +224,6 @@ if SERVER then
     end
   end)
 
-  local function MFBulletHook( ent, bullet)
-  	if ent.MFBullet then
-  		local dmg = DamageInfo()
-  		local fate = ents.Create("weapon_ttt_mirrorfate")
-  		dmg:SetDamage(bullet.Damage)
-  		dmg:SetAttacker(ent)
-  		dmg:SetInflictor(fate)
-  		dmg:SetDamageType(DMG_BULLET)
-  		ent:TakeDamageInfo(dmg)
-  		if !ent:IsTerror() then
-  			SendMFMessages(ent.MFEnt, ent)
-  		end
-    		return false
-    	end
-  end
-
-  local function MFOneHitHook(ent, dmginfo)
-  	if ent.MFOneHit and dmginfo:GetDamage() > 0 then
-  		ent.MFOneHit = false
-  		local dmg = DamageInfo()
-  		local fate = ents.Create("weapon_ttt_mirrorfate")
-  		dmg:SetDamage(10000)
-  		dmg:SetAttacker(ent)
-  		dmg:SetInflictor(fate)
-  		dmg:SetDamageType(dmginfo:GetDamageType())
-  		ent:TakeDamageInfo(dmg)
-  		SendMFMessages(ent.MFEnt, ent)
-  		return true
-  	end
-  end
-
-  hook.Add("EntityFireBullets", "MFBullets", MFBulletHook)
-  hook.Add("EntityTakeDamage", "MFDamage", MFOneHitHook)
 elseif CLIENT then
   local function MFMessage()
     local mode = net.ReadInt(8)
@@ -285,10 +234,6 @@ elseif CLIENT then
     elseif mode == 3 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will explode!")
   	elseif mode == 4 then
-  	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will get one hit by any damage!")
-  	elseif mode == 5 then
-  	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will damage himself every time he shoots!")
-  	elseif mode == 6 then
 	  chat.AddText("Mirror Fate: ", Color(250,250,250) ,"Your killer will die a holy death!")
     elseif mode == 11 then
       chat.AddText("Mirror Fate: ", Color(250,250,250) ,"You have experienced the " ,Color(255,0,0) ,"fate " ,Color(250,250,250) ,"your victim chose." )

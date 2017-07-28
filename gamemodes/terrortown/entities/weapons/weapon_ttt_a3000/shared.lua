@@ -28,11 +28,11 @@ if CLIENT then
 end
 
 //Damage\\
-SWEP.Primary.Delay = 0.7
-SWEP.Primary.Recoil = 2
+SWEP.Primary.Delay = 0.9
+SWEP.Primary.Recoil = 3
 SWEP.Primary.Automatic = true
 SWEP.Primary.NumShots = 1
-SWEP.Primary.Damage = 32
+SWEP.Primary.Damage = 45
 SWEP.Primary.Cone = 0.01
 SWEP.Primary.Ammo = "Alyxgun"
 SWEP.Primary.ClipSize = 6

@@ -38,6 +38,7 @@ SWEP.WorldModel   = "models/weapons/w_rocket_launcher.mdl"
 -----------------------------------------------
 
 -------------Primary Fire Attributes----------------------------------------
+SWEP.Primary.TakeAmmo       = 1
 SWEP.Primary.Delay			= 1  --In seconds
 SWEP.Primary.Recoil			= 2		--Gun Kick
 SWEP.Primary.Damage			= 0	--Damage per Bullet
@@ -130,7 +131,7 @@ function SWEP:PrimaryAttack(data)
 	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 	self:SetAnimation( PLAYER_ATTACK1 )
 
-	self:TakePrimaryAmmo(1)
+	self:TakePrimaryAmmo(self.Primary.TakeAmmo)
 	self:MuzzleFlash()
 	local rnda = self.Primary.Recoil * -1
 	local rndb = self.Primary.Recoil * math.random(-1, 1)

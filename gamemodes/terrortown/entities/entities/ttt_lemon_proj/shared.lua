@@ -47,8 +47,8 @@ function ENT:LemonExplode()
 	BOOM:SetScale( 1 )
 
 
-	local val = 100
-	local rep = 10
+	local val = 120
+	local rep = 12
 
 
 	for i = 1, rep do
@@ -71,11 +71,11 @@ function ENT:LemonExplode()
 					self:EmitSound( "ambient/fire/gascan_ignite1.wav" )
 				end
 
-				for _, ent in pairs( ents.FindInSphere( self:GetPos(), val * 2.2) ) do
-				   
+				for _, ent in pairs( ents.FindInSphere( self:GetPos(), val * 2.4) ) do
+
 					if ent:IsPlayer() or ent:GetClass() == "prop_ragdoll"  then
 						local dmg=DamageInfo()
-						dmg:SetDamage(math.random(7,14)) 
+						dmg:SetDamage(math.random(8,15))
 						dmg:SetAttacker(owner)
 						dmg:SetInflictor(self)
 						dmg:SetDamagePosition(ent:GetPos())
@@ -87,10 +87,9 @@ function ENT:LemonExplode()
 				end
 			end
 		end )
-		  
+
 	end
 	if SERVER then
 		timer.Simple( rep * 0.12, function() self:Remove() end )
 	end
 end
-
