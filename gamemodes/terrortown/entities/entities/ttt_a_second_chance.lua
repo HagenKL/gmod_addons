@@ -123,7 +123,6 @@ if SERVER then
 
   function SecondChance( victim, inflictor, attacker)
     local SecondChanceRandom = math.random(1,100)
-    SecondChanceRandom = 1
     local PlayerChance = math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99)
     if victim.shouldasc == true and SecondChanceRandom <= PlayerChance then
       victim.NOWINASC = true
