@@ -112,29 +112,3 @@ end
 function SWEP:OnDrop()
 	self:Remove()
 end
-
-if CLIENT then
-   function SWEP:DrawHUD()
-      local tr = self.Owner:GetEyeTrace(MASK_SHOT)
-
-      if tr.HitNonWorld and IsValid(tr.Entity) and tr.Entity:IsPlayer() then
-
-         local x = ScrW() / 2.0
-         local y = ScrH() / 2.0
-
-         surface.SetDrawColor(255, 0, 0, 255)
-
-         local outer = 20
-         local inner = 10
-         surface.DrawLine(x - outer, y - outer, x - inner, y - inner)
-         surface.DrawLine(x + outer, y + outer, x + inner, y + inner)
-
-         surface.DrawLine(x - outer, y + outer, x - inner, y + inner)
-         surface.DrawLine(x + outer, y - outer, x + inner, y - inner)
-
-         draw.SimpleText("INSTANT KILL", "TabLarge", x, y - 30, COLOR_RED, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-      end
-
-      return self.BaseClass.DrawHUD(self)
-   end
-end

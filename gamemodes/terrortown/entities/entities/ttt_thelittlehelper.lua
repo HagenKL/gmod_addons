@@ -5,6 +5,7 @@ if SERVER then
 	local PLAYER = FindMetaTable("Player")
 	util.AddNetworkString( "ColoredMessage" )
 	util.AddNetworkString("TLH_Ask")
+	util.AddNetworkString("SetTLH")
 	function BroadcastMsg(...)
 		local args = {...}
 		net.Start("ColoredMessage")
@@ -70,7 +71,7 @@ if CLIENT then
 		local height = 100
 		local color = Color(0,200,255,255)
 		local function TLHHUD()
-			if LocalPlayer():HasEquipmentItem(EQUIP_TLH) then
+			if LocalPlayer().HasTLH and LocalPlayer():IsTerror() then
 				local x = ScrW() - width - 25
 				local y = ScrH()/2 - height
 				draw.RoundedBox( 20, x, y, width , height ,color )
@@ -129,13 +130,17 @@ end
 hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, id, is_item)
 		if id == EQUIP_TLH then
 			ply.TLH = true
+			ply.HasTLH = true
+			net.Start("SetTLH")
+			net.WriteBool(true)
+			net.Send(ply)
 		end
 	end)
 
 if SERVER then
 	function tlhthink()
 		for key,ply in pairs(player.GetAll()) do
-			if ply:HasEquipmentItem(EQUIP_TLH) then
+			if ply.HasTLH then
 				if !ply.TLHInvincible and !ply.TLH then
 					if ply:GetNWInt("TLHTime") < 7 then
 						if CurTime() > ply.tlhtimer then
@@ -189,7 +194,7 @@ if SERVER then
 			end
 	end
 	function TLHOwnerGetsDamage(ent,dmginfo)
-		if ent:IsValid() and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_TLH) and ent.TLHInvincible then
+		if ent:IsValid() and ent:IsPlayer() and ent.HasTLH and ent.TLHInvincible then
 			ent:SetNWInt("TLHShield", ent:GetNWInt("TLHShield",0) - math.Round(dmginfo:GetDamage()))
 			if ent:GetNWInt("TLHShield",0) <= 0 then
 				ent:TLHExhausted()
@@ -228,6 +233,7 @@ local function ResettinTlh()
 	for k,v in pairs(player.GetAll()) do
 		v.TLH = false
 		v.TLHInvincible = false
+		v.HasTLH = false
 		v.tlhtimer = 0
 		v.cdtimer = 0
 		v:SetNWInt("TLHTime", 7)
@@ -236,12 +242,22 @@ local function ResettinTlh()
 end
 
 hook.Add("PlayerDeath", "TLHDeath", function(ply)
+	if ply.HasTLH then
 		ply.TLH = false
 		ply.TLHInvincible = false
+		ply.HasTLH = false
 		ply.tlhtimer = 0
 		ply.cdtimer = 0
 		ply:SetNWInt("TLHTime", 7)
 		ply:SetNWInt("TLHShield", 300)
-	end )
+		net.Start("SetTLH")
+		net.WriteBool(false)
+		net.Send(ply)
+	end
+end )
+
+net.Receive("SetTLH",function()
+	LocalPlayer().HasTLH = net.ReadBool()
+end)
 
 hook.Add( "TTTPrepareRound", "TLHRESET", ResettinTlh )

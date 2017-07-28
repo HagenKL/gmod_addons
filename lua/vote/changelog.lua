@@ -14,6 +14,13 @@ This is the Changelog for Gamefreaks Addons! (Started Documenting 05/26/2017)<br
 This will only get shown once a day! <br>
 It will get updated every time I have time to change something!<br>
 
+<h2>Version 1.1.1 (28/07/2017):</h2>
+
+- Updated Second Chance GUI and modified health and percentages <br>
+- The Little Helper now has a maximum health to block <br>
+- Balanced Several Weapons <br>
+- Optimized Code <br>
+
 <h2>Version 1.1 (26/07/2017):</h2>
 
 - Added new Passive: <b> Deathgrip </b> <br>
