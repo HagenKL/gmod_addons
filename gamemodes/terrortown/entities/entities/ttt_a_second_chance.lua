@@ -106,11 +106,11 @@ if SERVER then
         for k,v in pairs(ply.kills) do
           local victim = player.GetBySteamID(v)
           if (ply:GetTraitor() or (ply.IsEvil and ply:IsEvil())) and ((victim:GetRole() == ROLE_INNOCENT or victim:GetRole() == ROLE_DETECTIVE) or (victim.GetGood and (victim:GetGood() or victim:IsNeutral()))) then
-            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(20,30), 0, 99)
+            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(10,20), 0, 99)
           elseif (ply:GetRole() == ROLE_DETECTIVE or (ply.GetGood and ply:GetGood())) and (victim:GetTraitor() or (victim.IsEvil and (victim:IsEvil() or victim:IsNeutral()))) then
-            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(30,40), 0, 99)
+            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(20,30), 0, 99)
           elseif ply.IsNeutral and ply:IsNeutral() and (victim:GetGood() or victim:GetEvil()) then
-            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(25,30), 0, 99)
+            ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(15,25), 0, 99)
           end
         end
         net.Start("ASCBuyed")
@@ -198,7 +198,6 @@ if SERVER then
   function plymeta:ASCHandleRespawn(corpse)
   if !IsValid(self) then return end
     local body = FindCorpse(self)
-    local temp = self.SecondChanceChance
 
     if !IsValid(body) or body:IsOnFire() then
       if SERVER then
@@ -235,8 +234,6 @@ if SERVER then
     end
 
     self:SetMaxHealth(100)
-    self:SetHealth(temp)
-    timer.Remove("TTTASC" .. self:EntIndex())
     self.ASCCanRespawn = false
     self.ASCTimeLeft = 0
     self.shouldasc = false
