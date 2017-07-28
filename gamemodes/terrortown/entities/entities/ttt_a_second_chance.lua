@@ -367,10 +367,10 @@ if CLIENT then
       chat.PlaySound()
     end)
   net.Receive("ASCRespawn",function()
-      LocalPlayer().ASCCanRespawn = true
-      LocalPlayer().ASCTimeLeft = CurTime() + 10
       local respawn = net.ReadBool()
       if respawn then
+	    LocalPlayer().ASCCanRespawn = true
+		LocalPlayer().ASCTimeLeft = CurTime() + 10
         chat.AddText("SecondChance: ", Color(255,255,255), "Press Reload to spawn at your body. Press Space to spawn at the map spawn." )
       else
         chat.AddText("SecondChance: ", Color(255,255,255), "You will not be revived." )
