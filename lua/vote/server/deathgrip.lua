@@ -101,6 +101,7 @@ end
 local function BreakDeathGrip(ply)
   if ply:GetShinigami() then
     timer.Simple(0.15, function()
+      ply:SetNWBool("body_found", true)
       local corpse = FindCorpse(ply)
       CORPSE.SetFound(corpse, true)
       corpse:Remove()
