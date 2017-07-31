@@ -14,7 +14,7 @@ if SERVER then
 
 	local function AdjustSpeed(ply)
 		if ply:GetShinigami() and ply.ShinigamiRespawned then return 2.5 end
-		if (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
+		if TotemEnabled() and (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) and TTTVote.AnyTotems then
 			local Totem = ply:GetTotem()
 			if IsValid(Totem) then
 				local distance = Totem:GetPos():Distance(ply:GetPos())
@@ -56,9 +56,7 @@ if SERVER then
 		end
 	end
 
-	if TotemEnabled() then
-		hook.Add("Initialize", "TTTTotemOverrideFunction", SpeedOverride)
-	end
+	hook.Add("Initialize", "TTTOverrideSpeedFunction", SpeedOverride)
 	hook.Add("PlayerSay","TTTVote", GetVoteMessage)
 else
 	local function VoteMakeCounter(pnl)
