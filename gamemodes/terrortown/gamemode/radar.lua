@@ -55,6 +55,8 @@ local function RadarScan(ply, cmd, args)
 							-- Detectives/Traitors can see who has their role, but not who
 							-- has the opposite role.
 							role = ROLE_INNOCENT
+					 elseif GetRoleTableByID(role).HideRole then
+					 		role = GetRoleTableByID(role).HideRole
 					 end
 
 					 table.insert(targets, {role=role, pos=pos})

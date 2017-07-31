@@ -15,6 +15,7 @@ local function AddHunter()
 		DefaultMin = "6", -- Default Min Players for Role to be there
 		DefaultCredits = "0", -- Default Credits
 		IsEvilReplacement = true, -- Is Replacement for one traitor
+		HasShop = true,
 		ShopFallBack = true, -- Falls back to normal shop items, eg. all traitor items
 		indicator_mat = Material("vgui/ttt/sprite_hunter"), -- Icon above head
 		winning_team = WIN_TRAITOR, -- the team it wins with, available are "traitors" and "innocent"

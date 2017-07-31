@@ -81,6 +81,13 @@ local function DeathGrip(ply, inflictor, attacker)
     temp:TakeDamageInfo(dmginfo) // kill the other guy
     SendDeathGripMessage()
   end
+  if attacker:GetShinigami() and ply:GetTeam() == WIN_INNOCENT then
+    local dmginfo = DamageInfo()
+    dmginfo:SetDamage(10000)
+    dmginfo:SetAttacker(game.GetWorld())
+    dmginfo:SetDamageType(DMG_GENERIC)
+    attacker:TakeDamageInfo(dmginfo) // kill the other guy
+  end
 end
 
 local function FindCorpse(ply) -- From TTT Ulx Commands, sorry

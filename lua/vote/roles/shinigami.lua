@@ -15,14 +15,15 @@ local function AddShinigami()
 		DefaultMax = "1", -- Default Limit
 		DefaultMin = "4", -- Default Min Players for Role to be there
 		DefaultCredits = "0", -- Default Credits
+		HasShop = false,
 		IsGoodReplacement = false, -- Is Replacement for one traitor
 		ShopFallBack = false, -- Falls back to normal shop items, eg. all traitor items
 		winning_team = WIN_INNOCENT, -- the team it wins with, available are "traitors" and "innocent"
 		drawtargetidcircle = false, -- should draw circle
 		AllowTeamChat = false, -- team chat
 		RepeatingCredits = false,
-    HideRole = ROLE_INNOCENT, -- Hide Role from player
-    Chanceperround = 0.66,
+    	HideRole = ROLE_INNOCENT, -- Hide Role from player
+    	Chanceperround = 0.66
 	}
 	GAMEMODE:AddNewRole("SHINIGAMI", Shinigami)
 end

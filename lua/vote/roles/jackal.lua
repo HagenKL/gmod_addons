@@ -15,6 +15,7 @@ local function AddJackal()
 		DefaultMin = "7", -- Default Min Players for Role to be there
 		DefaultCredits = "3", -- Default Credits
 		IsGoodReplacement = false, -- Is Replacement for one traitor/detective
+		HasShop = true,
 		ShopFallBack = true, -- Falls back to normal shop items, eg. all traitor items
 		--indicator_mat = Material("vgui/ttt/sprite_jackal"), -- Icon above head
 		newteam = true, -- the team it wins with, available are "traitors" and "innocent"

@@ -103,7 +103,8 @@ TTTRoles = TTTRoles or {
     winning_team = WIN_INNOCENT,
     drawtargetidcircle = false,
     AllowTeamChat = false,
-    RepeatingCredits = false
+    RepeatingCredits = false,
+    HasShop = false
   },
   [ROLE_TRAITOR] = {
     ID = ROLE_TRAITOR,
@@ -122,7 +123,8 @@ TTTRoles = TTTRoles or {
     drawtargetidcircle = true,
     targetidcolor = COLOR_RED,
     AllowTeamChat = true,
-    RepeatingCredits = true
+    RepeatingCredits = true,
+    HasShop = true
   },
   [ROLE_DETECTIVE] = {
     ID = ROLE_DETECTIVE,
@@ -141,7 +143,8 @@ TTTRoles = TTTRoles or {
     targetidcolor = COLOR_BLUE,
     AllowTeamChat = true,
     RepeatingCredits = false,
-    ShowRole = true
+    ShowRole = true,
+    HasShop = true
   }
 }
 
