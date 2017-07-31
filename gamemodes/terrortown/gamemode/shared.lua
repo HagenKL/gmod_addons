@@ -184,6 +184,10 @@ function IsRoleDefault(role)
   return GetRoleTableByID(role).IsDefault
 end
 
+function IsRoleSpecial(role)
+  return GetRoleTableByID(role).IsSpecial
+end
+
 function GM:AddNewRole(RoleName,Role)
   local rolestring = "ROLE_" .. RoleName
   if _G[rolestring] then error("Role of name '" .. RoleName .. "' already exists!") return end
