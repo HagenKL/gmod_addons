@@ -15,16 +15,14 @@ if SERVER then
 	resource.AddWorkshop("788891000")
 	util.AddNetworkString( "HNHighNoonSound" )
 	util.AddNetworkString( "HNDrawSound" )
-	util.AddNetworkString( "HNEndSound" )
 	util.AddNetworkString( "HNStartSound" )
 	util.AddNetworkString( "HNOnLockSound" )
-	util.AddNetworkString( "HNChat" )
-	util.AddNetworkString( "HNFailed" )
+	util.AddNetworkString("HighNoonBullet")
 end
 
 //Clientside\\
 if CLIENT then
-	SWEP.PrintName = "The Peacekeeper"
+	SWEP.PrintName = "Peacekeeper"
 	SWEP.Slot = 6
 	SWEP.ViewModelFOV = 54
 	SWEP.ViewModelFlip = false
@@ -35,11 +33,6 @@ if CLIENT then
 		desc = "Its High Noon, I guess you know what to do. \nYou can only use it once. \nUse Right Click to taunt. "
 	}
 
-	net.Receive("ColoredMessage", function(len)
-			local msg = net.ReadTable()
-			chat.AddText(unpack(msg))
-			chat.PlaySound()
-		end)
 end
 
 //Damage\\
@@ -62,7 +55,7 @@ SWEP.AllowDrop = true
 SWEP.IsSilent = false
 SWEP.NoSights = true
 SWEP.UseHands = true
-SWEP.HeadshotMultiplier = 0
+SWEP.HeadshotMultiplier = 1
 SWEP.CanBuy = { ROLE_TRAITOR }
 SWEP.LimitedStock = true
 
@@ -79,11 +72,6 @@ function SWEP:OnRemove()
 end
 
 function SWEP:Initialize()
-	self.highnoonactive = false
-	self.highnoonshooting = false
-	self.canpressattackhighnoon = false
-	self.highnoonshots = 0
-	self.HNTarget = nil
 	util.PrecacheSound("weapons/peacekeeper/highnoon.wav")
 	util.PrecacheSound("weapons/peacekeeper/ult1.wav")
 	util.PrecacheSound("weapons/peacekeeper/ult2.wav")
@@ -100,398 +88,246 @@ function SWEP:Initialize()
 	util.PrecacheSound("weapons/peacekeeper/taunt9.wav")
 end
 
-local highnoontargets = {}
-function SWEP:Think()
-	if GetRoundState() == ROUND_ACTIVE then
-		if self.highnoonover and !self.highnoonshooting then
+function SWEP:SetupDataTables()
+	self:NetworkVar("String","0","HighNoon")
+	return self.BaseClass.SetupDataTables(self)
+end
+
+if SERVER then
+
+
+	function SWEP:PrimaryAttack()
+		if self:GetHighNoon() == "charging" and #self.Owner.highnoontargets > 0 then
+			self:FireHighNoon()
+		elseif (self:GetHighNoon() == "none" or !self:GetHighNoon()) and self:CanPrimaryAttack() then
+			self:StartHighNoon()
+		end
+	end
+
+	function SWEP:SecondaryAttack()
+		if self:GetHighNoon() == "charging" then
+			self:EndHighNoon()
+		elseif !self:HighNoonActive() then
+			self:SetNextSecondaryFire(CurTime() + 3)
+			self.Owner:EmitSound( Sound("weapons/peacekeeper/taunt" .. math.random(1,9) .. ".wav"), 100, 100, 1, CHAN_AUTO)
+		end
+	end
+
+	function SWEP:Think()
+		local owner = self.Owner
+		if self:GetHighNoon() == "starting" and self.HighNoonStart <= CurTime() then
+			self.HighNoonEnd = CurTime() + 7
+			self:SetHighNoon("charging")
+			net.Start("HNHighNoonSound")
+			net.Broadcast()
+		end
+		if self:GetHighNoon() == "charging" and self.HighNoonEnd <= CurTime() then
 			self:EndHighNoon()
 		end
-
-		table.Empty(highnoontargets)
-		local owner = self.Owner
-		for k, v in pairs(player.GetAll()) do
-			if CLIENT and v:IsTerror() and owner:IsLineOfSightClear(v) and v != owner and !v:GetNWBool("highnoonhit") then
-				local pos = v:LocalToWorld(v:OBBCenter()) + Vector(0, 0, 30)
-				pos.x = math.Round(pos.x)
-				pos.y = math.Round(pos.y)
-				pos.z = math.Round(pos.z)
-				v.highnooncirclepos = pos:ToScreen()
-			end
-
-			local pos = v:LocalToWorld(v:OBBCenter()) + Vector(0, 0, 30)
-			v:SetNWBool("highnoonpositionscreen", IsInFOV(owner, pos))
-
-			if v:IsTerror() and #highnoontargets < 6 and owner:IsLineOfSightClear(v) and v != owner and !v:GetNWBool("highnoonhit") and v:GetNWBool("highnoonpositionscreen") and ((isfunction(v.IsFakeDead) and !v:IsFakeDead()) or !isfunction(v.IsFakeDead)) then
-				if owner:IsTraitor() and !v:IsTraitor() and ((v.IsEvil and !v:IsEvil()) or !v.IsEvil) then
-					table.insert(highnoontargets, v)
-				elseif owner.IsEvil and owner:IsEvil() and !v:IsEvil() then
-					table.insert(highnoontargets, v)
-				elseif owner:GetRole() == ROLE_DETECTIVE or owner:GetRole() == ROLE_INNOCENT or (owner.GetGood and owner:GetGood()) then
-					table.insert(highnoontargets, v)
-				elseif owner.IsNeutral and owner:IsNeutral() and !v:IsNeutral() then
-					table.insert(highnoontargets, v)
-				end
-			end
-		end
-
-		self.HNTarget = highnoontargets[1]
-	end
-end
-
-function IsInFOV( ply, targetVec )
-	return ply:GetAimVector():Dot((targetVec - ply:GetPos()):GetNormalized()) > 0.64
-end
-
-function SWEP:Equip(ply)
-	ResettinHighNoon(ply)
-	self.highnoonactive = false
-	self.highnoonshooting = false
-end
-
-function SWEP:Deploy()
-	local ply = self.Owner
-	if !IsValid(ply) or !IsValid(self) or self:GetClass() != "weapon_ttt_peacekeeper" then return end
-	self:SendWeaponAnim(ACT_VM_DRAW)
-	self.canusehighnoon = false
-	self.highnoonactive = false
-	self.highnoonshooting = false
-	ResettinHighNoon(self.Owner)
-
-	timer.Create("dontusehighnoontooearly" .. self.Owner:EntIndex(), 0.75, 1, function()
-			self.canusehighnoon = true
-		end)
-	return self.BaseClass.Deploy(self)
-end
-
-function SWEP:Holster()
-	if self.highnoonactive or self.highnoonshooting then
-		return false
-	end
-	return self.BaseClass.Holster(self)
-end
-
-function SWEP:PreDrop()
-	if IsValid(self.Owner) then
-		if self.highnoonshooting or self.highnoonactive then
-			self:SetClip1(0)
-			self.Owner:Freeze(false)
-			RessetinPlayers(self.Owner)
-		else
-			ResettinHighNoon(self.Owner)
-		end
-	end
-end
-
-function SWEP:OnDrop()
-	self.highnoonactive = false
-	self.highnoonshooting = false
-	self:SetHoldType("pistol")
-	return self.BaseClass.OnDrop(self)
-end
-
-function SWEP:PrimaryAttack()
-	if SERVER then
-		for k, v in pairs(player.GetAll()) do
-			if v != self.Owner and v:GetNWBool("ItsHighNoon") or v:GetNWBool("ItsHighNoonshooting") then
-				net.Start("HNFailed")
-				net.Send(self.Owner)
-
-				return
-			end
-		end
-	end
-	if self.canusehighnoon and GetRoundState() == ROUND_ACTIVE then
-		if self.canpressattackhighnoon and !self.highnoonshooting and !self.highnoonover and self.HNTarget != nil then
-			timer.Remove("highnoondamage")
-			self:HighNoon()
-			self.canpressattackhighnoon = false
-			self.Owner:Freeze(true)
-			self:SetHoldType("revolver")
-			timer.Remove("highnoonisover" .. self.Owner:EntIndex())
-		elseif !self.highnoonactive and !self.canpressattackhighnoon and !self.highnoonshooting then
-			local ply = self.Owner
-			if !IsValid(ply) or !IsValid(self) or self:GetClass() != "weapon_ttt_peacekeeper" then return end
-			if self:Clip1() <= 0 then return end
-			self.Owner:SetNWBool("ItsHighNoon", true)
-			self:SetHoldType("normal")
-			self.Owner:SetNWInt("HighNoonTimeEnd", CurTime() + 7)
-
-			for k, v in pairs(player.GetAll()) do
-				v:SetNWFloat("HighnoonRadius", v:Health() + 10)
-				v:SetNWFloat("HighnoonDamage", 1)
-				v:SetNWBool("highnoonpositionscreen", false)
-
-				timer.Create("MakeHighnoonsound" .. v:EntIndex(), 0.01, 0, function()
-						if v:GetNWBool("IsHighnoonfinished") and SERVER then
-							net.Start("HNOnLockSound")
-							net.Send(ply)
-							timer.Remove("MakeHighnoonsound" .. v:EntIndex())
-						end
-					end)
-			end
-
-			if SERVER then
-				net.Start("HNStartSound")
-				net.Broadcast()
-			end
-			self.highnoonactive = true
-			self.canpressattackhighnoon = false
-			self:SendWeaponAnim(ACT_VM_IDLE_3)
-			self.Owner:SetNWBool("WhiteandBlackHighNoon", true)
-
-			timer.Remove("canusehighnoonnow" .. self.Owner:EntIndex())
-			timer.Remove("highnoonisover" .. self.Owner:EntIndex())
-
-			timer.Create("canusehighnoonnow" .. self.Owner:EntIndex(), 1, 1, function()
-					if self.Owner:GetNWBool("ItsHighNoon") then
-						if IsValid(ply) and IsValid(self) and self:GetClass() == "weapon_ttt_peacekeeper" and ply:Alive() and SERVER then
-							net.Start("HNHighNoonSound")
-							net.Broadcast()
-						end
-
-						self.Owner:SetNWBool("HNBegin", true)
-						self.canpressattackhighnoon = true
-					end
-
-					timer.Create("highnoondamage", 0.02, 0, function()
-							for k, v in pairs(highnoontargets) do
-								if v:IsTerror() and self.Owner:IsLineOfSightClear(v) and v != self.Owner and !v:GetNWBool("highnoonhit") then
-									if v:GetNWFloat("HighnoonRadius") > 10 then
-										v:SetNWFloat("HighnoonRadius", v:GetNWFloat("HighnoonRadius") - 1.25)
-									elseif v:GetNWFloat("HighnoonRadius") <= 10 then
-										v:SetNWFloat("HighnoonRadius", 7)
-										v:SetNWBool("IsHighnoonfinished", true)
-									end
-
-									v:SetNWFloat("HighnoonDamage", v:GetNWFloat("HighnoonDamage") + 1.25)
-								end
-							end
-						end)
-				end)
-
-			timer.Create("highnoonisover" .. self.Owner:EntIndex(), 6, 1, function()
-					if self.Owner:GetNWBool("ItsHighNoon") then
-						self.highnoonover = true
-					end
-				end)
-		end
-	end
-end
-
-function SWEP:HighNoon()
-	local ply = self.Owner
-	if !IsValid(ply) or !IsValid(self) or self:GetClass() != "weapon_ttt_peacekeeper" then return end
-	if self:Clip1() <= 0 then return end
-	self.highnoonactive = false
-	ply:SetNWBool("ItsHighNoon", false)
-	ply:SetNWBool("HNBegin", false)
-	ply:SetNWBool("ItsHighNoonshooting", true)
-	self.highnoonshooting = true
-	self:SetHoldType("pistol")
-
-	timer.Create("drawsound" .. ply:EntIndex(), 0.16, 1, function()
-			if SERVER then
-				net.Start("HNDrawSound")
-				net.Broadcast()
-			end
-		end)
-
-	timer.Create("highnoon" .. ply:EntIndex(), 0.15, 6, function()
-			if !IsValid(ply) or !IsValid(self) or self:GetClass() != "weapon_ttt_peacekeeper" then return end
-			local target = self.HNTarget
-			if target != nil and target:IsPlayer() then
-				self:EmitSound(self.Primary.Sound, 511, 100, 1, CHAN_AUTO)
-				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-
-				timer.Create("secondshootanimation" .. ply:EntIndex(), 0.06, 1, function()
-						self:SendWeaponAnim(ACT_VM_IDLE_4)
-					end)
-
-				local dmg = DamageInfo()
-				dmg:SetDamage(target:GetNWFloat("HighNoonDamage"))
-				dmg:SetAttacker(ply)
-				dmg:SetInflictor(self)
-				dmg:SetDamagePosition(ply:GetPos())
-				dmg:SetDamageType(DMG_BULLET)
-
-				if SERVER then
-					target:TakeDamageInfo(dmg)
-				end
-
-				target:SetNWBool("highnoonhit", true)
-				table.remove(highnoontargets, 1)
-				self:TakePrimaryAmmo(1)
-
-				if self:Clip1() <= 0 or table.Count(highnoontargets) == 0 or GetRoundState() != ROUND_ACTIVE then
-					timer.Create("ResetHighNoon", 0.5, 1, function()
-							if IsValid(ply) and IsValid(self) and self:GetClass() == "weapon_ttt_peacekeeper" and ply:Alive() then
-								self:EndHighNoon()
-								ply:EmitSound(Sound("weapons/peacekeeper/ult" .. math.random(1, 3) .. ".wav"), 100, 100, 1, CHAN_AUTO)
-							end
-						end)
-
-					return
-				end
+		if self:GetHighNoon() == "firing" and self.NextFire <= CurTime() then
+			if #owner.highnoontargets > 0 and self.NextTarget then
+				self.NextFire = CurTime() + 0.2
+				self:FireHighNoonBullet()
 			else
 				self:EndHighNoon()
+				owner:EmitSound(Sound("weapons/peacekeeper/ult" .. math.random(1, 3) .. ".wav"), 100, 100, 1, CHAN_AUTO)
 			end
-		end)
-end
-
-function SWEP:SecondaryAttack()
-	if self.canpressattackhighnoon and !self.highnoonshooting then
-		self:EndHighNoon()
-	elseif !self.highnoonactive and !self.highnoonshooting and self.canusehighnoon then
-		self:SetNextSecondaryFire(CurTime() + 3)
-		self.canusehighnoon = false
-		timer.Simple(0.5, function() self.canusehighnoon = true end)
-		self.Owner:EmitSound( Sound("weapons/peacekeeper/taunt" .. math.random(1,9) .. ".wav"), 100, 100, 1, CHAN_AUTO)
-	end
-end
-
-function SWEP:EndHighNoon()
-	self:SetClip1(0)
-	self.highnoonshooting = false
-	self.highnoonactive = false
-	self.highnoonover = false
-	self.canpressattackhighnoon = false
-	self:SendWeaponAnim(ACT_VM_IDLE_2)
-	self:SetHoldType("pistol")
-	RessetinPlayers(self.Owner)
-	table.Empty(highnoontargets)
-end
-
-function RessetinPlayers(ply)
-	ResettinHighNoon(ply)
-	for k,v in pairs(player.GetAll()) do
-		v:SetNWBool("highnoonhit", false)
-		v:SetNWBool("IsHighnoonfinished", false)
-		v:SetNWBool("highnoonpositionscreen", false)
-		v:SetNWFloat("HighnoonRadius", 100 )
-		v:SetNWFloat("HighnoonDamage", 1 )
-	end
-end
-
-function ResettinHighNoon(ply)
-	timer.Remove("Highnoonlockon" .. ply:EntIndex())
-	timer.Remove("highnoon" .. ply:EntIndex())
-	timer.Remove("highnoon1" .. ply:EntIndex())
-	timer.Remove("dontusehighnoontooearly" .. ply:EntIndex())
-	timer.Remove("Highnoonlockon" .. ply:EntIndex())
-	timer.Remove("secondshootanimation" .. ply:EntIndex())
-	timer.Remove("drawsound" .. ply:EntIndex())
-	timer.Remove("canusehighnoonnow" .. ply:EntIndex())
-	timer.Remove("highnoonisover" .. ply:EntIndex())
-	timer.Remove("MakeHighnoonsound" .. ply:EntIndex())
-	timer.Remove("highnoondamage")
-	ply:SetNWBool("WhiteandBlackHighNoon", false)
-	ply:SetNWBool("ItsHighNoon", false)
-	ply:SetNWBool("ItsHighNoonshooting", false)
-	ply:SetNWBool("HNBegin", false)
-	ply:Freeze(false)
-end
-
-function ResettinHighNoon2()
-	for k,v in pairs(player.GetAll()) do
-		timer.Remove("Highnoonlockon" .. v:EntIndex())
-		timer.Remove("highnoon" .. v:EntIndex())
-		timer.Remove("highnoon1" .. v:EntIndex())
-		timer.Remove("dontusehighnoontooearly" .. v:EntIndex())
-		timer.Remove("Highnoonlockon" .. v:EntIndex())
-		timer.Remove("secondshootanimation" .. v:EntIndex())
-		timer.Remove("drawsound" .. v:EntIndex())
-		timer.Remove("canusehighnoonnow" .. v:EntIndex())
-		timer.Remove("highnoonisover" .. v:EntIndex())
-		timer.Remove("MakeHighnoonsound" .. v:EntIndex())
-		timer.Remove("highnoondamage")
-		v:SetNWBool("WhiteandBlackHighNoon", false)
-		v:SetNWBool("ItsHighNoon", false)
-		v:SetNWBool("ItsHighNoonshooting", false)
-		v:SetNWBool("IsHighnoonfinished", false)
-		v:SetNWBool("highnoonpositionscreen", false)
-		v:SetNWBool("highnoonhit", false)
-		v:SetNWFloat("HighnoonRadius", 100 )
-		v:SetNWFloat("HighnoonDamage", 1 )
-		v:SetNWBool("HNBegin", false)
-		v.highnoonpositionscreen = false
-	end
-end
-
-hook.Add("TTTPlayerSpeed", "HighnoonSpeed" , function(ply)
-		local w = ply:GetActiveWeapon()
-		if w and IsValid(w) and w.highnoonactive and w:GetClass() == "weapon_ttt_peacekeeper" then
-			return 0.2
 		end
-	end )
-
-hook.Add("TTTPrepareRound", "HighNoonReset", ResettinHighNoon2)
-
-hook.Add( "PlayerDeath", "Highnoondead", function(ply)
-		ply:SetNWBool("WhiteandBlackHighNoon", false)
-		ply:SetNWBool("ItsHighNoon", false)
-		ply:SetNWBool("ItsHighNoonshooting", false)
-		ply:SetNWBool("IsHighnoonfinished", false)
-		ply:SetNWBool("highnoonpositionscreen", false)
-		ply:SetNWBool("HNBegin", false)
-		ply:Freeze(false)
-		ply:SetNWBool("highnoonhit", false)
-		ply:SetNWBool("IsHighnoonfinished", false)
-		ply:SetNWBool("highnoonpositionscreen", false)
-		ply:SetNWFloat("HighnoonRadius", 100 )
-		ply:SetNWFloat("HighnoonDamage", 1 )
-	end )
-
-hook.Add("EntityTakeDamage", "HighNoonLife", function(target, dmg)
-		if target:GetNWBool("highnoonpositionscreen") then
-			local damage = dmg:GetDamage()
-			target:SetNWFloat("HighnoonRadius", target:GetNWFloat("HighnoonRadius") - math.Round(damage) )
-		end
-	end )
-
-if CLIENT then
-	net.Receive("HNFailed", function()
-			chat.AddText("Peacekeeper: ", COLOR_WHITE, "Well, it's high noon somewhere else in the world, you sadly can´t use your Highnoon now.")
-			chat.PlaySound()
-		end)
-
-	net.Receive("HNChat", function()
-			chat.AddText("Peacekeeper: ", Color(255,255,255), net.ReadEntity():Nick() .. ", the gunslinger, is searching for duellists!")
-			chat.PlaySound()
-		end)
-
-	net.Receive("HNStartSound", function()
-			surface.PlaySound("weapons/peacekeeper/begin.wav")
-		end)
-	net.Receive("HNHighNoonSound", function()
-			surface.PlaySound("weapons/peacekeeper/highnoon.wav")
-		end)
-	net.Receive("HNDrawSound", function()
-			surface.PlaySound("weapons/peacekeeper/draw.wav")
-		end)
-	net.Receive("HNOnLockSound", function()
-			surface.PlaySound("weapons/peacekeeper/deadeyelockedon.wav")
-		end)
-
-	local Deadeyeicon = Material( "materials/VGUI/ttt/deadeye.png" )
-	function MakeAHighNoonCircle()
-		if LocalPlayer():GetNWBool("HNBegin") and LocalPlayer():Alive() and GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
-			for k, v in pairs(highnoontargets) do
-				if IsValid(v) then
-					surface.DrawCircle(v.highnooncirclepos.x, v.highnooncirclepos.y, v:GetNWFloat("HighnoonRadius") + 5, Color(255, 1, 1, 255))
-
-					if v:GetNWBool("IsHighnoonfinished") then
-						surface.SetMaterial(Deadeyeicon)
-						surface.DrawTexturedRect(v.highnooncirclepos.x - 10, v.highnooncirclepos.y - 10, 20, 20)
+		self.hntimer = self.hntimer or 0
+		if self:GetHighNoon() == "charging" and self.hntimer <= CurTime() then
+			self.hntimer = CurTime() + 0.03
+			for k,ply in pairs(util.GetAlivePlayers()) do
+				if ply != owner then
+					local wasinfov = ply:GetNWBool("HighNoonFOV" .. self:EntIndex())
+					if wasinfov and !IsInFOV(owner, ply) then
+						ply:SetNWBool("HighNoonFOV" .. self:EntIndex(), false)
+						table.RemoveByValue(owner.highnoontargets, ply)
+						continue
+					end
+					if wasinfov and IsInFOV(owner, ply) then
+						ply:SetNWInt("HighNoonCharged" .. self:EntIndex(), ply:GetNWInt("HighNoonCharged" .. self:EntIndex(),0) + 2)
+					end
+					if #owner.highnoontargets >= 6 then
+						continue
+					end
+					if !wasinfov and IsInFOV(owner, ply) then
+						if (owner:GetRole() == ROLE_INNOCENT or owner:GetRole() == ROLE_DETECTIVE or (owner.GetGood and owner:GetGood())) or (owner:IsTraitor() and !ply:IsTraitor() and ((ply.IsEvil and !ply:IsEvil()) or !ply.IsEvil)) or (owner.IsEvil and owner:IsEvil() and !ply:IsEvil()) or (owner.IsNeutral and owner:IsNeutral() and !ply:IsNeutral())  then
+							table.insert(owner.highnoontargets, ply)
+							ply:SetNWBool("HighNoonFOV" .. self:EntIndex(), true)
+						end
 					end
 				end
 			end
+		end
+		return self.BaseClass.Think(self)
+	end
 
-			draw.SimpleText(math.Round(LocalPlayer():GetNWInt("HighNoonTimeEnd") - CurTime()), "TargetID", ScrW() / 2, ScrH() / 2 - 50, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	function SWEP:StartHighNoon()
+		local owner = self.Owner
+		self:SetHoldType("normal")
+		self:SetHighNoon("starting")
+		self.HighNoonStart = CurTime() + 1
+		self:SendWeaponAnim(ACT_VM_IDLE_3)
+		net.Start("HNStartSound")
+		net.Broadcast()
+	end
+
+	function SWEP:FireHighNoon()
+		local owner = self.Owner
+		self:SetHoldType("revolver")
+		self:SetHighNoon("firing")
+		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+		self.NextFire = CurTime() + 0.1
+		self.NextTarget = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
+		owner:Freeze(true)
+		net.Start("HNDrawSound")
+		net.Broadcast()
+	end
+
+	function SWEP:FireHighNoonBullet()
+		local owner = self.Owner
+
+		local ply = self.NextTarget
+		local dir = ((ply:GetPos() + Vector(0,0,50)) - owner:GetShootPos() ):GetNormalized()
+
+		net.Start("HighNoonBullet")
+		net.WriteInt(ply:GetNWInt("HighNoonCharged" .. self:EntIndex()),8)
+		net.WriteVector(dir)
+		net.Send(owner)
+
+		local bullet = {}
+		bullet.Num    = 1
+		bullet.Src    = owner:GetShootPos()
+		bullet.Dir    = dir
+		bullet.Spread = Vector(0.001,0.001,0)
+		bullet.Force  = 10
+		bullet.Damage = ply:GetNWInt("HighNoonCharged" .. self:EntIndex())
+
+		self.Owner:EmitSound(self.Primary.Sound, 511, 100, 1, CHAN_AUTO)
+		self.Owner:FireBullets( bullet )
+		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+
+		timer.Simple(0.08, function() if IsValid(self) then self:SendWeaponAnim(ACT_VM_IDLE_4) end end)
+
+		table.RemoveByValue(owner.highnoontargets, ply)
+		self.NextTarget = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
+	end
+
+	function SWEP:EndHighNoon()
+		local owner = self.Owner
+		self:SetHoldType("pistol")
+		self:SetHighNoon("none")
+		owner:Freeze(false)
+		self:ResetPlayers()
+		self:SendWeaponAnim(ACT_VM_IDLE_2)
+		self:SetClip1(0)
+	end
+
+	function SWEP:ResetPlayers()
+		for k,ply in pairs(player.GetAll()) do
+			ply:SetNWBool("HighNoonFOV" .. self:EntIndex(), false)
+			ply:SetNWInt("HighNoonCharged" .. self:EntIndex(), 0)
 		end
 	end
 
-	hook.Add("RenderScreenspaceEffects", "BlackandWhite", function()
-		if LocalPlayer():GetNWBool("WhiteandBlackHighNoon") and LocalPlayer():Alive() and GetRoundState() == ROUND_ACTIVE and LocalPlayer():IsTerror() then
+	function SWEP:Deploy()
+		self:ResetPlayers()
+		self:SetHighNoon("none")
+		self.Owner.highnoontargets = {}
+		return self.BaseClass.Deploy(self)
+	end
+
+	function SWEP:PreDrop()
+		if self:HighNoonActive() then
+			self:EndHighNoon()
+			self:SetClip1(0)
+		end
+		return self.BaseClass.PreDrop(self)
+	end
+
+	function SWEP:Reload() end
+
+	local function HighNoonSpeed(ply)
+		local w = ply:GetActiveWeapon()
+		if w and IsValid(w) and w:GetClass() == "weapon_ttt_peacekeeper" and w:HighNoonActive() then
+			return 0.2
+		end
+	end
+
+	local function HighNoonDamage(ply, hitgroup, dmginfo)
+		local wep = util.WeaponFromDamage(dmginfo)
+		if wep:GetClass() == "weapon_ttt_peacekeeper" then
+			if ply:HasEquipmentItem(EQUIP_ARMOR) then
+				dmginfo:ScaleDamage(1.43)
+			end
+			if (hitgroup == HITGROUP_LEFTARM or
+           		hitgroup == HITGROUP_RIGHTARM or
+           		hitgroup == HITGROUP_LEFTLEG or
+           		hitgroup == HITGROUP_RIGHTLEG or
+           		hitgroup == HITGROUP_GEAR ) then
+
+				dmginfo:ScaleDamage(1.81)
+			end
+			print(dmginfo:GetDamage())
+		end
+	end
+
+	hook.Add("TTTPlayerSpeed", "HighnoonSpeed" , HighNoonSpeed)
+	hook.Add("ScalePlayerDamage", "HighNoonDamage", HighNoonDamage)
+
+elseif CLIENT then
+
+	function SWEP:PrimaryAttack() end
+	function SWEP:SecondaryAttack() end
+	function SWEP:Reload() end
+
+	local Deadeyeicon = Material( "materials/VGUI/ttt/deadeye.png" )
+	local function HighNoonHUD()
+		local wep = LocalPlayer():GetActiveWeapon()
+		if IsValid(wep) and wep:GetClass() == "weapon_ttt_peacekeeper" and wep:GetHighNoon() == "charging" then
+			for k,v in pairs(util.GetAlivePlayers()) do
+				if v:IsTerror() and v:GetNWBool("HighNoonFOV" .. wep:EntIndex(), false) then
+					local pos = (v:GetPos() + Vector(0,0,50)):ToScreen()
+					local charge = v:GetNWInt("HighNoonCharged" .. wep:EntIndex(),0)
+					local health = v:Health()
+					local radius = math.Clamp(math.Remap(health - charge, 0, health, 12, 150),12,150)
+					surface.DrawCircle(pos.x, pos.y, radius, Color(255, 1, 1, 255))
+					if radius <= 12 then
+						surface.SetMaterial(Deadeyeicon)
+						surface.DrawTexturedRect(pos.x - 10, pos.y - 10, 20, 20)
+						if !v.LockedOn then
+							v.LockedOn = true
+							surface.PlaySound("weapons/peacekeeper/deadeyelockedon.wav")
+						end
+					end
+				end
+			end
+		elseif IsValid(wep) and ((wep:GetClass() == "weapon_ttt_peacekeeper" and wep:GetHighNoon() != "charging") or wep:GetClass() != "weapon_ttt_peacekeeper") then
+			for k,v in pairs(player.GetAll()) do
+				v.LockedOn = false
+			end
+		end
+	end
+
+	local function HighNoonBullet()
+		local damage = net.ReadInt(8)
+		local dir = net.ReadVector()
+
+		local bullet = {}
+		bullet.Num    = 1
+		bullet.Src    = LocalPlayer():GetShootPos()
+		bullet.Dir    = dir
+		bullet.Spread = Vector(0.001,0.001,0)
+		bullet.Force  = 10
+		bullet.Damage = damage
+
+		LocalPlayer():FireBullets( bullet )
+
+	end
+
+	function BlackandWhiteHighNoon()
+		local wep = LocalPlayer():GetActiveWeapon()
+		if IsValid(wep) and wep:GetClass() == "weapon_ttt_peacekeeper" and wep:HighNoonActive() then
 			local tbl = {
 				["$pp_colour_addr"] = 0,
 				["$pp_colour_addg"] = 0,
@@ -506,8 +342,47 @@ if CLIENT then
 
 			DrawColorModify(tbl)
 		end
-	end)
+	end
 
-	hook.Add("HUDPaint", "HighNoonCircles", MakeAHighNoonCircle)
 
+	hook.Add("RenderScreenspaceEffects", "BlackandWhiteHighNoon", BlackandWhiteHighNoon )
+	hook.Add("HUDPaint", "TTTHighNoon", HighNoonHUD)
+	net.Receive("HighNoonBullet", HighNoonBullet)
+
+	net.Receive("HNStartSound", function()
+			surface.PlaySound("weapons/peacekeeper/begin.wav")
+		end)
+	net.Receive("HNHighNoonSound", function()
+			surface.PlaySound("weapons/peacekeeper/highnoon.wav")
+		end)
+	net.Receive("HNDrawSound", function()
+			surface.PlaySound("weapons/peacekeeper/draw.wav")
+		end)
+end
+
+function SWEP:HighNoonActive()
+	return (self:GetHighNoon() == "charging" or self:GetHighNoon() == "firing" or self:GetHighNoon() == "starting")
+end
+
+function IsInFOV( ply, target )
+	local inFOV = ply:GetAimVector():Dot(((target:GetPos() + Vector(0,0,50)) - ply:GetShootPos()):GetNormalized()) > 0.52
+	local tr = util.TraceHull({
+		start = ply:GetShootPos(),
+		endpos = target:GetPos()  + Vector(0,0,50),
+		filter = function(ent)
+			if ent:IsPlayer() and ent != target then
+				return false
+			end
+			return true
+		end,
+		mask = MASK_SHOT_HULL
+	})
+	return tr.Entity == target and inFOV
+end
+
+function SWEP:Holster()
+	if self:HighNoonActive() then
+		return false
+	end
+	return self.BaseClass.Holster(self)
 end
