@@ -16,7 +16,6 @@ if SERVER then
 	util.AddNetworkString( "HNHighNoonSound" )
 	util.AddNetworkString( "HNDrawSound" )
 	util.AddNetworkString( "HNStartSound" )
-	util.AddNetworkString( "HNOnLockSound" )
 	util.AddNetworkString("HighNoonBullet")
 end
 
@@ -88,6 +87,43 @@ function SWEP:Initialize()
 	util.PrecacheSound("weapons/peacekeeper/taunt9.wav")
 end
 
+local function IsInFOV( ply, target )
+	local inFOV = ply:GetAimVector():Dot(((target:GetPos() + Vector(0,0,50)) - ply:GetShootPos()):GetNormalized()) > 0.52
+	local los = ply:IsLineOfSightClear(target:GetPos() + Vector(0,0,50))
+	if inFOV and los then
+		local kmins = Vector(1,1,1) * -5
+		local kmaxs = Vector(1,1,1) * 5
+		local tr = util.TraceHull({
+			start = ply:GetShootPos(),
+			endpos = target:GetPos()  + Vector(0,0,50),
+			filter = function(ent)
+				if (ent:IsPlayer() and ent != target) or ent:IsWeapon() or string.sub( ent:GetClass(), 1, 5 ) == "item_" then
+					return false
+				end
+				return true
+			end,
+			mask = MASK_SHOT_HULL,
+			mins=kmins, 
+			maxs=kmaxs
+		})
+		if !tr.Entity:IsPlayer() then
+			local tr = util.TraceLine({
+				start = ply:GetShootPos(),
+				endpos = target:GetPos()  + Vector(0,0,50),
+				filter = function(ent)
+					if (ent:IsPlayer() and ent != target) or ent:IsWeapon() or string.sub( ent:GetClass(), 1, 5 ) == "item_" then
+						return false
+					end
+					return true
+				end,
+				mask = MASK_SHOT_HULL
+			})
+		end
+		return tr.Entity == target
+	end
+	return false
+end
+
 function SWEP:SetupDataTables()
 	self:NetworkVar("String","0","HighNoon")
 	return self.BaseClass.SetupDataTables(self)
@@ -125,7 +161,7 @@ if SERVER then
 			self:EndHighNoon()
 		end
 		if self:GetHighNoon() == "firing" and self.NextFire <= CurTime() then
-			if #owner.highnoontargets > 0 and self.NextTarget then
+			if #owner.highnoontargets > 0 then
 				self.NextFire = CurTime() + 0.2
 				self:FireHighNoonBullet()
 			else
@@ -135,7 +171,7 @@ if SERVER then
 		end
 		self.hntimer = self.hntimer or 0
 		if self:GetHighNoon() == "charging" and self.hntimer <= CurTime() then
-			self.hntimer = CurTime() + 0.03
+			self.hntimer = CurTime() + 0.06
 			for k,ply in pairs(util.GetAlivePlayers()) do
 				if ply != owner then
 					local wasinfov = ply:GetNWBool("HighNoonFOV" .. self:EntIndex())
@@ -145,7 +181,7 @@ if SERVER then
 						continue
 					end
 					if wasinfov and IsInFOV(owner, ply) then
-						ply:SetNWInt("HighNoonCharged" .. self:EntIndex(), ply:GetNWInt("HighNoonCharged" .. self:EntIndex(),0) + 2)
+						ply:SetNWInt("HighNoonCharged" .. self:EntIndex(), ply:GetNWInt("HighNoonCharged" .. self:EntIndex(),0) + 4)
 					end
 					if #owner.highnoontargets >= 6 then
 						continue
@@ -178,7 +214,6 @@ if SERVER then
 		self:SetHighNoon("firing")
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.NextFire = CurTime() + 0.1
-		self.NextTarget = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
 		owner:Freeze(true)
 		net.Start("HNDrawSound")
 		net.Broadcast()
@@ -187,7 +222,7 @@ if SERVER then
 	function SWEP:FireHighNoonBullet()
 		local owner = self.Owner
 
-		local ply = self.NextTarget
+		local ply = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
 		local dir = ((ply:GetPos() + Vector(0,0,50)) - owner:GetShootPos() ):GetNormalized()
 
 		net.Start("HighNoonBullet")
@@ -202,15 +237,30 @@ if SERVER then
 		bullet.Spread = Vector(0.001,0.001,0)
 		bullet.Force  = 10
 		bullet.Damage = ply:GetNWInt("HighNoonCharged" .. self:EntIndex())
+		bullet.Callback = function(attacker,tr,dmginfo)
+			if !tr.Entity:IsPlayer() then
+				ply.DelayedDamage = true
+			end
+		end
 
 		self.Owner:EmitSound(self.Primary.Sound, 511, 100, 1, CHAN_AUTO)
 		self.Owner:FireBullets( bullet )
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 
+		if ply:IsTerror() and ply.DelayedDamage then
+			local dmg = DamageInfo()
+			dmg:SetDamage(ply:GetNWInt("HighNoonCharged" .. self:EntIndex()))
+			dmg:SetInflictor(self)
+			dmg:SetAttacker(self.Owner)
+			dmg:SetDamagePosition(ply:GetPos())
+			ply:TakeDamageInfo(dmg)
+		end
+
+		ply.DelayedDamge = false
+
 		timer.Simple(0.08, function() if IsValid(self) then self:SendWeaponAnim(ACT_VM_IDLE_4) end end)
 
 		table.RemoveByValue(owner.highnoontargets, ply)
-		self.NextTarget = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
 	end
 
 	function SWEP:EndHighNoon()
@@ -268,7 +318,6 @@ if SERVER then
 
 				dmginfo:ScaleDamage(1.81)
 			end
-			print(dmginfo:GetDamage())
 		end
 	end
 
@@ -302,9 +351,11 @@ elseif CLIENT then
 					end
 				end
 			end
-		elseif IsValid(wep) and ((wep:GetClass() == "weapon_ttt_peacekeeper" and wep:GetHighNoon() != "charging") or wep:GetClass() != "weapon_ttt_peacekeeper") then
+		else
 			for k,v in pairs(player.GetAll()) do
-				v.LockedOn = false
+				if v.LockedOn then
+					v.LockedOn = false
+				end
 			end
 		end
 	end
@@ -362,22 +413,6 @@ end
 
 function SWEP:HighNoonActive()
 	return (self:GetHighNoon() == "charging" or self:GetHighNoon() == "firing" or self:GetHighNoon() == "starting")
-end
-
-function IsInFOV( ply, target )
-	local inFOV = ply:GetAimVector():Dot(((target:GetPos() + Vector(0,0,50)) - ply:GetShootPos()):GetNormalized()) > 0.52
-	local tr = util.TraceHull({
-		start = ply:GetShootPos(),
-		endpos = target:GetPos()  + Vector(0,0,50),
-		filter = function(ent)
-			if ent:IsPlayer() and ent != target then
-				return false
-			end
-			return true
-		end,
-		mask = MASK_SHOT_HULL
-	})
-	return tr.Entity == target and inFOV
 end
 
 function SWEP:Holster()
