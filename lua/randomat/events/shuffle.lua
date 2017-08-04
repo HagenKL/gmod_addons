@@ -17,4 +17,4 @@ function EVENT:Begin()
 	end
 end
 
-Randomat:register("shuffle", EVENT)
+//Randomat:register("shuffle", EVENT)
