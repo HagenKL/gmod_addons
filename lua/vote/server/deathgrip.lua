@@ -81,7 +81,7 @@ local function DeathGrip(ply, inflictor, attacker)
     temp:TakeDamageInfo(dmginfo) // kill the other guy
     SendDeathGripMessage()
   end
-  if attacker:IsPlayer() and attacker:GetShinigami() and ply:GetTeam() == WIN_INNOCENT then
+  if attacker:IsPlayer() and attacker:GetShinigami() and attacker.ShinigamiRespawned and ply:GetGood() then
     local dmginfo = DamageInfo()
     dmginfo:SetDamage(10000)
     dmginfo:SetAttacker(game.GetWorld())

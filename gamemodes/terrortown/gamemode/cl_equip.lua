@@ -32,7 +32,7 @@ function GetEquipmentForRole(role)
             };
 
             -- Force material to nil so that model key is used when we are
-            -- explicitly told to do so (ie. material is false rather than nil).
+            -- explicitly told to do so (ie. material is false rather than nil). 
             if data.modelicon then
                base.material = nil
             end
