@@ -244,7 +244,6 @@ if SERVER then
 		bullet.Force  = 10
 		bullet.Damage = ply:GetNWInt("HighNoonCharged" .. self:EntIndex())
 		bullet.Callback = function(attacker,tr,dmginfo)
-			print(tr.Entity, tr.Hit)
 			if !tr.Entity:IsPlayer() then
 				ply.DelayedDamage = true
 			end
@@ -255,7 +254,6 @@ if SERVER then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 
 		if ply:IsTerror() and ply.DelayedDamage then
-			print(ply)
 			local dmg = DamageInfo()
 			dmg:SetDamage(ply:GetNWInt("HighNoonCharged" .. self:EntIndex()))
 			dmg:SetInflictor(self)
