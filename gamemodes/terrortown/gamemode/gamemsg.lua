@@ -168,7 +168,7 @@ function GM:PlayerSay(ply, text, team_only)
 
          table.insert(filtered, 1, "[MUMBLED]")
          return table.concat(filtered, " ")
-      elseif team_only and not team and ply:IsSpecial() then
+      elseif team_only and not team and ply:IsSpecial() and ply:GetRoleTable().AllowTeamChat then
 	     RoleChatMsg(ply, ply:GetRole(), text)
 		 return ""
       end

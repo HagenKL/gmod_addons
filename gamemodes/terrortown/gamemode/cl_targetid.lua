@@ -45,7 +45,7 @@ function GM:PostDrawTranslucentRenderables()
 
       for i=1, #plys do
          ply = plys[i]
-         local indicator_mat = ply:GetRoleTable().indicator_mat
+         local indicator_mat = ply:GetRoleTable() and ply:GetRoleTable().indicator_mat
          if ply:GetTeam() == client:GetTeam() and ply:IsTerror() and ply != client and indicator_mat then
             render.SetMaterial(indicator_mat)
             pos = ply:GetPos()

@@ -19,7 +19,7 @@ local function RadarScan(ply, cmd, args)
 
 			local targets
 			local customradar
-			if ply:GetRoleTable().CustomRadar then
+			if ply:GetRoleTable() and ply:GetRoleTable().CustomRadar then
 				customradar = ply:GetRoleTable().CustomRadar(ply)
 			end
 			if istable(customradar) then
