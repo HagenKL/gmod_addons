@@ -179,7 +179,7 @@ function RADAR:Draw(client)
 
       role = tgt.role or ROLE_INNOCENT
 
-      local color = GetRoleTableByID(role) and GetRoleTableByID(role).DefaultColor
+      local color = GetRoleTableByID(role).DefaultColor
       if color then
          surface.SetDrawColor(color, alpha)
          surface.SetTextColor(color, alpha)

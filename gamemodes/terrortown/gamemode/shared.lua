@@ -235,7 +235,7 @@ function GetRoleTableByID(ID)
       return v
     end
   end
-  return false
+  return TTTRoles[ROLE_INNOCENT]
 end
 
 function GetTeamTableByID(ID)
@@ -244,7 +244,7 @@ function GetTeamTableByID(ID)
       return v
     end
   end
-  return false
+  return TTTRoles[ROLE_INNOCENT]
 end
 
 function GetRoleTableByTeam(team)
@@ -253,7 +253,7 @@ function GetRoleTableByTeam(team)
       return v
     end
   end
-  return false
+  return TTTRoles[ROLE_INNOCENT]
 end
 
 function GetRoleTableByString(str)
@@ -262,7 +262,7 @@ function GetRoleTableByString(str)
       return v
     end
   end
-  return false
+  return TTTRoles[ROLE_INNOCENT]
 end
 
 -- Everyone's model

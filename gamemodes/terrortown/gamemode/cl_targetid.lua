@@ -45,7 +45,7 @@ function GM:PostDrawTranslucentRenderables()
 
       for i=1, #plys do
          ply = plys[i]
-         local indicator_mat = ply:GetRoleTable() and ply:GetRoleTable().indicator_mat
+         local indicator_mat = ply:GetRoleTable().indicator_mat
          if ply:GetTeam() == client:GetTeam() and ply:IsTerror() and ply != client and indicator_mat then
             render.SetMaterial(indicator_mat)
             pos = ply:GetPos()
@@ -170,7 +170,7 @@ function GM:HUDDrawTargetID()
    local cls = ent:GetClass()
    local minimal = minimalist:GetBool()
    local hint = (not minimal) and (ent.TargetIDHint or ClassHint[cls])
-   local roletbl = ent:IsPlayer() and ent:GetRoleTable() and ent:GetRoleTable()
+   local roletbl = ent:IsPlayer() and ent:GetRoleTable()
 
    if ent:IsPlayer() then
       if ent:GetNWBool("disguised", false) then
@@ -200,7 +200,7 @@ function GM:HUDDrawTargetID()
       end
 
 
-      if roletbl and roletbl.drawtargetidcircle then
+      if roletbl.drawtargetidcircle then
          target[roletbl.String] = true
       end
 
@@ -232,7 +232,7 @@ function GM:HUDDrawTargetID()
 
    if ent:IsPlayer() then
       for k,v in pairs(target) do
-         if v and roletbl and roletbl.drawtargetidcircle then
+         if v and roletbl.drawtargetidcircle then
             surface.SetTexture(ring_tex)
             local col = roletbl.DefaultColor
             surface.SetDrawColor(Color(col.r,col.g,col.b,200))
@@ -327,7 +327,7 @@ function GM:HUDDrawTargetID()
 
    if ent:IsPlayer() then
       for k,v in pairs(target) do
-         if v and k != "corpse" and roletbl then
+         if v and k != "corpse" then
             text = L["target_" .. roletbl.String]
             clr = roletbl.DefaultColor
          end
