@@ -200,7 +200,7 @@ function GM:HUDDrawTargetID()
       end
 
 
-      if roletbl.drawtargetidcircle then
+      if roletbl and roletbl.drawtargetidcircle then
          target[roletbl.String] = true
       end
 
@@ -232,7 +232,7 @@ function GM:HUDDrawTargetID()
 
    if ent:IsPlayer() then
       for k,v in pairs(target) do
-         if v and roletbl.drawtargetidcircle then
+         if v and roletbl and roletbl.drawtargetidcircle then
             surface.SetTexture(ring_tex)
             local col = roletbl.DefaultColor
             surface.SetDrawColor(Color(col.r,col.g,col.b,200))
@@ -327,7 +327,7 @@ function GM:HUDDrawTargetID()
 
    if ent:IsPlayer() then
       for k,v in pairs(target) do
-         if v and k != "corpse" then
+         if v and k != "corpse" and roletbl then
             text = L["target_" .. roletbl.String]
             clr = roletbl.DefaultColor
          end
