@@ -99,7 +99,7 @@ local function FindCorpse(ply) -- From TTT Ulx Commands, sorry
 end
 
 local function BreakDeathGrip(ply)
-  if ply:GetShinigami() then
+  if ply:GetShinigami() and (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) then
     timer.Simple(0.15, function()
       ply:SetNWBool("body_found", true)
       local corpse = FindCorpse(ply)
@@ -107,14 +107,14 @@ local function BreakDeathGrip(ply)
       corpse:Remove()
     end)
     if !ply.ShinigamiRespawned then
-      SendShinigamiInfo(ply)
-      ply:SpawnForRound(true)
       timer.Simple(0.15, function()
+        ply:SpawnForRound(true)
+        SendShinigamiInfo(ply)
+        ply.ShinigamiRespawned = true
+        ply.ShiniDamage = 1
         ply:Give("weapon_ttt_shinigamiknife")
         ply:SelectWeapon("weapon_ttt_shinigamiknife")
       end)
-      ply.ShinigamiRespawned = true
-      ply.ShiniDamage = 1
       return
     end
   end
@@ -153,7 +153,7 @@ local function TTTRemoveDeathGrip(ply)
 end
 
 local function TTTSetShinigami(ply)
-  if ply:GetShinigami() then
+  if ply:GetShinigami() and (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) then
     if ply.ShinigamiRespawned then
       ply.ShinigamiRespawned = false
     end

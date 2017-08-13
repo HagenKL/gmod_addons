@@ -22,7 +22,16 @@ local function AddShinigami()
 		drawtargetidcircle = false, -- should draw circle
 		AllowTeamChat = false, -- team chat
 		RepeatingCredits = false,
-    	HideRole = ROLE_INNOCENT, -- Hide Role from player
+    	HideRole = function(ply)
+    		if ply.ShinigamiRespawned then
+    			return ROLE_SHINIGAMI
+    		else
+    			return ROLE_INNOCENT
+    		end
+    	end, -- Hide Role from player
+    	ShowRole = function(ply)
+    		return ply.ShinigamiRespawned
+    	end,
     	Chanceperround = 0.66
 	}
 	GAMEMODE:AddNewRole("SHINIGAMI", Shinigami)

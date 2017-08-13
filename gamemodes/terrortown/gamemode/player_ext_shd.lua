@@ -52,6 +52,10 @@ function plymeta:GetTeam()
   return false
 end
 
+function plymeta:IsPartOfTeam(team)
+  return GetRoleTableByTeam(self.winning_team).winning_team == self:GetRoleTable().winning_team
+end
+
 plymeta.IsTraitor = plymeta.GetTraitor
 plymeta.IsDetective = plymeta.GetDetective
 

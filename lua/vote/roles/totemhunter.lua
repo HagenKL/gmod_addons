@@ -16,30 +16,30 @@ local function AddHunter()
 		DefaultCredits = "0", -- Default Credits
 		IsEvilReplacement = true, -- Is Replacement for one traitor
 		HasShop = true,
-		ShopFallBack = true, -- Falls back to normal shop items, eg. all traitor items
+		ShopFallBack = ROLE_TRAITOR, -- Falls back to normal shop items, eg. all traitor items
 		indicator_mat = Material("vgui/ttt/sprite_hunter"), -- Icon above head
 		winning_team = WIN_TRAITOR, -- the team it wins with, available are "traitors" and "innocent"
 		drawtargetidcircle = true, -- should draw circle
 		AllowTeamChat = true, -- team chat
 		RepeatingCredits = false,
 		DefaultEquip = EQUIP_RADAR,
-    DefaultWeapon = "weapon_ttt_totemknife",
-    CustomRadar = function(ply) -- Custom Radar function
+	    DefaultWeapon = "weapon_ttt_totemknife",
+	    CustomRadar = function(ply) -- Custom Radar function
 			if TTTVote.AnyTotems then
 				local targets = {}
-	      local scan_ents = ents.FindByClass("ttt_totem")
-	      for k,t in pairs(scan_ents) do
-	        local pos = t:LocalToWorld(t:OBBCenter())
+		    	local scan_ents = ents.FindByClass("ttt_totem")
+		    	for k,t in pairs(scan_ents) do
+		    	    local pos = t:LocalToWorld(t:OBBCenter())
 
-	        pos.x = math.Round(pos.x)
-	        pos.y = math.Round(pos.y)
-	        pos.z = math.Round(pos.z) - 100
-	
-	        local owner = t:GetOwner()
-	        if owner != ply and !owner:IsEvil() then
-	          table.insert(targets, {role= 16, pos=pos})
-	        end
-	      end
+		        	pos.x = math.Round(pos.x)
+		        	pos.y = math.Round(pos.y)
+		        	pos.z = math.Round(pos.z) - 100
+		
+		        	local owner = t:GetOwner()
+		        	if owner != ply and !owner:IsEvil() then
+		          	table.insert(targets, {role= 16, pos=pos})
+		        	end
+		      	end
 				return targets
 			else
 				return false

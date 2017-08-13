@@ -111,7 +111,7 @@ function GetEquipmentItem(role, id)
    if GetRoleTableByID(role).IsDefault then
       tbl = EquipmentItems[role]
    elseif GetRoleTableByID(role).ShopFallBack then
-      tbl = EquipmentItems[ROLE_TRAITOR]
+      tbl = EquipmentItems[GetRoleTableByID(role).ShopFallBack]
    end
    if not tbl then return end
 

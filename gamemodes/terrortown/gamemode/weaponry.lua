@@ -69,11 +69,10 @@ local function GiveLoadoutWeapons(ply)
    end
 
    if GetRoundState() == ROUND_ACTIVE then
-     for k,v in pairs(TTTRoles) do
-       if v.ID == ply:GetRole() and v.DefaultWeapon then
-         ply:Give(v.DefaultWeapon)
+       local roletbl = ply:GetRoleTable()
+       if roletbl.DefaultWeapon then
+         ply:Give(roletbl.DefaultWeapon)
        end
-     end
    end
 end
 
@@ -105,13 +104,12 @@ local function GiveLoadoutItems(ply)
       end
    end
    if GetRoundState() == ROUND_ACTIVE then
-     for k,v in pairs(TTTRoles) do
-       if v.ID == ply:GetRole() and v.DefaultEquip then
-         ply:GiveEquipmentItem(v.DefaultEquip)
-         if v.DefaultEquip == EQUIP_RADAR then
-           ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
-         end
-       end
+    local roletbl = ply:GetRoleTable()
+    if roletbl.DefaultEquip then
+      ply:GiveEquipmentItem(roletbl.DefaultEquip)
+      if roletbl.DefaultEquip == EQUIP_RADAR then
+        ply:SendLua([[RunConsoleCommand("ttt_radar_scan")]])
+      end
      end
    end
 end
@@ -397,7 +395,7 @@ local function OrderEquipment(ply, cmd, args)
   	  if ply:IsTraitor() or ply:IsDetective() then
   		    allowed = GetEquipmentItem(ply:GetRole(), id)
   	  elseif GetRoleTableByID(ply:GetRole()).ShopFallBack then
-  		    allowed = GetEquipmentItem(ROLE_TRAITOR, id)
+  		    allowed = GetEquipmentItem(GetRoleTableByID(ply:GetRole()).ShopFallBack, id) or GetEquipmentItem(ply:GetRole(), id)
   	  end
 
       if not allowed then
@@ -420,7 +418,7 @@ local function OrderEquipment(ply, cmd, args)
 			 return
 		  end
 	  elseif GetRoleTableByID(ply:GetRole()).ShopFallBack then
-		  if not table.HasValue(swep_table.CanBuy, ROLE_TRAITOR) then
+		  if not table.HasValue(swep_table.CanBuy, GetRoleTableByID(ply:GetRole()).ShopFallBack) and not table.HasValue(swep_table.CanBuy, ply:GetRole()) then
 			 print(ply, "tried to buy weapon his role is not permitted to buy")
 			 return
 		  end

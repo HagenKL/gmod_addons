@@ -40,11 +40,10 @@ local function GetTextForRole(role)
 
       return text
    else
-     for k,v in pairs(TTTRoles) do
-       if v.newteam and role == v.ID then
-         return GetPTranslation("info_popup_" .. v.String, {menukey = Key("+menu_context", "C")})
-       end
-     end
+      local roletbl = GetRoleTableByID(role)
+      if roletbl.newteam or roletbl.winning_team == GetTeamTableByID(role).winning_team then
+         return GetPTranslation("info_popup_" .. GetTeamTableByID(role).String, {menukey = Key("+menu_context", "C")})
+      end
    end
 end
 

@@ -161,7 +161,7 @@ if SERVER then
 			self:EndHighNoon()
 		end
 		if self:GetHighNoon() == "firing" and self.NextFire <= CurTime() then
-			if #owner.highnoontargets > 0 then
+			if #owner.highnoontargets > 0 or self:Clip1() == 0 then
 				self.NextFire = CurTime() + 0.2
 				self:FireHighNoonBullet()
 			else
@@ -206,6 +206,10 @@ if SERVER then
 		self:SendWeaponAnim(ACT_VM_IDLE_3)
 		net.Start("HNStartSound")
 		net.Broadcast()
+		if IsValid(owner) then
+			owner.HighNoonTempJump = owner:GetJumpPower()
+			owner:SetJumpPower(0)
+		end
 	end
 
 	function SWEP:FireHighNoon()
@@ -214,7 +218,9 @@ if SERVER then
 		self:SetHighNoon("firing")
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 		self.NextFire = CurTime() + 0.1
-		owner:Freeze(true)
+		if IsValid(owner) then
+			owner:Freeze(true)
+		end
 		net.Start("HNDrawSound")
 		net.Broadcast()
 	end
@@ -238,6 +244,7 @@ if SERVER then
 		bullet.Force  = 10
 		bullet.Damage = ply:GetNWInt("HighNoonCharged" .. self:EntIndex())
 		bullet.Callback = function(attacker,tr,dmginfo)
+			print(tr.Entity, tr.Hit)
 			if !tr.Entity:IsPlayer() then
 				ply.DelayedDamage = true
 			end
@@ -248,6 +255,7 @@ if SERVER then
 		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 
 		if ply:IsTerror() and ply.DelayedDamage then
+			print(ply)
 			local dmg = DamageInfo()
 			dmg:SetDamage(ply:GetNWInt("HighNoonCharged" .. self:EntIndex()))
 			dmg:SetInflictor(self)
@@ -267,7 +275,11 @@ if SERVER then
 		local owner = self.Owner
 		self:SetHoldType("pistol")
 		self:SetHighNoon("none")
-		owner:Freeze(false)
+		if IsValid(owner) then
+			owner:Freeze(false)
+			owner:SetJumpPower(owner.HighNoonTempJump)
+			owner.HighNoonTempJump = nil
+		end
 		self:ResetPlayers()
 		self:SendWeaponAnim(ACT_VM_IDLE_2)
 		self:SetClip1(0)
@@ -306,7 +318,8 @@ if SERVER then
 
 	local function HighNoonDamage(ply, hitgroup, dmginfo)
 		local wep = util.WeaponFromDamage(dmginfo)
-		if wep:GetClass() == "weapon_ttt_peacekeeper" then
+		if wep and wep:GetClass() == "weapon_ttt_peacekeeper" then
+			--ply.DelayedDamage = false
 			if ply:HasEquipmentItem(EQUIP_ARMOR) then
 				dmginfo:ScaleDamage(1.43)
 			end
@@ -321,8 +334,18 @@ if SERVER then
 		end
 	end
 
+	local function ResetHighNoon()
+		for k,v in pairs(player.GetAll()) do
+			if v.HighNoonTempJump then
+				v.HighNoonTempJump = nil
+				v:SetJumpPower(160)
+			end
+		end
+	end
+
 	hook.Add("TTTPlayerSpeed", "HighnoonSpeed" , HighNoonSpeed)
 	hook.Add("ScalePlayerDamage", "HighNoonDamage", HighNoonDamage)
+	hook.Add("TTTPrepareRound", "ResetHighNoon", ResetHighNoon)
 
 elseif CLIENT then
 

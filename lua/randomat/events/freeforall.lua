@@ -1,6 +1,6 @@
 local EVENT = {}
 
-EVENT.Title = "Free for all!"
+EVENT.Title = "Free Weapons for all!"
 
 function EVENT:Begin()
 	for i, ply in pairs(self:GetAlivePlayers()) do

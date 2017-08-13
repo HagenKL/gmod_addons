@@ -204,12 +204,7 @@ local function ReceiveRole()
    client:SetRole(role)
 
    Msg("You are: ")
-   for k,v in pairs(TTTRoles) do
-     if client:GetRole() == v.ID then
-       MsgN(string.upper(v.String))
-       break
-     end
-   end
+   MsgN(string.upper(client:GetRoleTable().String))
 end
 net.Receive("TTT_Role", ReceiveRole)
 

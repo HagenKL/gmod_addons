@@ -18,7 +18,10 @@ if not TTTVote then
 	resource.AddFile("materials/vgui/ttt/icon_hunter.vmt")
 	resource.AddFile("materials/vgui/ttt/sprite_hunter.vmt")
 	resource.AddFile("materials/vgui/ttt/icon_jackal.vmt")
+	resource.AddFile("materials/vgui/ttt/sprite_jackal.vmt")
 	resource.AddFile("materials/vgui/ttt/icon_shini.vmt")
+	resource.AddFile("materials/vgui/ttt/icon_side.vmt")
+	resource.AddFile("materials/vgui/ttt/sprite_side.vmt")
 
 	// Convars
 	CreateConVar("ttt_startvotes","5",{FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_NOTIFY}, "Setze die Vote mit der jeder startet.")

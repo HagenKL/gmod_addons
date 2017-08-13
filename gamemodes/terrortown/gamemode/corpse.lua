@@ -57,19 +57,16 @@ local function IdentifyBody(ply, rag)
    local finder = ply:Nick()
    local nick = CORPSE.GetPlayerNick(rag, "")
    local traitor = IsRoleEvil(rag.was_role)
-   local neutral = IsRoleNeutal(rag.was_role)
+   local neutral = IsRoleNeutral(rag.was_role)
    local special = IsRoleSpecial(rag.was_role)
 
    -- Announce body
    if bodyfound:GetBool() and not CORPSE.GetFound(rag, false) then
       local roletext = nil
       local role = rag.was_role
-      for k,v in pairs(TTTRoles) do
-        if v.ID == role then
-          roletext = "body_found_" .. v.Short
-          break
-        end
-      end
+
+      roletext = "body_found_" .. GetRoleTableByID(role).Short
+
 
       LANG.Msg("body_found", {finder = finder,
                               victim = nick,

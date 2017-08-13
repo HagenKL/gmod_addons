@@ -143,7 +143,7 @@ TTTRoles = TTTRoles or {
     targetidcolor = COLOR_BLUE,
     AllowTeamChat = true,
     RepeatingCredits = false,
-    ShowRole = true,
+    ShowRole = function(ply) return true end,
     HasShop = true
   }
 }
@@ -172,7 +172,7 @@ function IsRoleGood(role)
   return GetRoleTableByID(role).IsGood
 end
 
-function IsRoleNeutal(role)
+function IsRoleNeutral(role)
   return !GetRoleTableByID(role).IsGood and !GetRoleTableByID(role).IsEvil
 end
 
@@ -186,6 +186,16 @@ end
 
 function IsRoleSpecial(role)
   return GetRoleTableByID(role).IsSpecial
+end
+
+function IsRolePartOfTeam(role, team)
+  if team == WIN_TRAITOR then
+    return IsRoleEvil(role)
+  elseif team == WIN_INNOCENT then
+    return IsRoleGood(role)
+  elseif team == WIN_JACKAL then
+    return IsRoleNeutral(role)
+  end
 end
 
 function GM:AddNewRole(RoleName,Role)
@@ -222,6 +232,24 @@ end
 function GetRoleTableByID(ID)
   for k,v in pairs(TTTRoles) do
     if v.ID == ID then
+      return v
+    end
+  end
+  return false
+end
+
+function GetTeamTableByID(ID)
+  for k,v in pairs(TTTRoles) do
+    if v.newteam and GetRoleTableByID(ID).winning_team == v.winning_team then
+      return v
+    end
+  end
+  return false
+end
+
+function GetRoleTableByTeam(team)
+  for k,v in pairs(TTTRoles) do
+    if v.winning_team == team and v.newteam then
       return v
     end
   end

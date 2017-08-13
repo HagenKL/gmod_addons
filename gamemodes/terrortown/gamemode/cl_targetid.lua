@@ -39,20 +39,19 @@ function GM:PostDrawTranslucentRenderables()
    client = LocalPlayer()
    plys = GetPlayers()
 
-   if client:GetEvil() then
+   if client:IsSpecial() then
 
       dir = client:GetForward() * -1
 
       for i=1, #plys do
          ply = plys[i]
-         for k,v in pairs(TTTRoles) do
-            if ply:GetRole() == v.ID and ply:IsActiveEvil() and ply != client then
-               render.SetMaterial(v.indicator_mat)
-               pos = ply:GetPos()
-               pos.z = pos.z + 74
+         local indicator_mat = ply:GetRoleTable().indicator_mat
+         if ply:GetTeam() == client:GetTeam() and ply:IsTerror() and ply != client and indicator_mat then
+            render.SetMaterial(indicator_mat)
+            pos = ply:GetPos()
+            pos.z = pos.z + 74
 
-               render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
-            end
+            render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
          end
       end
 
@@ -171,6 +170,7 @@ function GM:HUDDrawTargetID()
    local cls = ent:GetClass()
    local minimal = minimalist:GetBool()
    local hint = (not minimal) and (ent.TargetIDHint or ClassHint[cls])
+   local roletbl = ent:IsPlayer() and ent:GetRoleTable() and ent:GetRoleTable()
 
    if ent:IsPlayer() then
       if ent:GetNWBool("disguised", false) then
@@ -199,13 +199,11 @@ function GM:HUDDrawTargetID()
          target.traitor = ent:IsTraitor()
       end
 
-      for k,v in pairs(TTTRoles) do
-         if !v.IsDefault then
-            if ent:GetRole() == v.ID and ent:IsEvil() and client:IsEvil() then
-               target[v.String] = true
-            end
-         end
+
+      if roletbl.drawtargetidcircle then
+         target[roletbl.String] = true
       end
+
 
       target.detective = GetRoundState() > ROUND_PREP and ent:IsDetective() or false
 
@@ -234,13 +232,11 @@ function GM:HUDDrawTargetID()
 
    if ent:IsPlayer() then
       for k,v in pairs(target) do
-         for l,p in pairs(TTTRoles) do
-            if v and p.ID == ent:GetRole() and p.drawtargetidcircle then
-               surface.SetTexture(ring_tex)
-               local col = p.DefaultColor
-               surface.SetDrawColor(Color(col.r,col.g,col.b,200))
-               surface.DrawTexturedRect(x-32, y-32, 64, 64)
-            end
+         if v and roletbl.drawtargetidcircle then
+            surface.SetTexture(ring_tex)
+            local col = roletbl.DefaultColor
+            surface.SetDrawColor(Color(col.r,col.g,col.b,200))
+            surface.DrawTexturedRect(x-32, y-32, 64, 64)
          end
       end
    end
@@ -331,11 +327,9 @@ function GM:HUDDrawTargetID()
 
    if ent:IsPlayer() then
       for k,v in pairs(target) do
-         for l,p in pairs(TTTRoles) do
-            if v and ent:GetRole() == p.ID and k != "corpse" then
-               text = L["target_" .. p.String]
-               clr = p.DefaultColor
-            end
+         if v and k != "corpse" then
+            text = L["target_" .. roletbl.String]
+            clr = roletbl.DefaultColor
          end
       end
    end

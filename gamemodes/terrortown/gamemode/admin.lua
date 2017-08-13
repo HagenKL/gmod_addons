@@ -35,11 +35,7 @@ function PrintTraitors(ply)
 
       for _, p in pairs(ps) do
          if IsValid(p) then
-           for k,v in pairs(TTTRoles) do
-             if p:GetRole() == v.ID then
-               pr(v.Rolename, ":", p:Nick())
-             end
-           end
+            pr(p:GetRoleTable().Rolename, ":", p:Nick())
          end
       end
    end

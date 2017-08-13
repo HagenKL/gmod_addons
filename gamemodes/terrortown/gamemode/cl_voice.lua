@@ -32,21 +32,14 @@ local function RoleChatRecv()
 
    local Roletbl = GetRoleTableByID(role)
 
-   if IsRoleEvil(role) and Roletbl.AllowTeamChat then
-      chat.AddText(Color( 255, 30, 40 ),
-                   Format("(%s) ", string.upper(GetTranslation("traitor"))),
-                   Color( 255, 200, 20),
-                   sender:Nick(),
-                   Color( 255, 255, 200),
-                   ": " .. text)
-
-   elseif IsRoleGood(role) and Roletbl.AllowTeamChat then
-      chat.AddText(Color( 20, 100, 255 ),
-                   Format("(%s) ", string.upper(GetTranslation("detective"))),
-                   Color( 25, 200, 255),
-                   sender:Nick(),
-                   Color( 200, 255, 255),
-                   ": " .. text)
+   if Roletbl.AllowTeamChat then
+    local col = Roletbl.DefaultColor
+    chat.AddText(Color( util.ClampColor(col.r + 20), util.ClampColor(col.g + 100), util.ClampColor(col.b + 20) ),
+                 Format("(%s) ", Roletbl.Rolename),
+                 Color( util.ClampColor(col.r + 40), util.ClampColor(col.g + 200), util.ClampColor(col.b + 40)),
+                 sender:Nick(),
+                 Color( util.ClampColor(col.r + 200), util.ClampColor(col.g + 255), util.ClampColor(col.b + 200)),
+                 ": " .. text)
    end
 end
 net.Receive("TTT_RoleChat", RoleChatRecv)

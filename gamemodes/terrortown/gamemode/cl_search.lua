@@ -110,13 +110,7 @@ function PreprocSearch(raw)
          search[t].p = 1
          search[t].nick = d
       elseif t == "role" then
-         for k,v in pairs(TTTRoles) do
-           if v.ID == d then
-             search[t].text = T("search_role_" .. v.Short)
-             break
-           end
-         end
-
+         search[t].text = T("search_role_" .. GetRoleTableByID(d).Short)
          search[t].p = 2
       elseif t == "words" then
          if d != "" then

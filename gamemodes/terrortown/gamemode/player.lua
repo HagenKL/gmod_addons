@@ -683,6 +683,10 @@ function GM:PlayerDeath( victim, infl, attacker)
    if HasteMode() and GetRoundState() == ROUND_ACTIVE then
       IncRoundEnd(GetConVar("ttt_haste_minutes_per_death"):GetFloat() * 60)
    end
+
+   if victim:GetRoleTable().DeathFunction then
+      victim:GetRoleTable().DeathFunction(victim)
+   end
 end
 
 -- kill hl2 beep

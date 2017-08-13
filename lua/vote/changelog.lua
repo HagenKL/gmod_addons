@@ -14,6 +14,14 @@ This is the Changelog for Gamefreaks Addons! (Started Documenting 05/26/2017)<br
 This will only get shown once a day! <br>
 It will get updated every time I have time to change something!<br>
 
+<h2>Version 1.1.2 (13/08/2017):</h2>
+
+- Added a fellow for the Jackal: <b> Sidekick </b> <br>
+<div style=" text-align: left; margin-left: 15px;"> - Jackal has new Item in shop, The "Sidekick Deagle" <br>
+- The hit player will turn into his Sidekick and will help him to victory! <br>
+- All other players will still see him as the original role until his body gets identified. <br>
+- The Sidekick does not have a shop and will turn into a Jackal when the other Jackal dies. <br> </div>
+
 <h2>Version 1.1.1 (28/07/2017):</h2>
 
 - Updated Second Chance GUI and modified health and percentages <br>

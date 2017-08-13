@@ -14,4 +14,4 @@ function EVENT:Begin()
 	SendFullStateUpdate()
 end
 
-Randomat:register("deathmatch", EVENT)
+//Randomat:register("deathmatch", EVENT)

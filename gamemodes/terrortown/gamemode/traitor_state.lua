@@ -15,8 +15,9 @@ function CountTraitors() return #GetTraitors() end
 local function SendPlayerRoles()
    for k, v in pairs(player.GetAll()) do
       net.Start("TTT_Role")
-        if v:GetRoleTable().HideRole and !v.ShinigamiRespawned then
-          net.WriteUInt(v:GetRoleTable().HideRole,4)
+        local func = v:GetRoleTable().HideRole
+        if func and func(v) then
+          net.WriteUInt(func(v),4)
         else
          net.WriteUInt(v:GetRole(), 4)
         end
@@ -26,12 +27,22 @@ end
 
 local function SendPlayerRole(ply)
     net.Start("TTT_Role")
-      if ply:GetRoleTable().HideRole and !v.ShinigamiRespawned then
-        net.WriteUInt(ply:GetRoleTable().HideRole,4)
+      local func = ply:GetRoleTable().HideRole
+      if func and func(v) then
+        net.WriteUInt(func(v),4)
       else
        net.WriteUInt(ply:GetRole(), 4)
       end
     net.Send(ply)
+end
+
+local function SendPlayerRoleToPlayer(ply, ply_or_rf)
+    net.Start("TTT_RoleList")
+    net.WriteUInt(ply:GetRole(), 4)
+    net.WriteUInt(1,8)
+    net.WriteUInt(ply:EntIndex() - 1 , 7)
+    if ply_or_rf then net.Send(ply_or_rf)
+    else net.Broadcast() end
 end
 
 local function SendRoleListMessage(role, role_ids, ply_or_rf)
@@ -52,7 +63,8 @@ end
 local function SendRoleList(role, ply_or_rf, pred)
    local role_ids = {}
    for k, v in pairs(player.GetAll()) do
-      if v:IsRole(role) then
+      local func = v:GetRoleTable() and v:GetRoleTable().FakeRole and !IsRolePartOfTeam(role, v:GetTeam()) and v:GetRoleTable().FakeRole(v) 
+      if (v:IsRole(role) and !func) or (func and func == role) then
          if not pred or (pred and pred(v)) then
             table.insert(role_ids, v:EntIndex())
          end
@@ -79,12 +91,29 @@ function SendInnocentList(ply_or_rf)
    local traitor_ids = {}
    local neutral_ids = {}
    for k, v in pairs(player.GetAll()) do
-      if v:IsGood() and !v:GetRoleTable().ShowRole and !v.ShinigamiRespawned then
-         table.insert(inno_ids, v:EntIndex())
-      elseif v:IsEvil() then
-         table.insert(traitor_ids, v:EntIndex())
-      elseif v:IsNeutral() then
-        table.insert(neutral_ids, v:EntIndex())
+      local role = v:GetRoleTable().FakeRole and !IsRolePartOfTeam(v:GetRole(), v:GetTeam()) and v:GetRoleTable().FakeRole(v)
+      if role then
+        if IsRoleGood(role) then
+          table.insert(inno_ids, v:EntIndex())
+        elseif IsRoleEvil(role) then
+          table.insert(traitor_ids, v:EntIndex())
+        elseif IsRoleNeutral(role) then
+          table.insert(neutral_ids, v:EntIndex())
+        end
+        continue
+      end
+      local show = v:GetRoleTable().ShowRole and v:GetRoleTable().ShowRole(v)
+      if !show then
+        if v:IsGood() then
+           table.insert(inno_ids, v:EntIndex())
+        elseif v:IsEvil() then
+           table.insert(traitor_ids, v:EntIndex())
+        elseif v:IsNeutral() then
+          table.insert(neutral_ids, v:EntIndex())
+        end
+        continue
+      else
+        SendPlayerRoleToPlayer(v)
       end
    end
 
@@ -133,8 +162,8 @@ function SendFullStateUpdate()
    SendPlayerRoles()
    SendInnocentList()
    SendEvilList(GetEvilFilter())
+   SendNeutralList(GetNeutralFilter())
    SendDetectiveList()
-   SendConfirmedPlayers()
    -- not useful to sync confirmed traitors here
 end
 
@@ -163,7 +192,11 @@ local function request_rolelist(ply)
       SendRoleReset(ply)
       SendPlayerRole(ply)
       SendDetectiveList(ply)
-
+      if ply:GetEvil() then
+        SendEvilList(ply)
+      elseif ply:GetNeutral() then
+        SendNeutralList(ply)
+      end
       SendConfirmedSinglePlayer(ply)
    end
 end
@@ -199,13 +232,13 @@ concommand.Add("ttt_force_detective", force_detective, nil, nil, FCVAR_CHEAT)
 
 function AddForceCommand(Role)
 
-  _G["force_" .. Role.String] = function(ply)
+  local force_function = function(ply)
     ply:SetRole(Role.ID)
 
     SendFullStateUpdate()
   end
 
-  concommand.Add("ttt_force_" .. Role.String, _G["force_" .. Role.String], nil,nil, FCVAR_CHEAT )
+  concommand.Add("ttt_force_" .. Role.String, force_function , nil,nil, FCVAR_CHEAT )
 end
 
 local function AutoCompleteForceRole( cmd, stringargs )

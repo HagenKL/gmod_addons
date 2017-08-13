@@ -1,11 +1,11 @@
 local EVENT = {}
 
-EVENT.Title = "A Random Person will explode in 30 seconds! Watch out! (EXCEPT DETECTIVES)"
+EVENT.Title = "A Random Person will explode every 30 seconds! Watch out! (EXCEPT DETECTIVES)"
 
 function EVENT:Begin()
 	local effectdata = EffectData()
 
-	timer.Create("RandomatExplode",30,1, function()
+	timer.Create("RandomatExplode",30,0, function()
 		local plys = {}
 		for _, ply in pairs(self:GetPlayers(true)) do
 			if !ply:GetDetective() then

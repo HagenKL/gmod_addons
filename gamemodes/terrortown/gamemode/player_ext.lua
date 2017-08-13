@@ -60,12 +60,12 @@ function plymeta:SetDefaultCredits()
    elseif self:GetDetective() then
       self:SetCredits(math.ceil(GetConVarNumber("ttt_det_credits_starting")))
    else
-      for k,v in pairs(TTTRoles) do
-        if v.ID == self:GetRole() and v.DefaultCredits then
-          self:SetCredits(GetConVarNumber("ttt_" .. v.String .. "_credits_starting"))
-        elseif v.ID == self:GetRole() and !v.DefaultCredits then
-          self:SetCredits(0)
-       end
+
+      local roletbl = self:GetRoleTable()
+     if roletbl.DefaultCredits then
+       self:SetCredits(GetConVarNumber("ttt_" .. roletbl.String .. "_credits_starting"))
+     else
+       self:SetCredits(0)
      end
    end
 end

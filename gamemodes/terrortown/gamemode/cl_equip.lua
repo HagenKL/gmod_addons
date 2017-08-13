@@ -13,9 +13,16 @@ function GetEquipmentForRole(role)
       -- start with all the non-weapon goodies
       local tbl = table.Copy(EquipmentItems)
 
+      for k,v in pairs(TTTRoles) do
+        if v.ShopFallBack then
+          tbl[v.ID] = table.Copy(EquipmentItems[v.ShopFallBack])
+        end
+      end
+
       -- find buyable weapons to load info from
       for k, v in pairs(weapons.GetList()) do
          if v and v.CanBuy then
+
             local data = v.EquipMenuData or {}
             local base = {
                id       = WEPS.GetClass(v),
@@ -42,6 +49,11 @@ function GetEquipmentForRole(role)
             -- add this buyable weapon to all relevant equipment tables
             for _, r in pairs(v.CanBuy) do
                table.insert(tbl[r], base)
+               for k,v in pairs(TTTRoles) do
+                if v.ShopFallBack and v.ShopFallBack == r then
+                  table.insert(tbl[v.ID], base)
+                end
+              end
             end
          end
       end
@@ -58,11 +70,7 @@ function GetEquipmentForRole(role)
       Equipment = tbl
    end
 
-   if GetRoleTableByID(role).ShopFallBack then
-     return Equipment and Equipment[ROLE_TRAITOR] or {}
-   else
-     return Equipment and Equipment[role] or {}
-   end
+  return Equipment and Equipment[role] or {}
 end
 
 

@@ -179,13 +179,10 @@ function RADAR:Draw(client)
 
       role = tgt.role or ROLE_INNOCENT
 
-      for k,v in pairs(TTTRoles) do
-        if role == v.ID then
-          surface.SetDrawColor(v.DefaultColor, alpha)
-          surface.SetTextColor(v.DefaultColor, alpha)
-          break
-        end
-      end
+      local color = GetRoleTableByID(role).DefaultColor
+      surface.SetDrawColor(color, alpha)
+      surface.SetTextColor(color, alpha)
+
 
       if role == 16 then -- decoys
          surface.SetDrawColor(150, 150, 150, alpha)

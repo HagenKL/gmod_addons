@@ -102,10 +102,8 @@ end
 function GM:TTTScoreboardRowColorForPlayer(ply)
    if not IsValid(ply) then return rolecolor.default end
 
-   for k,v in pairs(TTTRoles) do
-      if ply:GetRole() == v.ID and ply:GetRole() != ROLE_INNOCENT then
-        return rolecolor[v.String]
-      end
+   if ply:IsSpecial() and ply:GetRoleTable() then
+     return rolecolor[ply:GetRoleTable().String]
    end
 
    return rolecolor.default

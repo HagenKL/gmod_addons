@@ -826,6 +826,8 @@ function GM:TTTCheckForWin()
               alive.traitor = true
             elseif tbl.winning_team == WIN_INNOCENT then
               alive.innocent = true
+            elseif GetRoleTableByTeam(tbl.winning_team).winning_team == tbl.winning_team then
+               alive[GetRoleTableByTeam(tbl.winning_team).String] = true
             end
           end
         end
@@ -945,7 +947,7 @@ function SelectRoles()
          print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 to enable!")
          continue
        end
-       if v.Chanceperround and v.Chanceperround < math.random(0,1) and not v.RoleForce then
+       if (v.Chanceperround and v.Chanceperround < math.random(0,1) and not v.RoleForce) or v.DontSelect then
           continue
        end
        if v.IsGoodReplacement and (choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() or v.RoleForce) and #goodtbl <= det_count then

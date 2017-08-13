@@ -125,12 +125,7 @@ local function DrawBg(x, y, width, height, client)
    if GAMEMODE.round_state != ROUND_ACTIVE then
       col = bg_colors.noround
   else
-      for k,v in pairs(TTTRoles) do
-        if client:GetRole() == v.ID then
-          col = bg_colors[v.String]
-          break
-        end
-      end
+      col = bg_colors[client:GetRoleTable().String]
    end
 
    draw.RoundedBox(8, x, y, tw, th, col)
