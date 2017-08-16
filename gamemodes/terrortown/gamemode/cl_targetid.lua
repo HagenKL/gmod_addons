@@ -200,7 +200,7 @@ function GM:HUDDrawTargetID()
       end
 
 
-      if roletbl.drawtargetidcircle then
+      if roletbl.drawtargetidcircle and ent:GetTeam() == client:GetTeam()  then
          target[roletbl.String] = true
       end
 
