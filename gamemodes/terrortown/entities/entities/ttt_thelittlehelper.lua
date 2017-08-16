@@ -62,7 +62,7 @@ if CLIENT then
 	hook.Add("HUDPaint", "TTTTLH", function()
 			if (LocalPlayer():HasEquipmentItem(EQUIP_TLH)) then
 				surface.SetMaterial(material)
-				surface.SetDrawColor(255, 255, 255, 200)
+				surface.SetDrawColor(255, 255, 255, 255)
 				surface.DrawTexturedRect(20, yCoordinate, 64, 64)
 			end
 		end)
