@@ -22,6 +22,7 @@ local function AddShinigami()
 		drawtargetidcircle = false, -- should draw circle
 		AllowTeamChat = false, -- team chat
 		RepeatingCredits = false,
+		CanCollectCredits = false,
     	HideRole = function(ply)
     		if ply.ShinigamiRespawned then
     			return ROLE_SHINIGAMI

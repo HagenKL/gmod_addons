@@ -23,6 +23,7 @@ local function AddHunter()
 		AllowTeamChat = true, -- team chat
 		RepeatingCredits = false,
 		DefaultEquip = EQUIP_RADAR,
+		CanCollectCredits = true,
 	    DefaultWeapon = "weapon_ttt_totemknife",
 	    CustomRadar = function(ply) -- Custom Radar function
 			if TTTVote.AnyTotems then

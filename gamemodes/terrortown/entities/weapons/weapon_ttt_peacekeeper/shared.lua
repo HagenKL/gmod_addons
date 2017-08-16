@@ -88,14 +88,15 @@ function SWEP:Initialize()
 end
 
 local function IsInFOV( ply, target )
-	local inFOV = ply:GetAimVector():Dot(((target:GetPos() + Vector(0,0,50)) - ply:GetShootPos()):GetNormalized()) > 0.52
-	local los = ply:IsLineOfSightClear(target:GetPos() + Vector(0,0,50))
+	local targetPos = target:Crouching() and target:GetPos() + Vector(0,0,25) or target:GetPos() + Vector(0,0,50)
+	local inFOV = ply:GetAimVector():Dot(((targetPos) - ply:GetShootPos()):GetNormalized()) > 0.52
+	local los = ply:IsLineOfSightClear(targetPos)
 	if inFOV and los then
 		local kmins = Vector(1,1,1) * -5
 		local kmaxs = Vector(1,1,1) * 5
 		local tr = util.TraceHull({
 			start = ply:GetShootPos(),
-			endpos = target:GetPos()  + Vector(0,0,50),
+			endpos = targetPos,
 			filter = function(ent)
 				if (ent:IsPlayer() and ent != target) or ent:IsWeapon() or string.sub( ent:GetClass(), 1, 5 ) == "item_" then
 					return false
@@ -109,7 +110,7 @@ local function IsInFOV( ply, target )
 		if !tr.Entity:IsPlayer() then
 			local tr = util.TraceLine({
 				start = ply:GetShootPos(),
-				endpos = target:GetPos()  + Vector(0,0,50),
+				endpos = targetPos,
 				filter = function(ent)
 					if (ent:IsPlayer() and ent != target) or ent:IsWeapon() or string.sub( ent:GetClass(), 1, 5 ) == "item_" then
 						return false
@@ -228,8 +229,10 @@ if SERVER then
 	function SWEP:FireHighNoonBullet()
 		local owner = self.Owner
 
+		
 		local ply = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
-		local dir = ((ply:GetPos() + Vector(0,0,50)) - owner:GetShootPos() ):GetNormalized()
+		local targetPos = ply:Crouching() and ply:GetPos() + Vector(0,0,25) or ply:GetPos() + Vector(0,0,50)
+		local dir = (targetPos - owner:GetShootPos() ):GetNormalized()
 
 		net.Start("HighNoonBullet")
 		net.WriteInt(ply:GetNWInt("HighNoonCharged" .. self:EntIndex()),8)
@@ -357,7 +360,7 @@ elseif CLIENT then
 		if IsValid(wep) and wep:GetClass() == "weapon_ttt_peacekeeper" and wep:GetHighNoon() == "charging" then
 			for k,v in pairs(util.GetAlivePlayers()) do
 				if v:IsTerror() and v:GetNWBool("HighNoonFOV" .. wep:EntIndex(), false) then
-					local pos = (v:GetPos() + Vector(0,0,50)):ToScreen()
+					local pos = (v:Crouching() and v:GetPos() + Vector(0,0,25) or v:GetPos() + Vector(0,0,50)):ToScreen()
 					local charge = v:GetNWInt("HighNoonCharged" .. wep:EntIndex(),0)
 					local health = v:Health()
 					local radius = math.Clamp(math.Remap(health - charge, 0, health, 12, 150),12,150)

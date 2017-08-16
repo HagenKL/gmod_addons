@@ -23,6 +23,7 @@ local function AddSidekick()
 		drawtargetidcircle = true, -- should draw circle
 		AllowTeamChat = true, -- team chat
 		RepeatingCredits = false,
+		CanCollectCredits = false,
 		HideRole = function(ply)
 			return false
 		end, -- Hide Role from player

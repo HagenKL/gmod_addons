@@ -102,7 +102,7 @@ end
 function GM:TTTScoreboardRowColorForPlayer(ply)
    if not IsValid(ply) then return rolecolor.default end
 
-   if ply:IsSpecial() and ply:GetRoleTable() then
+   if ply:IsSpecial() and ply:GetRoleTable() and rolecolor[ply:GetRoleTable().String] then
      return rolecolor[ply:GetRoleTable().String]
    end
 

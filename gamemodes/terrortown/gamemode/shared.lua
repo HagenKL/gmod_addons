@@ -104,6 +104,7 @@ TTTRoles = TTTRoles or {
     drawtargetidcircle = false,
     AllowTeamChat = false,
     RepeatingCredits = false,
+    CanCollectCredits = false,
     HasShop = false
   },
   [ROLE_TRAITOR] = {
@@ -124,6 +125,7 @@ TTTRoles = TTTRoles or {
     targetidcolor = COLOR_RED,
     AllowTeamChat = true,
     RepeatingCredits = true,
+    CanCollectCredits = true,
     HasShop = true
   },
   [ROLE_DETECTIVE] = {
@@ -143,6 +145,7 @@ TTTRoles = TTTRoles or {
     targetidcolor = COLOR_BLUE,
     AllowTeamChat = true,
     RepeatingCredits = false,
+    CanCollectCredits = true,
     ShowRole = function(ply) return true end,
     HasShop = true
   }

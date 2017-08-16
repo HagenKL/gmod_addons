@@ -35,6 +35,7 @@ local function AddJackal()
 		RepeatingCredits = false,
 		Chanceperround = 0.5,
 		DefaultEquip = EQUIP_ARMOR,
+		CanCollectCredits = true,
 		ExtraWeapons = {
 			"weapon_ttt_sidekickdeagle"
 		},

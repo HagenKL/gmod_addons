@@ -217,7 +217,7 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
    end
 
    local credits = CORPSE.GetCredits(rag, 0)
-   if ply:IsActiveSpecial() and credits > 0 and (not long_range) then
+   if ply:IsActiveSpecial() and ply:GetRoleTable().CanCollectCredits and credits > 0 and (not long_range) then
       LANG.Msg(ply, "body_credits", {num = credits})
       ply:AddCredits(credits)
 
