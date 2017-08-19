@@ -9,7 +9,7 @@ local function SendDeathGripReset(ply)
   net.Send(ply)
 end
 
-local function SendDeathGripMessage(ply)
+local function SendDeathGripMessage()
   net.Start("TTTDeathGripMessage")
   net.Broadcast()
 end

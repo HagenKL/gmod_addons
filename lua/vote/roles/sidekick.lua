@@ -14,6 +14,7 @@ local function AddSidekick()
 		DefaultPct = "0", -- Role Percentage
 		DefaultMax = "0", -- Default Limit
 		DefaultMin = "64", -- Default Min Players for Role to be there
+		DontSelect = true,
 		DefaultCredits = "0", -- Default Credits
 		HasShop = false,
 		IsGoodReplacement = false, -- Is Replacement for one traitor

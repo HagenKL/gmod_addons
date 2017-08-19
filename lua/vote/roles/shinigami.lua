@@ -1,4 +1,3 @@
-
 local function AddShinigami()
 	local Shinigami = {  -- table to create new role
 		Rolename = "Shinigami", -- Normal Name
