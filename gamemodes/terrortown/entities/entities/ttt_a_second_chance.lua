@@ -85,7 +85,7 @@ if SERVER then
           wep:SetClip1(v.c1)
           wep:SetClip2(v.c2)
           if wep.Kind == WEAPON_HEAVY then
-          ply:SelectWeapon(v.cl)
+            ply:SelectWeapon(v.cl)
           end
         end
     end
@@ -265,19 +265,6 @@ if SERVER then
     end
   end
 
-  local function ResettinAsc()
-    for k,v in pairs(player.GetAll()) do
-      v.shouldasc = false
-      v.NOWINASC = false
-      v.ASCCanRespawn = false
-      v.ASCTimeLeft = 0
-      v.SecondChanceChance = 0
-      --if keepweapons:GetBool() and istable(v.ASCWeapons) then
-      --  table.Empty(v.ASCWeapons)
-      --end
-    end
-  end
-
   local function CheckifAsc(ply, attacker, dmg)
     if IsValid(attacker) and ply != attacker and attacker:IsPlayer() and attacker:HasEquipmentItem(EQUIP_ASC) then
       if (attacker:GetTraitor() or (attacker.IsEvil and attacker:IsEvil())) and ((ply:GetRole() == ROLE_INNOCENT or ply:GetRole() == ROLE_DETECTIVE) or (ply.GetGood and (ply:GetGood() or ply:IsNeutral()))) then
@@ -298,10 +285,26 @@ if SERVER then
   end
 
   hook.Add("DoPlayerDeath", "ASCChance", CheckifAsc )
-  hook.Add("TTTPrepareRound", "ASCRESET", ResettinAsc )
   hook.Add("PlayerDeath", "ASCCHANCE", SecondChance )
   hook.Add("TTTCheckForWin", "ASCCHECKFORWIN", CUSTOMWIN)
 end
+
+local function ResettinAsc()
+	for k,v in pairs(player.GetAll()) do
+		v.ASCCanRespawn = false
+		v.ASCTimeLeft = 0
+	  	if SERVER then
+			v.SecondChanceChance = 0
+		  	v.shouldasc = false
+	  		v.NOWINASC = false
+		  --if keepweapons:GetBool() and istable(v.ASCWeapons) then
+		  --  table.Empty(v.ASCWeapons)
+		  --end
+		end
+	end
+end
+
+hook.Add("TTTPrepareRound", "ASCRESET", ResettinAsc )
 
 if CLIENT then
   local width = 300
