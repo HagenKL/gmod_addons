@@ -71,7 +71,7 @@ function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsEvil
 function SendGoodList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendNeutralList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if !v.IsGood and !v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendTraitorList(ply_or_rf, pred) SendRoleList(ROLE_TRAITOR, ply_or_rf, pred) end
-function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) end
+function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) for k,v in pairs(player.GetAll()) do if v:GetRoleTable().FakeRole(v) == ROLE_DETECTIVE then SendRoleList(ROLE_DETECTIVE, ply_or_rf) end end
 
 -- this is purely to make sure last round's traitors/dets ALWAYS get reset
 -- not happy with this, but it'll do for now
@@ -86,7 +86,7 @@ function SendInnocentList(ply_or_rf)
          table.insert(inno_ids, v:EntIndex())
       elseif v:IsEvil() or IsRoleEvil(v:GetRoleTable():FakeRole(v)) then
          table.insert(traitor_ids, v:EntIndex())
-      elseif v:IsNeutral() or IsRoleEvil(v:GetRoleTable():FakeRole(v)) then
+      elseif v:IsNeutral() or IsRoleNeutral(v:GetRoleTable():FakeRole(v)) then
         table.insert(neutral_ids, v:EntIndex())
       end
    end
