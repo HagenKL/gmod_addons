@@ -28,21 +28,12 @@ end
 local function SendPlayerRole(ply)
     net.Start("TTT_Role")
       local func = ply:GetRoleTable().HideRole
-      if func and func(v) then
-        net.WriteUInt(func(v),4)
+      if func and func(ply) then
+        net.WriteUInt(func(ply),4)
       else
        net.WriteUInt(ply:GetRole(), 4)
       end
     net.Send(ply)
-end
-
-local function SendPlayerRoleToPlayer(ply, ply_or_rf)
-    net.Start("TTT_RoleList")
-    net.WriteUInt(ply:GetRole(), 4)
-    net.WriteUInt(1,8)
-    net.WriteUInt(ply:EntIndex() - 1 , 7)
-    if ply_or_rf then net.Send(ply_or_rf)
-    else net.Broadcast() end
 end
 
 local function SendRoleListMessage(role, role_ids, ply_or_rf)
@@ -63,8 +54,8 @@ end
 local function SendRoleList(role, ply_or_rf, pred)
    local role_ids = {}
    for k, v in pairs(player.GetAll()) do
-      local func = v:GetRoleTable() and v:GetRoleTable().FakeRole and !IsRolePartOfTeam(role, v:GetTeam()) and v:GetRoleTable().FakeRole(v) 
-      if (v:IsRole(role) and !func) or (func and func == role) then
+      local func = v:GetRoleTable() and v:GetRoleTable().FakeRole and !IsRolePartOfTeam(role, v:GetTeam()) and v:GetRoleTable().FakeRole(v)
+      if (v:IsRole(role) and (!func or (func and func != role))) or (func and func == role) then
          if not pred or (pred and pred(v)) then
             table.insert(role_ids, v:EntIndex())
          end
@@ -91,29 +82,12 @@ function SendInnocentList(ply_or_rf)
    local traitor_ids = {}
    local neutral_ids = {}
    for k, v in pairs(player.GetAll()) do
-      local role = v:GetRoleTable().FakeRole and !IsRolePartOfTeam(v:GetRole(), v:GetTeam()) and v:GetRoleTable().FakeRole(v)
-      if role then
-        if IsRoleGood(role) then
-          table.insert(inno_ids, v:EntIndex())
-        elseif IsRoleEvil(role) then
-          table.insert(traitor_ids, v:EntIndex())
-        elseif IsRoleNeutral(role) then
-          table.insert(neutral_ids, v:EntIndex())
-        end
-        continue
-      end
-      local show = v:GetRoleTable().ShowRole and v:GetRoleTable().ShowRole(v)
-      if !show then
-        if v:IsGood() then
-           table.insert(inno_ids, v:EntIndex())
-        elseif v:IsEvil() then
-           table.insert(traitor_ids, v:EntIndex())
-        elseif v:IsNeutral() then
-          table.insert(neutral_ids, v:EntIndex())
-        end
-        continue
-      else
-        SendPlayerRoleToPlayer(v)
+      if v:IsGood() or IsRoleGood(v:GetRoleTable():FakeRole(v)) then
+         table.insert(inno_ids, v:EntIndex())
+      elseif v:IsEvil() or IsRoleEvil(v:GetRoleTable():FakeRole(v)) then
+         table.insert(traitor_ids, v:EntIndex())
+      elseif v:IsNeutral() or IsRoleEvil(v:GetRoleTable():FakeRole(v)) then
+        table.insert(neutral_ids, v:EntIndex())
       end
    end
 

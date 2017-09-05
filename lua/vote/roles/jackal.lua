@@ -40,6 +40,7 @@ local function AddJackal()
 			"weapon_ttt_sidekickdeagle"
 		},
 		DeathFunction = function(ply)
+			if ply.NOWINASC then return end
 			for k,v in pairs(util.GetAlivePlayers()) do
 				if v:GetSidekick() then
 					v:SetRole(ROLE_JACKAL)
