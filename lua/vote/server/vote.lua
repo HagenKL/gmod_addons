@@ -28,7 +28,7 @@ end
 
 local function ReceiveVotes(len, sender)
   local target = net.ReadEntity()
-  if target:GetNWInt("VoteCounter") < 3 and sender:GetCurrentVotes() >= 1 and sender:GetNWInt("UsedVotes",0) <= 0 and not sender.ShinigamiRespawned  then
+  if target:GetNWInt("VoteCounter") < 3 and sender:GetCurrentVotes() >= 1 and sender:GetNWInt("UsedVotes",0) <= 0 and not sender.ShinigamiRespawned then
     CalculateVotes(sender, target, sender)
   else
   	net.Start("TTTVoteFailure")
