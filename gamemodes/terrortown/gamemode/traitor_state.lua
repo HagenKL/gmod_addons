@@ -84,6 +84,7 @@ function SendInnocentList(ply_or_rf)
    for k, v in pairs(player.GetAll()) do
       if v:IsGood() or (v:GetRoleTable().FakeRole and IsRoleGood(v:GetRoleTable().FakeRole(v))) then
         table.insert(inno_ids, v:EntIndex())
+      end
       if v:IsEvil() or (v:GetRoleTable().FakeRole and IsRoleEvil(v:GetRoleTable().FakeRole(v))) then
         table.insert(traitor_ids, v:EntIndex())
       if v:IsNeutral() or (v:GetRoleTable().FakeRole and IsRoleNeutral(v:GetRoleTable().FakeRole(v))) then
