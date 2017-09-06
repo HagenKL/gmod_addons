@@ -87,6 +87,7 @@ function SendInnocentList(ply_or_rf)
       end
       if v:IsEvil() or (v:GetRoleTable().FakeRole and IsRoleEvil(v:GetRoleTable().FakeRole(v))) then
         table.insert(traitor_ids, v:EntIndex())
+      end
       if v:IsNeutral() or (v:GetRoleTable().FakeRole and IsRoleNeutral(v:GetRoleTable().FakeRole(v))) then
         table.insert(neutral_ids, v:EntIndex())
       end
