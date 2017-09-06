@@ -43,7 +43,7 @@ local function OpenVoteMenu()
     end
   end
   ListView.DoDoubleClick = function(List, lineID,line)
-    if LocalPlayer():IsTerror() and GetRoundState() == ROUND_ACTIVE or LocalPlayer():GetNWInt("UsedVotes", 0) <= 0 then
+    if LocalPlayer():IsTerror() and GetRoundState() == ROUND_ACTIVE and LocalPlayer():GetNWInt("UsedVotes", 0) <= 0 then
       local nick,steamid = line:GetColumnText(1), line:GetColumnText(2)
       if isstring(steamid) and steamid != "NULL" and steamid != "BOT" then
         local ply = player.GetBySteamID(steamid)
