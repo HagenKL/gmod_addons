@@ -38,14 +38,26 @@ end
 
 local function SendUpdatedFakeRoles(ply_or_rf)
   local plys = ply_or_rf or player.GetAll()
-  for k,v in pairs(plys) do
+  if istable(plys) then
+    for k,v in pairs(plys) do
+      for _,ply in pairs(player.GetAll()) do
+        if v:GetTeam() == ply:GetTeam() and ply:GetRoleTable().FakeRole and ply:IsTerror() then
+          net.Start("TTT_RoleList")
+          net.WriteUInt(ply:GetRole(),4)
+          net.WriteUInt(1,8)
+          net.WriteUInt(ply:EntIndex() - 1,7)
+          net.Send(v)
+        end
+      end
+    end
+  elseif plys:IsPlayer() then
     for _,ply in pairs(player.GetAll()) do
-      if v:GetTeam() == ply:GetTeam() and ply:GetRoleTable().FakeRole and ply:IsTerror() and ply != v then
+      if plys:GetTeam() == ply:GetTeam() and ply:GetRoleTable().FakeRole and ply:IsTerror() then
         net.Start("TTT_RoleList")
         net.WriteUInt(ply:GetRole(),4)
         net.WriteUInt(1,8)
         net.WriteUInt(ply:EntIndex() - 1,7)
-        net.Send(v)
+        net.Send(plys)
       end
     end
   end
