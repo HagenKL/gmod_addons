@@ -56,7 +56,7 @@ local function RadarScan(ply, cmd, args)
 							-- has the opposite role.
 							role = ROLE_INNOCENT
 					 elseif GetRoleTableByID(role).HideRole then
-					 		role = GetRoleTableByID(role).HideRole
+					 		role = GetRoleTableByID(role).HideRole(p)
 					 end
 
 					 table.insert(targets, {role=role, pos=pos})
