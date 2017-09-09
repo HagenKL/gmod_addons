@@ -193,10 +193,10 @@ function SCORE:ApplyEventLogScores(wintype)
       if ply:GetEvil() then
          table.insert(tbl.traitors, ply:SteamID())
       elseif ply:GetGood() then
-        if ply:IsSpecial() then
+        if ply:IsDetective() then
          table.insert(tbl.detectives, ply:SteamID())
        else
-        table.insert(tbl.innocent, ply:SteamID())
+         table.insert(tbl.innocent, ply:SteamID())
        end
       elseif role.newteam then
          table.insert(tbl[role.String .. "s"], ply:SteamID())

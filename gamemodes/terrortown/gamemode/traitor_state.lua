@@ -36,6 +36,22 @@ local function SendPlayerRole(ply)
     net.Send(ply)
 end
 
+local function SendUpdatedFakeRoles(ply_or_rf)
+  local plys = ply_or_rf or player.GetAll()
+  for k,v in pairs(plys) do
+    for _,ply in pairs(player.GetAll()) do
+      if v:GetTeam() == ply:GetTeam() and ply:GetRoleTable().FakeRole and ply:IsTerror() and ply != v then
+        print(ply, ply:GetRole(), ply:GetRoleTable().FakeRole(ply), v)
+        net.Start("TTT_RoleList")
+        net.WriteUInt(ply:GetRole(),4)
+        net.WriteUInt(1,8)
+        net.WriteUInt(ply:EntIndex() - 1,7)
+        net.Send(v)
+      end
+    end
+  end
+end
+
 local function SendRoleListMessage(role, role_ids, ply_or_rf)
    net.Start("TTT_RoleList")
       net.WriteUInt(role, 4)
@@ -54,8 +70,10 @@ end
 local function SendRoleList(role, ply_or_rf, pred)
    local role_ids = {}
    for k, v in pairs(player.GetAll()) do
-      local func = v:GetRoleTable() and v:GetRoleTable().FakeRole and !IsRolePartOfTeam(role, v:GetTeam()) and v:GetRoleTable().FakeRole(v)
-      if (v:IsRole(role) and (!func or (func and func != role))) or (func and func == role and v:IsTerror()) then
+      local tbl = v:GetRoleTable()
+      local func = tbl and tbl.FakeRole and tbl.FakeRole(v) == role
+      print(func, v)
+      if (v:IsRole(role) and !func) or (!v:IsRole(role) and func and v:IsTerror()) then
          if not pred or (pred and pred(v)) then
             table.insert(role_ids, v:EntIndex())
          end
@@ -71,7 +89,7 @@ function SendEvilList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsEvil
 function SendGoodList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if v.IsGood then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendNeutralList(ply_or_rf, pred) for k,v in pairs(TTTRoles) do if !v.IsGood and !v.IsEvil then SendRoleList(v.ID, ply_or_rf, pred) end end end
 function SendTraitorList(ply_or_rf, pred) SendRoleList(ROLE_TRAITOR, ply_or_rf, pred) end
-function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) for k,v in pairs(player.GetAll()) do if v:GetRoleTable().FakeRole and v:GetRoleTable().FakeRole(v) == ROLE_DETECTIVE then SendRoleList(ROLE_DETECTIVE, ply_or_rf) end end end
+function SendDetectiveList(ply_or_rf) SendRoleList(ROLE_DETECTIVE, ply_or_rf) end
 
 -- this is purely to make sure last round's traitors/dets ALWAYS get reset
 -- not happy with this, but it'll do for now
@@ -140,6 +158,7 @@ function SendFullStateUpdate()
    SendEvilList(GetEvilFilter())
    SendNeutralList(GetNeutralFilter())
    SendDetectiveList()
+   SendUpdatedFakeRoles()
    -- not useful to sync confirmed traitors here
 end
 
@@ -174,6 +193,7 @@ local function request_rolelist(ply)
         SendNeutralList(ply)
       end
       SendConfirmedSinglePlayer(ply)
+      SendUpdatedFakeRoles(ply)
    end
 end
 concommand.Add("_ttt_request_rolelist", request_rolelist)
