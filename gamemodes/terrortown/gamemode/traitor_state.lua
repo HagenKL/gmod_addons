@@ -41,7 +41,6 @@ local function SendUpdatedFakeRoles(ply_or_rf)
   for k,v in pairs(plys) do
     for _,ply in pairs(player.GetAll()) do
       if v:GetTeam() == ply:GetTeam() and ply:GetRoleTable().FakeRole and ply:IsTerror() and ply != v then
-        print(ply, ply:GetRole(), ply:GetRoleTable().FakeRole(ply), v)
         net.Start("TTT_RoleList")
         net.WriteUInt(ply:GetRole(),4)
         net.WriteUInt(1,8)
@@ -72,7 +71,6 @@ local function SendRoleList(role, ply_or_rf, pred)
    for k, v in pairs(player.GetAll()) do
       local tbl = v:GetRoleTable()
       local func = tbl and tbl.FakeRole and tbl.FakeRole(v) == role
-      print(func, v)
       if (v:IsRole(role) and !func) or (!v:IsRole(role) and func and v:IsTerror()) then
          if not pred or (pred and pred(v)) then
             table.insert(role_ids, v:EntIndex())
