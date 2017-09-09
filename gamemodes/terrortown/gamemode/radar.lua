@@ -55,7 +55,7 @@ local function RadarScan(ply, cmd, args)
 							-- Detectives/Traitors can see who has their role, but not who
 							-- has the opposite role.
 							role = ROLE_INNOCENT
-					 elseif GetRoleTableByID(role).HideRole then
+					 elseif GetRoleTableByID(role).HideRole(p) then
 					 		role = GetRoleTableByID(role).HideRole(p)
 					 end
 
