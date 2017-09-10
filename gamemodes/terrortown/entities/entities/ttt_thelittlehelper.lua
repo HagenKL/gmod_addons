@@ -131,6 +131,8 @@ hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, id, is_item)
 		if id == EQUIP_TLH then
 			ply.TLH = true
 			ply.HasTLH = true
+			ply:SetNWInt("TLHTime", 7)
+			ply:SetNWInt("TLHShield", 300)
 			net.Start("SetTLH")
 			net.WriteBool(true)
 			net.Send(ply)
