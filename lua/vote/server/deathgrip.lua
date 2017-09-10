@@ -80,6 +80,11 @@ local function DeathGrip(ply, inflictor, attacker)
     dmginfo:SetDamageType(DMG_GENERIC)
     temp:TakeDamageInfo(dmginfo) // kill the other guy
     SendDeathGripMessage()
+  elseif ply.DeathGrip and IsValid(ply.DeathGrip) and ply.DeathGrip:IsTerror() and (attacker:IsWorld() or inflictor:IsWorld()) then
+      SendDeathGripReset(ply)
+      SendDeathGripReset(ply.DeathGrip)
+      ply.DeathGrip.DeathGrip = nil
+      ply.DeathGrip = nil
   end
   if attacker:IsPlayer() and attacker:GetShinigami() and attacker.ShinigamiRespawned and ply:GetGood() then
     local dmginfo = DamageInfo()

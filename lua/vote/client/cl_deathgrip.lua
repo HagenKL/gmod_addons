@@ -42,6 +42,11 @@ local function PaintBar(x, y, w, h, colors)
 end
 
 local function DeathGripHUD() // similar to TTT Code
+
+  local client = LocalPlayer()
+
+  if !client.DeathGrip then return end
+  
   local width = 250
   local height = 90
 
@@ -57,7 +62,7 @@ local function DeathGripHUD() // similar to TTT Code
   draw.SimpleText("Death Grip", "TraitorState", x+2, y+16, COLOR_BLACK, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
   draw.SimpleText("Death Grip", "TraitorState", x, y+14, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
-  local str = LocalPlayer().DeathGrip:Nick()
+  local str = client.DeathGrip:Nick()
 
   if surface.GetTextSize(str) > 250 then
     draw.SimpleText(string.sub(str,1,12) .. "...", "HealthAmmo", x-58, y+46, COLOR_BLACK, TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
