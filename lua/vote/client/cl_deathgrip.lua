@@ -45,7 +45,7 @@ local function DeathGripHUD() // similar to TTT Code
 
   local client = LocalPlayer()
 
-  if !client.DeathGrip then return end
+  if !client.DeathGrip or !IsValid(client.DeathGrip) then return end
   
   local width = 250
   local height = 90
