@@ -55,6 +55,8 @@ SWEP.IsSilent = false
 SWEP.NoSights = true
 SWEP.UseHands = false
 SWEP.CanBuy = {}
+SWEP.TPClipSize = 1
+--SWEP.TPDefaultClip = 1
 
 if (detectiveEnabled:GetBool()) then
 	table.insert(SWEP.CanBuy, ROLE_DETECTIVE)
@@ -82,7 +84,8 @@ end
 function SWEP:Deploy()
 	if SERVER then
 		net.Start("SATMMessage")
-		net.WriteInt(self.satmmode, 16)
+		net.WriteInt(self.satmmode, 6)
+		net.WriteInt(self.TPClipSize, 6)
 		net.Send(self.Owner)
 	end
 	return self.BaseClass.Deploy(self)
@@ -95,11 +98,24 @@ local function ResetTimeScale()
 end
 
 function SWEP:PrimaryAttack()
-	if !self:CanPrimaryAttack() then return end
-	self:DoSATMAnimation(true)
+	if not self:CanPrimaryAttack() then return end
+	if not IsFirstTimePredicted() then return end
+
+	if self.satmmode == 4 and self.TPClipSize <= 0 then
+		self:DoSATMAnimation(false)
+		if SERVER then
+			net.Start("SATMMessage")
+			net.WriteInt(25, 6)
+			net.Send(self.Owner)
+		end
+		return
+	else
+		self:DoSATMAnimation(true)
+	end
 
 	if SERVER then
 		local owner = self.Owner
+
 		if self.satmmode == 1 || self.satmmode == 2 || self.satmmode == 3 then
 			timer.Remove("ResetSATM")
 			game.SetTimeScale(self.timescale)
@@ -112,7 +128,7 @@ function SWEP:PrimaryAttack()
 		elseif self.satmmode == 4 then
 			if !owner:OnGround() or owner:Crouching() then
 				net.Start("SATMMessage")
-				net.WriteInt(20, 16)
+				net.WriteInt(20, 6)
 				net.Send(owner)
 
 				return
@@ -127,7 +143,7 @@ function SWEP:PrimaryAttack()
 
 			if #aliveplayers <= 0 then
 				net.Start("SATMMessage")
-				net.WriteInt(15, 16)
+				net.WriteInt(15, 6)
 				net.Send(owner)
 				return
 			end
@@ -147,13 +163,14 @@ function SWEP:PrimaryAttack()
 			end
 
 			net.Start("SATMMessage")
-			net.WriteInt(10, 16)
+			net.WriteInt(10, 6)
 			net.WriteString(ply:Nick())
 			net.Send(owner)
 		end
 	end
 
 	self:TakePrimaryAmmo(1)
+	if ( self.satmmode == 4 ) then self.TPClipSize = self.TPClipSize - 1 end
 end
 
 function SWEP:SecondaryAttack()
@@ -174,7 +191,8 @@ function SWEP:SecondaryAttack()
 
 	if SERVER then
 		net.Start("SATMMessage")
-		net.WriteInt(self.satmmode, 16)
+		net.WriteInt(self.satmmode, 6)
+		if self.satmmode == 4 then net.WriteInt(self.TPClipSize, 6) end
 		net.Send(self.Owner)
 	end
 end
@@ -209,7 +227,7 @@ function SWEP:OnDrop()
 	if SERVER then
 		if game.GetTimeScale() != 1 then
 			net.Start("SATMMessage")
-			net.WriteInt(0, 16)
+			net.WriteInt(0, 6)
 			net.Broadcast()
 			game.SetTimeScale(1)
 			net.Start("SATMEndSound")
@@ -236,7 +254,7 @@ else
 	end)
 
 	net.Receive("SATMMessage", function()
-		local mode = net.ReadInt(16)
+		local mode = net.ReadInt(6)
 
 		if mode == 0 then
 			chat.AddText("SATM: ", Color(255, 255, 255), "The Space and Time-Manipulator is now destroyed and the time is reset!")
@@ -247,7 +265,8 @@ else
 		elseif mode == 3 then
 			chat.AddText("SATM: ", Color(255, 255, 255), "Mode: Normal time.")
 		elseif mode == 4 then
-			chat.AddText("SATM: ", Color(255, 255, 255), "Mode: Swap your position with a random player.")
+			local charges = net.ReadInt(6)
+			chat.AddText("SATM: ", Color(255, 255, 255), "Mode: Swap your position with a random player. " .. "Charges left: " .. charges)
 		elseif mode == 10 then
 			local nick = net.ReadString()
 			chat.AddText("SATM: ", Color(255, 255, 255), "You swapped your position with ", COLOR_GREEN, nick, COLOR_WHITE, ".")
@@ -255,6 +274,9 @@ else
 			chat.AddText("SATM: ", Color(255, 255, 255), "No more players alive or all alive players crouching!")
 		elseif mode == 20 then
 			chat.AddText("SATM: ", Color(255, 255, 255), "You need to stand on the ground and to not be crouching to switch positions!")
+		elseif mode == 25 then
+			chat.AddText("SATM: ", Color(255, 255, 255), "No charges left for teleportation!")
+			surface.PlaySound( "common/wpn_denyselect.wav" )
 		end
 
 		chat.PlaySound()
