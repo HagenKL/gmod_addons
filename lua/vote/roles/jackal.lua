@@ -41,11 +41,12 @@ local function AddJackal()
 		},
 		DeathFunction = function(ply)
 			if ply.NOWINASC then return end
-			for k,v in pairs(util.GetAlivePlayers()) do
-				if v:GetSidekick() then
+			for k,v in pairs(player.GetAll()) do
+				if v:IsTerror() and v:GetSidekick() then
 					v:SetRole(ROLE_JACKAL)
 					SendFullStateUpdate()
 					v:SetDefaultCredits()
+					break
 				end
 			end
 		end
