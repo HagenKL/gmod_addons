@@ -142,7 +142,7 @@ local function PrintCenteredText(txt,delay,color)
 end
 
 local function GetRoleColor(role,ply)
-	return (IsValid(ply) or ply:IsTerror()) and COLOR_ORANGE or (role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and COLOR_RED or COLOR_GREEN
+	return !(IsValid(ply) and ply:IsTerror()) and COLOR_ORANGE or (role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and COLOR_RED or COLOR_GREEN
 end
 
 if CLIENT then
