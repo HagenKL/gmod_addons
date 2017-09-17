@@ -57,6 +57,8 @@ local function RadarScan(ply, cmd, args)
 							role = ROLE_INNOCENT
 					 elseif GetRoleTableByID(role).HideRole and GetRoleTableByID(role).HideRole(p) then
 					 		role = GetRoleTableByID(role).HideRole(p)
+					 elseif GetRoleTableByID(role).FakeRole and GetRoleTableByID(role).FakeRole(p) and IsRolePartOfTeam(GetRoleTableByID(role).FakeRole(p), ply:GetTeam()) then
+					 		role = GetRoleTableByID(role).FakeRole(p)
 					 end
 
 					 table.insert(targets, {role=role, pos=pos})
