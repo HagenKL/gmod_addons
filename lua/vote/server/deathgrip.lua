@@ -117,6 +117,7 @@ local function BreakDeathGrip(ply)
         SendShinigamiInfo(ply)
         ply.ShinigamiRespawned = true
         ply.ShiniDamage = 1
+        ply:StripWeapons()
         ply:Give("weapon_ttt_shinigamiknife")
         ply:SelectWeapon("weapon_ttt_shinigamiknife")
       end)
