@@ -82,8 +82,8 @@ local function SendRoleList(role, ply_or_rf, pred)
    local role_ids = {}
    for k, v in pairs(player.GetAll()) do
       local tbl = v:GetRoleTable()
-      local func = tbl and tbl.FakeRole and tbl.FakeRole(v) == role
-      if (v:IsRole(role) and !func) or (!v:IsRole(role) and func and v:IsTerror()) then
+      local func = tbl and tbl.FakeRole and v:IsTerror() and tbl.FakeRole(v) == role
+      if (v:IsRole(role) and !func) or (!v:IsRole(role) and func) then
          if not pred or (pred and pred(v)) then
             table.insert(role_ids, v:EntIndex())
          end
