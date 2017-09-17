@@ -116,9 +116,6 @@ if SERVER then
 			killer:TakeDamageInfo(dmginfo)
 			SendMFMessages(victim, killer)
 			killer:SetGravity(1)
-			killer:SetNWBool("body_found", true)
-			local corpse = ConfirmBody(killer)
-			corpse:Remove()
     	end
     end)
   end
