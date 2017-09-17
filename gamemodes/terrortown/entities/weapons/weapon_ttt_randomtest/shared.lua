@@ -23,8 +23,8 @@ end
 
 
 function SWEP:Precache()
-	util.PrecacheSound("weapons/gaben.wav")
-	util.PrecacheSound("weapons/run.mp3")
+   util.PrecacheSound("weapons/gaben.wav")
+   util.PrecacheSound("weapons/run.mp3")
 end
 
 SWEP.Author = "Gamefreak"
@@ -71,11 +71,11 @@ function SWEP:OnRemove()
 end
 
 function SWEP:SecondaryAttack()
-	self:SetNextSecondaryFire(CurTime()+self.Secondary.Delay)
+	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 	self:EmitSound("weapons/gaben.wav",500)
 end
 
-function GetRandomTesterPlayer()
+local function GetRandomTesterPlayer()
 	local result = {}
 	for k,v in pairs(player.GetAll()) do
 		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsEvil and (v:IsEvil() or v:IsNeutral()))) and !v:GetNWBool("RTTested") then
@@ -90,18 +90,18 @@ function SWEP:HandleMessages(ply)
 	local role, nick = ply:GetRole(), ply:Nick()
 	local owner, ownerNick = self.Owner, self.Owner:Nick()
 	local rolestring = ply:GetRoleString()
-	local id= ply:EntIndex()
+	local id = ply:EntIndex()
 	local txtDelay = self.TextDelay
 
 	ply:SetNWBool("RTTested", true)
 
-	if timer.Exists("RT Timer".. id) then return end
+	if timer.Exists("RT Timer" .. id) then return end
 
 	net.Start("rt started")
 		net.WriteUInt(self.Delay,8)
 	net.Broadcast()
 
-	if (role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) then
+	if (role == ROLE_TRAITOR or (_G.IsRolePartOfTeam and !IsRolePartOfTeam(role, WIN_INNOCENT))) then
 		net.Start("rt notify traitor")
 			net.WriteUInt(txtDelay,8)
 		net.Send(ply)
@@ -109,10 +109,10 @@ function SWEP:HandleMessages(ply)
 
 	util.PrecacheSound("weapons/prank.mp3")
 
-	timer.Create("RT Timer "..id,self.Delay,1, function()
-		if GetRoundState()!=ROUND_ACTIVE then return end
+	timer.Create("RT Timer " .. id,self.Delay,1, function()
+		if GetRoundState() != ROUND_ACTIVE then return end
 
-		DamageLog("RTester:\t".. ownerNick .. "[".. owner:GetRoleString() .."] tested "..nick.." [".. rolestring .."]")
+		DamageLog("RTester:\t" .. ownerNick .. "[" .. owner:GetRoleString() .. "] tested " .. nick .. "[" .. rolestring .. "]")
 
 		local valid = IsValid(ply)
 		role,nick = valid and ply:GetRole() or role,valid and ply:Nick() or nick
@@ -131,10 +131,10 @@ end
 local function PrintCenteredText(txt,delay,color)
 	if hook.GetTable()["RT Draw Text"] then
 		hook.Remove("HUDPaint","RT Draw Text")
-		hook.Add("HUDPaint","RT Draw Text", function() draw.DrawText(txt,"CloseCaption_Bold",ScrW()*0.5,ScrH()*0.2,color,TEXT_ALIGN_CENTER) end)
+		hook.Add("HUDPaint","RT Draw Text", function() draw.DrawText(txt,"CloseCaption_Bold",ScrW() * 0.5,ScrH() * 0.2,color,TEXT_ALIGN_CENTER) end)
 		timer.Adjust("RT Remove Text",delay,1, function() hook.Remove("HUDPaint","RT Draw Text") hook.Remove("TTTEndRound","RT Remove Text") hook.Remove("TTTPrepareRound","RT Remove Text") end)
 	else
-		hook.Add("HUDPaint","RT Draw Text", function() draw.DrawText(txt,"CloseCaption_Bold",ScrW()*0.5,ScrH()*0.2,color,TEXT_ALIGN_CENTER) end)
+		hook.Add("HUDPaint","RT Draw Text", function() draw.DrawText(txt,"CloseCaption_Bold",ScrW() * 0.5,ScrH() * 0.2,color,TEXT_ALIGN_CENTER) end)
 		hook.Add("TTTEndRound","RT Remove Text", function() hook.Remove("HUDPaint","RT Draw Text") hook.Remove("TTTEndRound","RT Remove Text") hook.Remove("TTTPrepareRound","RT Remove Text") timer.Remove("RT Remove Text") end)
 		hook.Add("TTTPrepareRound","RT Remove Text", function() hook.Remove("HUDPaint","RT Draw Text") hook.Remove("TTTEndRound","RT Remove Text") hook.Remove("TTTPrepareRound","RT Remove Text") timer.Remove("RT Remove Text") end)
 		timer.Create("RT Remove Text",delay,1, function() hook.Remove("HUDPaint","RT Draw Text") hook.Remove("TTTEndRound","RT Remove Text") hook.Remove("TTTPrepareRound","RT Remove Text") end)
@@ -147,11 +147,11 @@ end
 
 if CLIENT then
 	net.Receive("rt failed", function()
-		chat.AddText("Random Test: ", COLOR_WHITE, "The Random Tester hasn't found an alive player that isn't a detective.")
+		chat.AddText("Random Tester: ", COLOR_WHITE, "The Random Tester couldn't find any valid players.")
 	end)
 
 	net.Receive("rt started", function()
-		chat.AddText("Random Test: ", COLOR_WHITE, "The Random Test result will show up in "..net.ReadUInt(8).." seconds!")
+		chat.AddText("Random Tester: ", COLOR_WHITE, "The Random Test result will show up in " .. net.ReadUInt(8) .. " seconds!")
 	end)
 
 	net.Receive("rt notify traitor", function()
@@ -165,27 +165,32 @@ if CLIENT then
 		local valid = IsValid(ply)
 		local nick = valid and Nick or "\"" .. Nick .. "\" (unconnected)"
 
-		if valid && ply:IsSpec() then surface.PlaySound("weapons/prank.mp3") end
-
 		if valid then
-			if !(valid && ply:IsTerror()) then chat.AddText("Random Test: ", roleColor,nick,textColor," was ",roleColor,roleString,textColor,"!")
-			else if lply:IsTerror() then PrintCenteredText(nick .." is ".. roleString .."!",txtDelay,roleColor) end chat.AddText("Random Test: ", roleColor,nick,textColor," is ",roleColor,roleString,textColor,"!") end
+			if !(valid and ply:IsTerror()) then
+				chat.AddText("Random Tester: ", roleColor,nick,textColor," was ",roleColor,roleString,textColor,"!")
+				surface.PlaySound("weapons/prank.mp3")
+			else
+				if lply:IsTerror() then
+					PrintCenteredText(nick .. " is " .. roleString .. "!",txtDelay,roleColor)
+				end
+			chat.AddText("Random Tester: ", roleColor,nick,textColor," is ",roleColor,roleString,textColor,"!") end
 		end
 		chat.PlaySound()
 	end)
 end
 
 function SWEP:PrimaryAttack()
-	self:SetNextPrimaryFire(CurTime()+self.Delay)
-	self:EmitSound("weapons/wiimote_meow.wav",500)
+	self:SetNextPrimaryFire(CurTime() + self.Delay)
 	if CLIENT then return end
-	if GetRoundState()==ROUND_ACTIVE then self:HandleMessages(GetRandomTesterPlayer()) end
+	if GetRoundState() == ROUND_ACTIVE then
+		self:HandleMessages(GetRandomTesterPlayer())
+	end
 	self:Remove()
 end
 
 hook.Add("TTTPrepareRound","RTReset",function()
 	for k,v in pairs(player.GetAll()) do
 		v:SetNWBool("RTTested", false)
-    	timer.Remove("RT Timer "..v:EntIndex())
+	   	timer.Remove("RT Timer " .. v:EntIndex())
 	end
 end)
