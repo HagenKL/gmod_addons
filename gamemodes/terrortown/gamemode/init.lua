@@ -934,7 +934,7 @@ function SelectRoles()
    end
 
    for k,v in pairs(TTTRoles) do
-     if not v.IsDefault or v.DontSelect then
+     if not v.IsDefault and not v.DontSelect then
        if v.String == "hunter" and GetConVar("ttt_" .. v.String .. "_enabled", false):GetBool() and not TotemEnabled() then  -- special for hunter
          print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 and ttt_totem to 1 to enable!(requires restart or map change)")
          continue
