@@ -934,7 +934,7 @@ function SelectRoles()
    end
 
    for k,v in pairs(TTTRoles) do
-     if not v.IsDefault then
+     if not v.IsDefault or v.DontSelect then
        if v.String == "hunter" and GetConVar("ttt_" .. v.String .. "_enabled", false):GetBool() and not TotemEnabled() then  -- special for hunter
          print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 and ttt_totem to 1 to enable!(requires restart or map change)")
          continue
@@ -947,7 +947,7 @@ function SelectRoles()
          print("The " .. v.Rolename .. " Role is disabled, set ttt_" .. v.String .. "_enabled to 1 to enable!")
          continue
        end
-       if (v.Chanceperround and v.Chanceperround < math.random(0,1) and not v.RoleForce) or v.DontSelect then
+       if (v.Chanceperround and v.Chanceperround < math.random(0,1) and not v.RoleForce) then
           continue
        end
        if v.IsGoodReplacement and (choice_count >= GetConVar("ttt_" .. v.String .. "_min_players"):GetInt() or v.RoleForce) and #goodtbl <= det_count then
