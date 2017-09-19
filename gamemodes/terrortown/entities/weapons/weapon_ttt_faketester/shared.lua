@@ -89,23 +89,6 @@ function SWEP:HandleMessages(ply)
 	local role, nick = ply:GetRole(), ply:Nick()
 	local owner, ownerNick = self.Owner, self.Owner:Nick()
 	local rolestring = ply:GetRoleString()
-	if TTTVote then
-		if (owner:IsEvil() and IsRoleEvil(GetRoleTableByString(rolestring).ID)) or (owner:IsNeutral() and IsRoleNeutral(GetRoleTableByString(rolestring).ID)) then
-			role = ROLE_INNOCENT
-			rolestring = "innocent"
-		else
-			role = ROLE_TRAITOR
-			rolestring = "traitor"
-		end
-	else
-		if owner:IsTraitor() and ply:IsTraitor() then
-			role = ROLE_INNOCENT
-			rolestring = "innocent"
-		else
-			role = ROLE_TRAITOR
-			rolestring = "traitor"
-		end
-	end
 	local id = ply:EntIndex()
 	local txtDelay = self.TextDelay
 
@@ -124,14 +107,32 @@ function SWEP:HandleMessages(ply)
 	timer.Create("FT Timer " .. id,self.Delay,1, function()
 		if GetRoundState() != ROUND_ACTIVE then return end
 
-		DamageLog("FTester:\t" .. ownerNick .. "[" .. owner:GetRoleString() .. "] fake tested " .. nick .. "[" .. rolestring .. "]")
-
 		local valid = IsValid(ply)
 		role,nick = valid and ply:GetRole() or role,valid and ply:Nick() or nick
 
+		if TTTVote then
+			if (owner:IsEvil() and IsRoleEvil(GetRoleTableByString(rolestring).ID)) or (owner:IsNeutral() and IsRoleNeutral(GetRoleTableByString(rolestring).ID)) then
+				role = ROLE_INNOCENT
+				rolestring = "innocent"
+			else
+				role = ROLE_TRAITOR
+				rolestring = "traitor"
+			end
+		else
+			if owner:IsTraitor() and ply:IsTraitor() then
+				role = ROLE_INNOCENT
+				rolestring = "innocent"
+			else
+				role = ROLE_TRAITOR
+				rolestring = "traitor"
+			end
+		end
+
+		DamageLog("FTester:\t" .. ownerNick .. "[" .. owner:GetRoleString() .. "] fake tested " .. nick .. "[" .. rolestring .. "]")
+
 		net.Start("ft result")
 			net.WriteEntity(ply)
-			net.WriteUInt(role, 2)
+			net.WriteUInt(role, 4)
 			net.WriteString(rolestring)
 			net.WriteString(nick)
 			net.WriteUInt(txtDelay,8)
@@ -163,7 +164,7 @@ if CLIENT then
 	end)
 
 	net.Receive("ft result", function()
-		local ply, role, roleString, Nick, txtDelay, lply = net.ReadEntity(),net.ReadUInt(2),net.ReadString(),net.ReadString(),net.ReadUInt(8),LocalPlayer()
+		local ply, role, roleString, Nick, txtDelay, lply = net.ReadEntity(),net.ReadUInt(4),net.ReadString(),net.ReadString(),net.ReadUInt(8),LocalPlayer()
 		local roleColor, textColor = GetFakeRoleColor(role,ply), COLOR_WHITE
 		local valid = IsValid(ply)
 		local nick = valid and Nick or "\"" .. Nick .. "\" (unconnected)"
@@ -184,7 +185,6 @@ end
 
 function SWEP:PrimaryAttack()
 	self:SetNextPrimaryFire(CurTime() + self.Delay)
-	self:EmitSound("weapons/wiimote_meow.wav",500)
 	if CLIENT then return end
 	if GetRoundState() == ROUND_ACTIVE then
 		self:HandleMessages(GetFakeTesterPlayer())

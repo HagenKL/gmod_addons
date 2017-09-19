@@ -119,7 +119,7 @@ function SWEP:HandleMessages(ply)
 
 		net.Start("rt result")
 			net.WriteEntity(ply)
-			net.WriteUInt(role, 2)
+			net.WriteUInt(role, 4)
 			net.WriteString(rolestring)
 			net.WriteString(nick)
 			net.WriteUInt(txtDelay,8)
@@ -160,7 +160,7 @@ if CLIENT then
 	end)
 
 	net.Receive("rt result", function()
-		local ply, role, roleString, Nick, txtDelay, lply = net.ReadEntity(),net.ReadUInt(2),net.ReadString(),net.ReadString(),net.ReadUInt(8),LocalPlayer()
+		local ply, role, roleString, Nick, txtDelay, lply = net.ReadEntity(),net.ReadUInt(4),net.ReadString(),net.ReadString(),net.ReadUInt(8),LocalPlayer()
 		local roleColor, textColor = GetRoleColor(role,ply), COLOR_WHITE
 		local valid = IsValid(ply)
 		local nick = valid and Nick or "\"" .. Nick .. "\" (unconnected)"
@@ -181,6 +181,7 @@ end
 
 function SWEP:PrimaryAttack()
 	self:SetNextPrimaryFire(CurTime() + self.Delay)
+	self:EmitSound("weapons/wiimote_meow.wav",500)
 	if CLIENT then return end
 	if GetRoundState() == ROUND_ACTIVE then
 		self:HandleMessages(GetRandomTesterPlayer())
