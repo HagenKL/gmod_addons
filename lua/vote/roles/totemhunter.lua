@@ -5,7 +5,7 @@ local function AddHunter()
 		IsGood = false, -- Fights for the good
 		IsEvil = true, -- Fights for the bad
 		IsSpecial = true, -- Is it special, eg. not innocent
-		Creditsforkills = false, -- Gets Credits for kills
+		Creditsforkills = true, -- Gets Credits for kills
 		ShortString = "hunter", -- for icons
 		Short = "h", -- short for icons, ttt based
 		IsDefault = false, -- Is default in TTT, obviously no
