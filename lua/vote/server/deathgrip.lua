@@ -111,11 +111,13 @@ local function BreakDeathGrip(ply)
       CORPSE.SetFound(corpse, true)
       corpse:Remove()
     end)
+    ply.NOWINSHINI = false
     if !ply.ShinigamiRespawned then
       timer.Simple(0.15, function()
         ply:SpawnForRound(true)
         SendShinigamiInfo(ply)
         ply.ShinigamiRespawned = true
+        ply.NOWINSHINI = true
         ply.ShiniDamage = 1
         ply:StripWeapons()
         ply:Give("weapon_ttt_shinigamiknife")
@@ -137,12 +139,13 @@ local function ResetDeathGrips()
   for k,v in pairs(player.GetAll()) do
     v.DeathGrip = nil // Reset
     v.ShinigamiRespawned = false
+    v.NOWINSHINI = false
   end
 end
 
 local function ShinigamiPreventWin()
   for k,v in pairs(player.GetAll()) do
-    if v:GetShinigami() and !v.ShinigamiRespawned and !v:IsTerror() then return WIN_NONE end
+    if v:GetShinigami() and v.NOWINSHINI and !v:IsTerror() then return WIN_NONE end
   end
 end
 
@@ -162,6 +165,7 @@ local function TTTSetShinigami(ply)
   if ply:GetShinigami() and (GetRoundState() == ROUND_ACTIVE or GetRoundState() == ROUND_POST) then
     if ply.ShinigamiRespawned then
       ply.ShinigamiRespawned = false
+      ply.NOWINSHINI = false
     end
     net.Start("TTT_RoleList")
     net.WriteUInt(ROLE_SHINIGAMI,4)
