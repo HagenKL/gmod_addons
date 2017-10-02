@@ -1,6 +1,7 @@
 local detectiveEnabled = CreateConVar("ttt_satm_detective", 0, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should Detectives be able to buy the SATM?")
 local traitorEnabled = CreateConVar("ttt_satm_traitor", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should Traitors be able to buy the SATM?")
 local satmduration = CreateConVar("ttt_satm_duration", 10, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long the duration of the SATM should be?")
+local satmteleportcharges = CreateConVar("ttt_satm_teleport_charges", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How many charges should the teleport function have?")
 --GeneralSettings\\
 SWEP.Base = "weapon_tttbase"
 SWEP.Spawnable = true
@@ -55,7 +56,7 @@ SWEP.IsSilent = false
 SWEP.NoSights = true
 SWEP.UseHands = false
 SWEP.CanBuy = {}
-SWEP.TPClipSize = 1
+SWEP.TPClipSize = satmteleportcharges:GetInt()
 --SWEP.TPDefaultClip = 1
 
 if (detectiveEnabled:GetBool()) then
