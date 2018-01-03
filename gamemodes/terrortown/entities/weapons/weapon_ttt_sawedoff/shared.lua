@@ -1,3 +1,5 @@
+DEFINE_BASECLASS "weapon_tttbase"
+
 if SERVER then
    AddCSLuaFile( "shared.lua" )
    resource.AddFile("materials/VGUI/ttt/icon_sawedoff.vmt")
