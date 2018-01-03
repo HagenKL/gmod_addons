@@ -149,27 +149,27 @@ if CLIENT then
 end
 
 hook.Add("TTTPlayerSpeedModifier", "StaminUpSpeed", function(ply)
-  if ply:GetNWBool("StaminUpActive",false) and ply:HasEquipmentItem(EQUIP_STAMINUP) then
+  if ply:GetNWBool("StaminUpActive",false) then
     return 1.5
   end
 end)
 
-  function SWEP:Initialize()
-    timer.Simple(0.1, function()
-      self:DrinkTheBottle()
-      if CLIENT then
-        if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
-          local vm = LocalPlayer():GetViewModel()
-          local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
-          oldmat = vm:GetMaterial() or ""
-          vm:SetMaterial(mat)
-        end
+function SWEP:Initialize()
+  timer.Simple(0.1, function()
+    self:DrinkTheBottle()
+    if CLIENT then
+      if self.Owner == LocalPlayer() and LocalPlayer().GetViewModel then
+        local vm = LocalPlayer():GetViewModel()
+        local mat = "models/perk_bottle/c_perk_bottle_stamin" --perk_materials[self:GetPerk()]
+        oldmat = vm:GetMaterial() or ""
+        vm:SetMaterial(mat)
       end
-    end)
-    return self.BaseClass.Initialize(self)
-  end
+    end
+  end)
+  return self.BaseClass.Initialize(self)
+end
 
-  function SWEP:GetViewModelPosition( pos, ang )
+function SWEP:GetViewModelPosition( pos, ang )
 
  	local newpos = LocalPlayer():EyePos()
 	local newang = LocalPlayer():EyeAngles()
