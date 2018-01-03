@@ -148,11 +148,11 @@ if CLIENT then
     end)
 end
 
-hook.Add("TTTPlayerSpeed", "StaminUpSpeed", function(ply)
-    if ply:GetNWBool("StaminUpActive",false) and ply:HasEquipmentItem(EQUIP_STAMINUP) then
-      return 1.5
-    end
-  end)
+hook.Add("TTTPlayerSpeedModifier", "StaminUpSpeed", function(ply)
+  if ply:GetNWBool("StaminUpActive",false) and ply:HasEquipmentItem(EQUIP_STAMINUP) then
+    return 1.5
+  end
+end)
 
   function SWEP:Initialize()
     timer.Simple(0.1, function()

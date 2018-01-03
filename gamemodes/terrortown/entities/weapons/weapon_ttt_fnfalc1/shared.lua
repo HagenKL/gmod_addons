@@ -60,9 +60,7 @@ SWEP.IronSightsPos = Vector(2.5, -0.81, -0.5)
 SWEP.IronSightsAng = Vector(0, 0, 0)
 
 function SWEP:SetZoom(state)
-   if CLIENT then
-      return
-   elseif IsValid(self.Owner) and self.Owner:IsPlayer() then
+   if IsValid(self.Owner) and self.Owner:IsPlayer() then
       if state then
          self.Owner:SetFOV(20, 0.3)
       else
@@ -85,9 +83,8 @@ function SWEP:SecondaryAttack()
 
    self:SetIronsights( bIronsights )
 
-   if SERVER then
-      self:SetZoom(bIronsights)
-   else
+   self:SetZoom(bIronsights)
+   if (CLIENT) then
       self:EmitSound(self.Secondary.Sound)
    end
 
@@ -101,7 +98,7 @@ function SWEP:PreDrop()
 end
 
 function SWEP:Reload()
-	if ( self:Clip1() == self.Primary.ClipSize or self.Owner:GetAmmoCount( self.Primary.Ammo ) <= 0 ) then return end
+   if ( self:Clip1() == self.Primary.ClipSize or self.Owner:GetAmmoCount( self.Primary.Ammo ) <= 0 ) then return end
    self:DefaultReload( ACT_VM_RELOAD )
    self:SetIronsights( false )
    self:SetZoom( false )
@@ -119,7 +116,7 @@ if CLIENT then
    function SWEP:DrawHUD()
       if self:GetIronsights() then
          surface.SetDrawColor( 0, 0, 0, 255 )
-
+         
          local scrW = ScrW()
          local scrH = ScrH()
 
@@ -148,7 +145,7 @@ if CLIENT then
          local w = (x - sh) + 2
          surface.DrawRect(0, 0, w, scope_size)
          surface.DrawRect(x + sh - 2, 0, w, scope_size)
-
+         
          -- cover gaps on top and bottom of screen
          surface.DrawLine( 0, 0, scrW, 0 )
          surface.DrawLine( 0, scrH - 1, scrW, scrH - 1 )

@@ -190,9 +190,9 @@ if CLIENT then
     end)
 end
 
-hook.Add("TTTPlayerSpeed", "HomebatSpeed" , function(ply)
+hook.Add("TTTPlayerSpeedModifier", "HomebatSpeed" , function(ply)
     local wep=ply:GetActiveWeapon()
-    if wep and IsValid(wep) and wep:GetClass()=="weapon_ttt_homebat" and !ply.RandomatSuperSpeed then
+    if wep and IsValid(wep) and wep:GetClass()=="weapon_ttt_homebat" then
       return 1.25
     end
-  end )
+end )

@@ -14,7 +14,7 @@ function EVENT:Begin()
 			ply:SetHealth(50)
 		end
 	end
-  self:AddHook("TTTPlayerSpeed", function()
+  self:AddHook("TTTPlayerSpeedModifier", function()
     return 1.5
   end)
 end

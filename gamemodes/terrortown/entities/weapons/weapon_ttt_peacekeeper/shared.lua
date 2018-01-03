@@ -310,13 +310,6 @@ if SERVER then
 
 	function SWEP:Reload() end
 
-	local function HighNoonSpeed(ply)
-		local w = ply:GetActiveWeapon()
-		if w and IsValid(w) and w:GetClass() == "weapon_ttt_peacekeeper" and w:HighNoonActive() then
-			return 0.2
-		end
-	end
-
 	local function HighNoonDamage(ply, hitgroup, dmginfo)
 		local wep = util.WeaponFromDamage(dmginfo)
 		if wep and wep:GetClass() == "weapon_ttt_peacekeeper" then
@@ -344,7 +337,6 @@ if SERVER then
 		end
 	end
 
-	hook.Add("TTTPlayerSpeed", "HighnoonSpeed" , HighNoonSpeed)
 	hook.Add("ScalePlayerDamage", "HighNoonDamage", HighNoonDamage)
 	hook.Add("TTTPrepareRound", "ResetHighNoon", ResetHighNoon)
 
@@ -434,6 +426,15 @@ elseif CLIENT then
 			surface.PlaySound("weapons/peacekeeper/draw.wav")
 		end)
 end
+
+local function HighNoonSpeed(ply)
+	local w = ply:GetActiveWeapon()
+	if w and IsValid(w) and w:GetClass() == "weapon_ttt_peacekeeper" and w:HighNoonActive() then
+		return 0.2
+	end
+end
+
+hook.Add("TTTPlayerSpeedModifier", "HighnoonSpeed" , HighNoonSpeed)
 
 function SWEP:HighNoonActive()
 	return (self:GetHighNoon() == "charging" or self:GetHighNoon() == "firing" or self:GetHighNoon() == "starting")

@@ -81,6 +81,12 @@ hook.Add("SetupMove", "Multi Jump", function(ply, mv)
 	end
 end )
 
+hook.Add("TTTPlayerSpeedModifier", "BlueBullSpeed" , function(ply)
+	if ply:HasEquipmentItem(EQUIP_BLUE_BULL) and !ply:GetNWBool("DRDead") and !ply:GetActiveWeapon() == "weapon_ttt_homebat" and !ply:GetNWBool("ItsHighNoon") and !ply:GetNWBool("ItsHighNoonshooting") and !ply.RandomatSuperSpeed and !ply.RandomatSpeed then
+		 return 1.2 -- a little speed buff
+	end
+end )
+
 if SERVER then
 
 	hook.Add("TTTOrderedEquipment", "TTTBlueBull3", function(ply, equipment, is_item)
@@ -91,11 +97,7 @@ if SERVER then
 			ply.BoughtBlueBull = true
 		end
 	end )
-	hook.Add("TTTPlayerSpeed", "BlueBullSpeed" , function(ply)
-			if ply:HasEquipmentItem(EQUIP_BLUE_BULL) and !ply:GetNWBool("DRDead") and !ply:GetActiveWeapon() == "weapon_ttt_homebat" and !ply:GetNWBool("ItsHighNoon") and !ply:GetNWBool("ItsHighNoonshooting") and !ply.RandomatSuperSpeed and !ply.RandomatSpeed then
-				 return 1.2 -- a little speed buff
-			end
-	end )
+	
 	hook.Add("EntityTakeDamage", "BlueBullFallDamage", function(ent, dmg)
 		if IsValid(ent) and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_BLUE_BULL) and dmg:IsFallDamage() then
 			dmg:ScaleDamage(0.75)  -- reduce the fall damage a bit
