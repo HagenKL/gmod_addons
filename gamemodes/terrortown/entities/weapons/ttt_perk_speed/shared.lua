@@ -147,7 +147,83 @@ function ApplySpeed(wep)
       wep.OldStartReload = wep.StartReload
       wep.OldPerformReload = wep.PerformReload
       wep.OldFinishReload = wep.FinishReload
-      wep.StartReload = function( self, ...)
+      if wep.SetReloading then
+        wep.StartReload = function( self, ...)
+            if self:GetReloading() then
+                  return false
+             end
+
+          self:SetIronsights( false )
+
+          if !IsFirstTimePredicted() then return false end
+
+          self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+
+          local ply = self.Owner
+
+          if not ply or ply:GetAmmoCount(self.Primary.Ammo) <= 0 then
+            return false
+          end
+
+          local wep = self
+
+          if wep:Clip1() >= self.Primary.ClipSize then
+            return false
+          end
+
+          wep:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
+          self:SetPlaybackRate(2)
+          self.Owner:GetViewModel():SetPlaybackRate(2)
+          self.reloadtimer = CurTime() + wep:SequenceDuration()/2
+
+          --wep:SetNWBool("reloading", true)
+          self:SetReloading(true)
+
+          return true
+        end
+        wep.PerformReload = function(self, ...)
+          local ply = self.Owner
+
+          -- prevent normal shooting in between reloads
+          self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+
+          if not ply or ply:GetAmmoCount(self.Primary.Ammo) <= 0 then return end
+
+          if self:Clip1() >= self.Primary.ClipSize then return end
+
+          self.Owner:RemoveAmmo( 1, self.Primary.Ammo, false )
+          self:SetClip1( self:Clip1() + 1 )
+
+          self:SendWeaponAnim(ACT_VM_RELOAD)
+          self:SetPlaybackRate(2)
+          self.Owner:GetViewModel():SetPlaybackRate(2)
+
+          self:SetReloadTimer(CurTime() + self:SequenceDuration()/2)
+        end
+        wep.FinishReload = function( self, ...)
+          self:SetReloading(false)
+
+          self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
+          self:SetPlaybackRate(2)
+          self.Owner:GetViewModel():SetPlaybackRate(2)
+
+          self:SetReloadTimer(CurTime() + self:SequenceDuration()/2)
+        end
+        wep.OldOnDrop = wep.OnDrop
+        wep.OnDrop = function( self, ...)
+          self:SetReloading(false)
+          self:SetDeploySpeed(1)
+          self.StartReload = self.OldStartReload
+          self.PerformReload = self.OldPerformReload
+          self.FinishReload = self.OldFinishReload
+          self.OnDrop = self.OldOnDrop
+          self.OldStartReload = nil
+          self.OldPerformReload = nil
+          self.OldFinishReload = nil
+          self.OldOnDrop = nil
+        end
+      else
+        wep.StartReload = function( self, ...)
         if self.dt.reloading then
           return false
         end
@@ -221,6 +297,7 @@ function ApplySpeed(wep)
         self.OldFinishReload = nil
         self.OldOnDrop = nil
       end
+    end
     end
   end
 end

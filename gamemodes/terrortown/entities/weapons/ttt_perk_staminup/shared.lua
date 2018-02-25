@@ -149,7 +149,7 @@ if CLIENT then
 end
 
 hook.Add("TTTPlayerSpeedModifier", "StaminUpSpeed", function(ply)
-  if ply:GetNWBool("StaminUpActive",false) then
+  if ply:HasEquipmentItem(EQUIP_STAMINUP) and ply:GetNWBool("StaminUpActive",false) then
     return 1.5
   end
 end)
