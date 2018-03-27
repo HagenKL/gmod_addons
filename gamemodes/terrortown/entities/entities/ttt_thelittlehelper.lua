@@ -40,7 +40,11 @@ if CLIENT then
 	local function getYCoordinate(currentPerkID)
 		local amount, i, perk = 0, 1
 		while (i < currentPerkID) do
-			perk = GetEquipmentItem(LocalPlayer():GetRole(), i)
+			local role = LocalPlayer():GetRole()
+			if role == ROLE_INNOCENT then
+				role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
+			end
+			perk = GetEquipmentItem(role, i)
 			if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
 				amount = amount + 1
 			end

@@ -132,11 +132,11 @@ end
 
 function RemoveDoubleTap(wep)
   if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
-    wep.Primary.Delay = wep.OldDelay
+    wep.Primary.Delay = wep.OldDelay or wep.Primary.Delay
     --wep.Primary.NumShots = wep.OldNumShots
     --wep.Primary.Cone = wep.OldCone
     --wep.Primary.Recoil = wep.OldRecoil
-    wep.OnDrop = wep.OldOnDrop
+    wep.OnDrop = wep.OldOnDrop or wep.OnDrop
     net.Start("Doubletap")
     net.WriteBool(false)
     net.WriteEntity(wep)
@@ -171,7 +171,7 @@ hook.Add("TTTPrepareRound", "TTTDoubleTapReset", function()
   end)
 
 hook.Add("DoPlayerDeath", "TTTDoubleTapReset",function(ply)
-    if ply:HasEquipmentItem(EQUIP_doubletap) then
+    if ply:HasEquipmentItem(EQUIP_DOUBLETAP) then
       ply:SetNWBool("DoubleTapActive",false)
     end
   end)
