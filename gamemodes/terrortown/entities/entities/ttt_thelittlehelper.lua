@@ -36,23 +36,31 @@ if CLIENT then
 		end)
 	-- feel for to use this function for your own perk, but please credit Zaratusa
 	-- your perk needs a "hud = true" in the table, to work properly
-	local defaultY = ScrH() / 2 + 20
-	local function getYCoordinate(currentPerkID)
-		local amount, i, perk = 0, 1
-		while (i < currentPerkID) do
-			local role = LocalPlayer():GetRole()
-			if role == ROLE_INNOCENT then
-				role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-			end
-			perk = GetEquipmentItem(role, i)
-			if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
-				amount = amount + 1
-			end
-			i = i * 2
-		end
+	  local defaultY = ScrH() / 2 + 20
+	  local function getYCoordinate(currentPerkID)
+	    local amount, i, perk = 0, 1
+	    while (i < currentPerkID) do
 
-		return defaultY - 80 * amount
-	end
+	      local role = LocalPlayer():GetRole()
+
+	      if role == ROLE_INNOCENT then --he gets it in a special way
+	        if GetEquipmentItem(ROLE_TRAITOR, i).id then
+	          role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
+	        elseif GetEquipmentItem(ROLE_DETECTIVE, i).id then
+	          role = ROLE_DETECTIVE
+	        end
+	      end
+
+	      perk = GetEquipmentItem(role, i)
+
+	      if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
+	        amount = amount + 1
+	      end
+	      i = i * 2
+	    end
+
+	    return defaultY - 80 * amount
+	  end
 
 	local yCoordinate = defaultY
 	-- best performance, but the has about 0.5 seconds delay to the HasEquipmentItem() function

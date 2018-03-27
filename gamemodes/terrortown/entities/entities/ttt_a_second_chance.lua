@@ -16,11 +16,19 @@ if CLIENT then
   local function getYCoordinate(currentPerkID)
     local amount, i, perk = 0, 1
     while (i < currentPerkID) do
-		local role = LocalPlayer():GetRole()
-		if role == ROLE_INNOCENT then
-			role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-		end
-			perk = GetEquipmentItem(role, i)
+
+      local role = LocalPlayer():GetRole()
+
+      if role == ROLE_INNOCENT then --he gets it in a special way
+        if GetEquipmentItem(ROLE_TRAITOR, i).id then
+          role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
+        elseif GetEquipmentItem(ROLE_DETECTIVE, i).id then
+          role = ROLE_DETECTIVE
+        end
+      end
+
+      perk = GetEquipmentItem(role, i)
+
       if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
         amount = amount + 1
       end
@@ -111,7 +119,7 @@ if SERVER then
           local victim = player.GetBySteamID(v)
           if (ply:GetTraitor() or (ply.IsEvil and ply:IsEvil())) and ((victim:GetRole() == ROLE_INNOCENT or victim:GetRole() == ROLE_DETECTIVE) or (victim.GetGood and (victim:GetGood() or victim:IsNeutral()))) then
             ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(10,20), 0, 99)
-          elseif (ply:GetRole() == ROLE_DETECTIVE or (ply.GetGood and ply:GetGood())) and (victim:GetTraitor() or (victim.IsEvil and (victim:IsEvil() or victim:IsNeutral()))) then
+          elseif (ply:GetRole() == ROLE_DETECTIVE or ply:GetRole() == ROLE_INNOCENT or (ply.GetGood and ply:GetGood())) and (victim:GetTraitor() or (victim.IsEvil and (victim:IsEvil() or victim:IsNeutral()))) then
             ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(20,30), 0, 99)
           elseif ply.IsNeutral and ply:IsNeutral() and (victim:GetGood() or victim:GetEvil()) then
             ply.SecondChanceChance = math.Clamp(ply.SecondChanceChance + math.random(15,25), 0, 99)
