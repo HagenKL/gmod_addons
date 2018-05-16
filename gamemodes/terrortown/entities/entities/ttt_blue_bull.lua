@@ -90,14 +90,15 @@ end )
 if SERVER then
 
 	hook.Add("TTTOrderedEquipment", "TTTBlueBull3", function(ply, equipment, is_item)
-		 if is_item == EQUIP_BLUE_BULL then
+		if is_item and equipment == EQUIP_BLUE_BULL then
 			ply:SetJumpPower(400)-- bit more then twice as much
 			ply:SetNWInt("MaxJumpLevel", 2)
 			ply:SetNWInt("JumpLevel", 0)
+
 			ply.BoughtBlueBull = true
 		end
-	end )
-	
+	end)
+
 	hook.Add("EntityTakeDamage", "BlueBullFallDamage", function(ent, dmg)
 		if IsValid(ent) and ent:IsPlayer() and ent:HasEquipmentItem(EQUIP_BLUE_BULL) and dmg:IsFallDamage() then
 			dmg:ScaleDamage(0.75)  -- reduce the fall damage a bit
