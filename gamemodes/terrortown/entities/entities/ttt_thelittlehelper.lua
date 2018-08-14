@@ -44,9 +44,9 @@ if CLIENT then
 	      local role = LocalPlayer():GetRole()
 
 	      if role == ROLE_INNOCENT then --he gets it in a special way
-	        if GetEquipmentItem(ROLE_TRAITOR, i).id then
+	        if GetEquipmentItem(ROLE_TRAITOR, i) then
 	          role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-	        elseif GetEquipmentItem(ROLE_DETECTIVE, i).id then
+	        elseif GetEquipmentItem(ROLE_DETECTIVE, i) then
 	          role = ROLE_DETECTIVE
 	        end
 	      end
@@ -79,32 +79,32 @@ if CLIENT then
 			end
 		end)
 
-		local width = 200
-		local height = 100
-		local color = Color(0,200,255,255)
-		local function TLHHUD()
-			if LocalPlayer().HasTLH and LocalPlayer():IsTerror() then
-				local x = ScrW() - width - 25
-				local y = ScrH()/2 - height
-				draw.RoundedBox( 20, x, y, width , height ,color )
-				surface.SetDrawColor(255,255,255,255)
-				local time = LocalPlayer():GetNWInt("TLHTime",0)
-				local shield = LocalPlayer():GetNWInt("TLHShield",0)
-				local w = (time/7)*133
-				local w2 = (shield/300)*133
-				draw.SimpleText("TLH Seconds: " .. math.Round(time,1), DermaDefault, x + width/2, y + height/7, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				-- draw.SimpleText("Press R to Respawn on your Corpse", DermaDefault, x + width/2, y + height/6, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				-- draw.SimpleText("Press Space to Respawn on Map Spawn", DermaDefault, x + width/2, y + height/3, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				surface.DrawRect(x + width/6, y + height/4, w, 20)
-				surface.SetDrawColor(0,0,0,255)
-				surface.DrawOutlinedRect(x + width/6, y + height/4, 133, 20)
-				draw.SimpleText("TLH Shield: " .. math.Round(shield,1), DermaDefault, x + width/2, y + height/1.8, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				surface.SetDrawColor(255,0,0,255)
-				surface.DrawRect(x + width/6, y + height/1.5, w2, 20)
-				surface.SetDrawColor(0,0,0,255)
-				surface.DrawOutlinedRect(x + width/6, y + height/1.5, 133, 20)
-			end
+	local width = 200
+	local height = 100
+	local color = Color(0,200,255,255)
+	local function TLHHUD()
+		if LocalPlayer().HasTLH and LocalPlayer():IsTerror() and LocalPlayer():HasEquipmentItem(EQUIP_TLH) then
+			local x = ScrW() - width - 25
+			local y = ScrH()/2 - height
+			draw.RoundedBox( 20, x, y, width , height ,color )
+			surface.SetDrawColor(255,255,255,255)
+			local time = LocalPlayer():GetNWInt("TLHTime",0)
+			local shield = LocalPlayer():GetNWInt("TLHShield",0)
+			local w = (time/7)*133
+			local w2 = (shield/300)*133
+			draw.SimpleText("TLH Seconds: " .. math.Round(time,1), DermaDefault, x + width/2, y + height/7, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			-- draw.SimpleText("Press R to Respawn on your Corpse", DermaDefault, x + width/2, y + height/6, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			-- draw.SimpleText("Press Space to Respawn on Map Spawn", DermaDefault, x + width/2, y + height/3, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			surface.DrawRect(x + width/6, y + height/4, w, 20)
+			surface.SetDrawColor(0,0,0,255)
+			surface.DrawOutlinedRect(x + width/6, y + height/4, 133, 20)
+			draw.SimpleText("TLH Shield: " .. math.Round(shield,1), DermaDefault, x + width/2, y + height/1.8, COLOR_WHITE, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			surface.SetDrawColor(255,0,0,255)
+			surface.DrawRect(x + width/6, y + height/1.5, w2, 20)
+			surface.SetDrawColor(0,0,0,255)
+			surface.DrawOutlinedRect(x + width/6, y + height/1.5, 133, 20)
 		end
+	end
 
 	hook.Add("HUDPaint", "TLHHUD", TLHHUD)
 
