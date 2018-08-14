@@ -56,7 +56,14 @@ hook.Add("SetupMove", "Multi Jump", function(ply, mv)
 		-- Let the engine handle movement from the ground
 		if ply:OnGround() then
 			ply:SetNWInt("JumpLevel", 0)
-
+			
+			if not mv:KeyPressed(IN_JUMP) then
+				return
+			end
+			local vel = GetMoveVector(mv)
+			
+			vel.z = 400
+			mv:SetVelocity(vel)
 			return
 		end
 
@@ -73,7 +80,7 @@ hook.Add("SetupMove", "Multi Jump", function(ply, mv)
 
 		local vel = GetMoveVector(mv)
 
-		vel.z = ply:GetJumpPower()
+		vel.z = 400
 
 		mv:SetVelocity(vel)
 
@@ -88,10 +95,9 @@ hook.Add("TTTPlayerSpeedModifier", "BlueBullSpeed" , function(ply)
 end )
 
 if SERVER then
-
+	
 	hook.Add("TTTOrderedEquipment", "TTTBlueBull3", function(ply, equipment, is_item)
 		if is_item and equipment == EQUIP_BLUE_BULL then
-			ply:SetJumpPower(400)-- bit more then twice as much
 			ply:SetNWInt("MaxJumpLevel", 2)
 			ply:SetNWInt("JumpLevel", 0)
 
@@ -106,7 +112,6 @@ if SERVER then
 	end)
 	hook.Add( "TTTPrepareRound", "TTTBlueBull", function()
 		for k, v in pairs(player.GetAll()) do
-			v:SetJumpPower(160)
 			v:SetNWInt("JumpLevel", 0)
 			v:SetNWInt("MaxJumpLevel", 1)
 			v.BoughtBlueBull = false
@@ -115,13 +120,11 @@ if SERVER then
 	hook.Add("PlayerDeath", "TTTBlueBull2", function(ply)
 		if ply.BoughtBlueBull then
 			ply.BoughtBlueBull = false
-			ply:SetJumpPower(160)
 		end
 	end)
 	hook.Add("PlayerSpawn", "TTTBlueBull2", function(ply)
 		if ply.BoughtBlueBull then
 			ply.BoughtBlueBull = false
-			ply:SetJumpPower(160)
 		end
 	end)
 
