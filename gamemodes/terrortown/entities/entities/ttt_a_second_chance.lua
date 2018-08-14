@@ -20,9 +20,9 @@ if CLIENT then
       local role = LocalPlayer():GetRole()
 
       if role == ROLE_INNOCENT then --he gets it in a special way
-        if GetEquipmentItem(ROLE_TRAITOR, i) then
+        if GetEquipmentItem(ROLE_TRAITOR, i).id then
           role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-        elseif GetEquipmentItem(ROLE_DETECTIVE, i) then
+        elseif GetEquipmentItem(ROLE_DETECTIVE, i).id then
           role = ROLE_DETECTIVE
         end
       end
