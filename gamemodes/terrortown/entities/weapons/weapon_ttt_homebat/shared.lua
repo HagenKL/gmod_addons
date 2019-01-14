@@ -10,7 +10,7 @@ else
   SWEP.ViewModelFOV=70
   SWEP.ViewModelFlip=false
 
-  SWEP.Icon="VGUI/ttt/icon_homebat"
+  SWEP.Icon="VGUI/ttt/icon_homerun_bat.png"
   SWEP.EquipMenuData={
     type="Melee Weapon",
     desc="Left click to hit a home run!\nHas 3 uses.\nYou will run 25% faster with it in your Hands."
