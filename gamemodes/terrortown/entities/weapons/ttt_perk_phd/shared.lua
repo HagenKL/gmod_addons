@@ -1,6 +1,7 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
   resource.AddFile("sound/perks/buy_phd.wav")
+    util.AddNetworkString("DrinkingthePHD")
   util.AddNetworkString("PHDBlurHUD")
   resource.AddFile("materials/models/perk_bottle/c_perk_bottle_phd.vmt")
 end

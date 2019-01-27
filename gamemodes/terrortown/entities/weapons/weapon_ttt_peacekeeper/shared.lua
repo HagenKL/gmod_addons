@@ -104,7 +104,7 @@ local function IsInFOV( ply, target )
 				return true
 			end,
 			mask = MASK_SHOT_HULL,
-			mins=kmins, 
+			mins=kmins,
 			maxs=kmaxs
 		})
 		if !tr.Entity:IsPlayer() then
@@ -229,7 +229,7 @@ if SERVER then
 	function SWEP:FireHighNoonBullet()
 		local owner = self.Owner
 
-		
+
 		local ply = owner.highnoontargets[math.random(1,#owner.highnoontargets)]
 		local targetPos = ply:Crouching() and ply:GetPos() + Vector(0,0,25) or ply:GetPos() + Vector(0,0,50)
 		local dir = (targetPos - owner:GetShootPos() ):GetNormalized()
@@ -430,7 +430,11 @@ end
 local function HighNoonSpeed(ply)
 	local w = ply:GetActiveWeapon()
 	if w and IsValid(w) and w:GetClass() == "weapon_ttt_peacekeeper" and w:HighNoonActive() then
-		return 0.2
+		if TTT2 then
+			noLag[1] = noLag[1] * 0.2
+		else
+			return 0.2
+		end
 	end
 end
 

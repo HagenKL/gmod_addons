@@ -1,8 +1,9 @@
+if TTT2 then return end
+
 if SERVER then
   AddCSLuaFile()
   resource.AddFile("materials/vgui/ttt/ic_phd.vmt")
   resource.AddFile("materials/vgui/ttt/perks/hud_phd.png")
-  util.AddNetworkString("DrinkingthePHD")
 end
 
 if CLIENT then
@@ -16,9 +17,9 @@ if CLIENT then
       local role = LocalPlayer():GetRole()
 
       if role == ROLE_INNOCENT then --he gets it in a special way
-        if GetEquipmentItem(ROLE_TRAITOR, i).id then
+        if GetEquipmentItem(ROLE_TRAITOR, i) then
           role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-        elseif GetEquipmentItem(ROLE_DETECTIVE, i).id then
+        elseif GetEquipmentItem(ROLE_DETECTIVE, i) then
           role = ROLE_DETECTIVE
         end
       end

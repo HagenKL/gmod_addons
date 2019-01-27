@@ -1,5 +1,6 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
+  util.AddNetworkString("DrinkingtheSpeed")
   util.AddNetworkString("SpeedBlurHUD")
   resource.AddFile("sound/perks/buy_speed.wav")
   resource.AddFile("models/weapons/c_perk_bottle.mdl")
@@ -224,80 +225,80 @@ function ApplySpeed(wep)
         end
       else
         wep.StartReload = function( self, ...)
-        if self.dt.reloading then
-          return false
+          if self.dt.reloading then
+            return false
+          end
+
+          self:SetIronsights( false )
+
+          if !IsFirstTimePredicted() then return false end
+
+          self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+
+          local ply = self.Owner
+
+          if not ply or ply:GetAmmoCount(self.Primary.Ammo) <= 0 then
+            return false
+          end
+
+          local wep = self
+
+          if wep:Clip1() >= self.Primary.ClipSize then
+            return false
+          end
+
+          wep:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
+          self:SetPlaybackRate(2)
+          self.Owner:GetViewModel():SetPlaybackRate(2)
+          self.reloadtimer = CurTime() + wep:SequenceDuration()/2
+
+          --wep:SetNWBool("reloading", true)
+          self.dt.reloading = true
+
+          return true
         end
+        wep.PerformReload = function(self, ...)
+          local ply = self.Owner
 
-        self:SetIronsights( false )
+          -- prevent normal shooting in between reloads
+          self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 
-        if !IsFirstTimePredicted() then return false end
+          if not ply or ply:GetAmmoCount(self.Primary.Ammo) <= 0 then return end
 
-        self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+          if self:Clip1() >= self.Primary.ClipSize then return end
 
-        local ply = self.Owner
+          self.Owner:RemoveAmmo( 1, self.Primary.Ammo, false )
+          self:SetClip1( self:Clip1() + 1 )
 
-        if not ply or ply:GetAmmoCount(self.Primary.Ammo) <= 0 then
-          return false
+          self:SendWeaponAnim(ACT_VM_RELOAD)
+          self:SetPlaybackRate(2)
+          self.Owner:GetViewModel():SetPlaybackRate(2)
+
+          self.reloadtimer = CurTime() + self:SequenceDuration()/2
         end
+        wep.FinishReload = function( self, ...)
+          self.dt.reloading = false
 
-        local wep = self
+          self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
+          self:SetPlaybackRate(2)
+          self.Owner:GetViewModel():SetPlaybackRate(2)
 
-        if wep:Clip1() >= self.Primary.ClipSize then
-          return false
+          self.reloadtimer = CurTime() + self:SequenceDuration()/2
         end
-
-        wep:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
-        self:SetPlaybackRate(2)
-        self.Owner:GetViewModel():SetPlaybackRate(2)
-        self.reloadtimer = CurTime() + wep:SequenceDuration()/2
-
-        --wep:SetNWBool("reloading", true)
-        self.dt.reloading = true
-
-        return true
+        wep.OldOnDrop = wep.OnDrop
+        wep.OnDrop = function( self, ...)
+          self.Reloading = false
+          self:SetDeploySpeed(1)
+          self.StartReload = self.OldStartReload
+          self.PerformReload = self.OldPerformReload
+          self.FinishReload = self.OldFinishReload
+          self.OnDrop = self.OldOnDrop
+          self.OldStartReload = nil
+          self.OldPerformReload = nil
+          self.OldFinishReload = nil
+          self.OldOnDrop = nil
+        end
       end
-      wep.PerformReload = function(self, ...)
-        local ply = self.Owner
-
-        -- prevent normal shooting in between reloads
-        self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-
-        if not ply or ply:GetAmmoCount(self.Primary.Ammo) <= 0 then return end
-
-        if self:Clip1() >= self.Primary.ClipSize then return end
-
-        self.Owner:RemoveAmmo( 1, self.Primary.Ammo, false )
-        self:SetClip1( self:Clip1() + 1 )
-
-        self:SendWeaponAnim(ACT_VM_RELOAD)
-        self:SetPlaybackRate(2)
-        self.Owner:GetViewModel():SetPlaybackRate(2)
-
-        self.reloadtimer = CurTime() + self:SequenceDuration()/2
-      end
-      wep.FinishReload = function( self, ...)
-        self.dt.reloading = false
-
-        self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-        self:SetPlaybackRate(2)
-        self.Owner:GetViewModel():SetPlaybackRate(2)
-
-        self.reloadtimer = CurTime() + self:SequenceDuration()/2
-      end
-      wep.OldOnDrop = wep.OnDrop
-      wep.OnDrop = function( self, ...)
-        self.Reloading = false
-        self:SetDeploySpeed(1)
-        self.StartReload = self.OldStartReload
-        self.PerformReload = self.OldPerformReload
-        self.FinishReload = self.OldFinishReload
-        self.OnDrop = self.OldOnDrop
-        self.OldStartReload = nil
-        self.OldPerformReload = nil
-        self.OldFinishReload = nil
-        self.OldOnDrop = nil
-      end
-    end
     end
   end
 end

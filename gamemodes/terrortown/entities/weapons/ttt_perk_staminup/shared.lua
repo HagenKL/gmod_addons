@@ -1,5 +1,6 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
+  util.AddNetworkString("DrinkingtheStaminup")
   util.AddNetworkString("StaminBlurHUD")
   resource.AddFile("sound/perks/buy_stam.wav")
   resource.AddFile("materials/models/perk_bottle/c_perk_bottle_stamin.vmt")

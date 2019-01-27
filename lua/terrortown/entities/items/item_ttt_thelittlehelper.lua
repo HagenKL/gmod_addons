@@ -1,17 +1,15 @@
+if TTT2 then return end
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddFile("vgui/ttt/icon_tlh.vmt")
 	resource.AddWorkshop("676695745")
-	local PLAYER = FindMetaTable("Player")
+
 	util.AddNetworkString( "ColoredMessage" )
 	util.AddNetworkString("TLH_Ask")
 	util.AddNetworkString("SetTLH")
-	function BroadcastMsg(...)
-		local args = {...}
-		net.Start("ColoredMessage")
-		net.WriteTable(args)
-		net.Broadcast()
-	end
+
+  local PLAYER = FindMetaTable("Player")
 
 	function PLAYER:PlayerMsg(...)
 		local args = {...}
@@ -19,13 +17,15 @@ if SERVER then
 		net.WriteTable(args)
 		net.Send(self)
 	end
+
 	net.Receive("TLH_Ask", function(len,ply)
-		if ply:HasEquipmentItem(EQUIP_TLH) and ply.TLH and ply:IsTerror() and !ply.TLHInvincible then
+		if ply:HasEquipmentItem("item_ttt_thelittlehelper") and ply.TLH and ply:IsTerror() and !ply.TLHInvincible then
 			ply:TheLittleHelper()
 		elseif ply.TLHInvincible and ply:IsTerror() then
 			ply:TLHExhausted()
 		end
 	end )
+
 end
 
 if CLIENT then
@@ -34,54 +34,11 @@ if CLIENT then
 			chat.AddText(unpack(msg))
 			chat.PlaySound()
 		end)
-	-- feel for to use this function for your own perk, but please credit Zaratusa
-	-- your perk needs a "hud = true" in the table, to work properly
-	  local defaultY = ScrH() / 2 + 20
-	  local function getYCoordinate(currentPerkID)
-	    local amount, i, perk = 0, 1
-	    while (i < currentPerkID) do
-
-	      local role = LocalPlayer():GetRole()
-
-	      if role == ROLE_INNOCENT then --he gets it in a special way
-	        if GetEquipmentItem(ROLE_TRAITOR, i) then
-	          role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-	        elseif GetEquipmentItem(ROLE_DETECTIVE, i) then
-	          role = ROLE_DETECTIVE
-	        end
-	      end
-
-	      perk = GetEquipmentItem(role, i)
-
-	      if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
-	        amount = amount + 1
-	      end
-	      i = i * 2
-	    end
-
-	    return defaultY - 80 * amount
-	  end
-
-	local yCoordinate = defaultY
-	-- best performance, but the has about 0.5 seconds delay to the HasEquipmentItem() function
-	hook.Add("TTTBoughtItem", "TTTTLH2", function()
-			if (LocalPlayer():HasEquipmentItem(EQUIP_TLH)) then
-				yCoordinate = getYCoordinate(EQUIP_TLH)
-			end
-		end)
-
-	local material = Material("vgui/ttt/perks/hud_tlh.png")
-	hook.Add("HUDPaint", "TTTTLH", function()
-			if (LocalPlayer():HasEquipmentItem(EQUIP_TLH)) then
-				surface.SetMaterial(material)
-				surface.SetDrawColor(255, 255, 255, 255)
-				surface.DrawTexturedRect(20, yCoordinate, 64, 64)
-			end
-		end)
 
 		local width = 200
 		local height = 100
 		local color = Color(0,200,255,255)
+
 		local function TLHHUD()
 			if LocalPlayer().HasTLH and LocalPlayer():IsTerror() then
 				local x = ScrW() - width - 25
@@ -116,40 +73,31 @@ if CLIENT then
 	concommand.Add("thelittlehelper", askTLH)
 end
 
-EQUIP_TLH = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 32
-
-local TheLittleHelper = {
-	id = EQUIP_TLH,
-	loadout = false,
-	type = "item_active",
-	material = "vgui/ttt/icon_tlh",
-	name = "The Little Helper",
-	desc = "With this item you are invincible for 7 seconds. \nBind a key to *thelittlehelper* to use it. \nCAUTION: YOU CAN�T SHOT IN THAT PERIOD OF TIME. \nIt will recharge in 35 seconds.",
-	hud = true
+ITEM.Icon  = "vgui/ttt/perks/hud_tlh.png"
+ITEM.EquipMenuData = {
+  type = "item_active",
+  name = "The Little Helper",
+  desc = "With this item you are invincible for 7 seconds. \nBind a key to *thelittlehelper* to use it. \nCAUTION: YOU CAN�T SHOT IN THAT PERIOD OF TIME. \nIt will recharge in 35 seconds.",
 }
 
-local detectiveCanUse = CreateConVar("ttt_thelittlehelper_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the The Little Helper.")
-local traitorCanUse = CreateConVar("ttt_thelittlehelper_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the The Little Helper.")
+ITEM.corpseDesc = "They had a Little Helper watching over them."
+ITEM.credits = 1
+ITEM.material = "vgui/ttt/icon_tlh"
+ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
+
 local tlhduration = CreateConVar("ttt_thelittlehelper_duration", 7, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long should you be invincible?")
 
-if (detectiveCanUse:GetBool()) then
-	table.insert(EquipmentItems[ROLE_DETECTIVE], TheLittleHelper)
-end
-if (traitorCanUse:GetBool()) then
-	table.insert(EquipmentItems[ROLE_TRAITOR], TheLittleHelper)
-end
+function ITEM:Bought(ply)
+		ply.TLH = true
+		ply.HasTLH = true
 
-hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, id, is_item)
-		if id == EQUIP_TLH then
-			ply.TLH = true
-			ply.HasTLH = true
-			ply:SetNWInt("TLHTime", 7)
-			ply:SetNWInt("TLHShield", 300)
-			net.Start("SetTLH")
-			net.WriteBool(true)
-			net.Send(ply)
-		end
-	end)
+		ply:SetNWInt("TLHTime", 7)
+		ply:SetNWInt("TLHShield", 300)
+
+		net.Start("SetTLH")
+		net.WriteBool(true)
+		net.Send(ply)
+end
 
 if SERVER then
 	function tlhthink()
@@ -186,7 +134,9 @@ if SERVER then
 			end
 		end
 	end
+
 	local plymeta = FindMetaTable("Player")
+
 	function plymeta:TheLittleHelper()
 		if IsValid(self) then
 			self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is now watching over you!")
@@ -197,6 +147,7 @@ if SERVER then
 			self.cdtimer = CurTime() + 1
 		end
 	end
+
 	function plymeta:TLHExhausted()
 			if self:IsValid() and self:IsTerror() then
 				self:PlayerMsg("Little Helper: ", Color(255,255,255),"Your Little Helper is exhausted!")
@@ -207,6 +158,7 @@ if SERVER then
 				self:SetNWInt("TLHShield", 0)
 			end
 	end
+
 	function TLHOwnerGetsDamage(ent,dmginfo)
 		if ent:IsValid() and ent:IsPlayer() and ent.HasTLH and ent.TLHInvincible then
 			ent:SetNWInt("TLHShield", ent:GetNWInt("TLHShield",0) - math.Round(dmginfo:GetDamage()))
@@ -222,25 +174,6 @@ if SERVER then
 	end
 	hook.Add("EntityTakeDamage", "TLHSaveLife", TLHOwnerGetsDamage)
 	hook.Add( "Think", "TTTTLH", tlhthink)
-end
-
-if CLIENT then
-
-	hook.Add("TTTBodySearchEquipment", "TLHCorpseIcon", function(search, eq)
-			search.eq_tlh = util.BitSet(eq, EQUIP_TLH)
-		end )
-
-	hook.Add("TTTBodySearchPopulate", "TLHCorpseIcon", function(search, raw)
-		if (!raw.eq_tlh) then
-			return end
-
-			local highest = 0
-			for _, v in pairs(search) do
-				highest = math.max(highest, v.p)
-			end
-
-			search.eq_tlh = {img = "vgui/ttt/icon_tlh", text = "They had a Little Helper watching over them.", p = highest + 1}
-	end )
 end
 
 local function ResettinTlh()
