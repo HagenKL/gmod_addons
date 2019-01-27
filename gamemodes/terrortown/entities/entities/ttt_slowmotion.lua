@@ -14,17 +14,11 @@ end
 if CLIENT then
 	-- feel for to use this function for your own perk, but please credit Zaratusa
 	-- your perk needs a "hud = true" in the table, to work properly
-	local defaultY = ScrH() / 2 + 20
-	local function getYCoordinate(currentPerkID)
-		local amount, i, perk = 0, 1
-		while (i < currentPerkID) do
-			local role = LocalPlayer():GetRole()
-			if role == ROLE_INNOCENT then
 	  local defaultY = ScrH() / 2 + 20
 	  local function getYCoordinate(currentPerkID)
 	    local amount, i, perk = 0, 1
 	    while (i < currentPerkID) do
-		
+
 		local role = LocalPlayer():GetRole()
 		if role == ROLE_INNOCENT then
 			role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
