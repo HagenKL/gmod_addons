@@ -6,7 +6,7 @@ if SERVER then
   resource.AddFile("materials/vgui/ttt/perks/hud_speed.png")
 end
 
-ITEM.Icon  = "vgui/ttt/perks/hud_speed.png"
+ITEM.hud  = "vgui/ttt/perks/hud_speed.png"
 
 ITEM.EquipMenuData = {
   type = "item_passive",

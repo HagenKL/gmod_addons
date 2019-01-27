@@ -8,6 +8,7 @@ end
 EQUIP_BLUE_BULL = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 16
 
 local bluebull = {
+	avoidTTT2 = true,
 	id = EQUIP_BLUE_BULL,
 	loadout = false,
 	type = "item_passive",

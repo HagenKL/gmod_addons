@@ -73,7 +73,7 @@ if CLIENT then
 	concommand.Add("thelittlehelper", askTLH)
 end
 
-ITEM.Icon  = "vgui/ttt/perks/hud_tlh.png"
+ITEM.hud  = "vgui/ttt/perks/hud_tlh.png"
 ITEM.EquipMenuData = {
   type = "item_active",
   name = "The Little Helper",

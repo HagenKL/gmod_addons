@@ -121,6 +121,7 @@ end
 EQUIP_TLH = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 32
 
 local TheLittleHelper = {
+	avoidTTT2 = true,
 	id = EQUIP_TLH,
 	loadout = false,
 	type = "item_active",

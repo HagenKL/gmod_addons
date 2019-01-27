@@ -20,17 +20,35 @@ if CLIENT then
 		while (i < currentPerkID) do
 			local role = LocalPlayer():GetRole()
 			if role == ROLE_INNOCENT then
-				role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
-			end
-			perk = GetEquipmentItem(role, i)
-			if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
-				amount = amount + 1
-			end
-			i = i * 2
+	  local defaultY = ScrH() / 2 + 20
+	  local function getYCoordinate(currentPerkID)
+	    local amount, i, perk = 0, 1
+	    while (i < currentPerkID) do
+		
+		local role = LocalPlayer():GetRole()
+		if role == ROLE_INNOCENT then
+			role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
 		end
+		perk = GetEquipmentItem(role, i)
 
-		return defaultY - 80 * amount
-	end
+	      if role == ROLE_INNOCENT then --he gets it in a special way
+	        if GetEquipmentItem(ROLE_TRAITOR, i).id then
+	          role = ROLE_TRAITOR -- Temp fix what if a perk is just for Detective
+	        elseif GetEquipmentItem(ROLE_DETECTIVE, i).id then
+	          role = ROLE_DETECTIVE
+	        end
+	      end
+
+	      perk = GetEquipmentItem(role, i)
+
+	      if (istable(perk) and perk.hud and LocalPlayer():HasEquipmentItem(perk.id)) then
+	        amount = amount + 1
+	      end
+	      i = i * 2
+	    end
+
+	    return defaultY - 80 * amount
+	  end
 
 	local yCoordinate = defaultY
 	-- best performance, but the has about 0.5 seconds delay to the HasEquipmentItem() function
@@ -74,6 +92,7 @@ end
 EQUIP_SM = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 4096
 
 local SlowMotion = {
+	avoidTTT2 = true,
 	id = EQUIP_SM,
 	loadout = false,
 	type = "item_active",

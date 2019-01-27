@@ -5,8 +5,7 @@ if SERVER then
 	resource.AddWorkshop("653258161")
 end
 
-ITEM.Icon  = "vgui/ttt/perks/hud_blue_bull.png"
-
+ITEM.hud  = "vgui/ttt/perks/hud_blue_bull.png"
 ITEM.EquipMenuData = {
   type = "item_passive",
   name = "Blue Bull",
@@ -16,6 +15,7 @@ ITEM.EquipMenuData = {
 ITEM.credits = 1
 ITEM.material = "vgui/ttt/icon_bluebull"
 ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
+ITEM.corpseDesc = "This Person jumped higher then anybody else.. "
 
 local function GetMoveVector(mv)
 	local ang = mv:GetAngles()

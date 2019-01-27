@@ -36,6 +36,7 @@ end
     --if TTT2 then return end
     for _,perk in pairs(Perks) do
       local tbl = {
+        avoidTTT2 = true,
         id = _G["EQUIP_" .. string.upper(perk)],
         loadout = false,
         type = "item_passive",
