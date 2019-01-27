@@ -50,11 +50,23 @@ if CLIENT then
         surface.DrawTexturedRect(20, yCoordinate, 64, 64)
       end
     end)
-    LANG.AddToLanguage("english", "item_staminup_name", "Stamin-Up")
-    LANG.AddToLanguage("english", "item_staminup_desc", "Stamin-Up Perk.\nAutomatically drinks perk to greatly increase\nwalk speed!")
 end
 
 EQUIP_STAMINUP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 256
+
+local Staminup = {
+	avoidTTT2 = true,
+	id = EQUIP_STAMINUP,
+	loadout = false,
+	type = "item_passive",
+	material = "vgui/ttt/icon_staminup",
+	name = "Stamin-Up",
+	desc = "Stamin-Up Perk.\nAutomatically drinks perk to greatly increase\nwalk speed!",
+	hud = true
+}
+
+table.insert(EquipmentItems[ROLE_DETECTIVE], Staminup)
+table.insert(EquipmentItems[ROLE_TRAITOR], Staminup)
 
 if SERVER then
 

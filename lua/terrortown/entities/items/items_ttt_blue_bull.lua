@@ -1,11 +1,9 @@
-if true then return end
-
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("653258161")
 end
 
-ITEM.hud  = "vgui/ttt/perks/hud_blue_bull.png"
+ITEM.hud  = Material("vgui/ttt/perks/hud_blue_bull.png")
 ITEM.EquipMenuData = {
   type = "item_passive",
   name = "Blue Bull",

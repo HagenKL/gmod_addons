@@ -31,32 +31,6 @@ function plymeta:IsDrinking()
   return false
 end
 
---if not TTT2 then
-  hook.Add("InitPostEntity", "InitPerks", function()
-    --if TTT2 then return end
-    for _,perk in pairs(Perks) do
-      local tbl = {
-        avoidTTT2 = true,
-        id = _G["EQUIP_" .. string.upper(perk)],
-        loadout = false,
-        type = "item_passive",
-        material = "vgui/ttt/ic_" .. string.lower(perk),
-        name = "item_" .. string.lower(perk) .. "_name",
-        desc = "item_" .. string.lower(perk) .. "_desc",
-        hud = true
-      }
-      local detectiveCanUse = CreateConVar("ttt_" .. string.lower(perk) .. "_det", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the" .. perk .. ".")
-      local traitorCanUse = CreateConVar("ttt_" .. string.lower(perk) .. "_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the " .. perk .. ".")
-      if (detectiveCanUse:GetBool()) then
-        table.insert(EquipmentItems[ROLE_DETECTIVE], tbl)
-      end
-      if (traitorCanUse:GetBool()) then
-        table.insert(EquipmentItems[ROLE_TRAITOR], tbl)
-      end
-    end
-  end)
---end
-
 hook.Add("TTTPrepareRound", "ZPBResetMaterial", function()
   if SERVER then
     net.Start("ZPBResetMaterials")

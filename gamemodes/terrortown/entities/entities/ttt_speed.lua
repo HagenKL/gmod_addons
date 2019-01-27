@@ -56,6 +56,20 @@ end
 
 EQUIP_SPEED = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 512
 
+local Speed = {
+	avoidTTT2 = true,
+	id = EQUIP_SPEED,
+	loadout = false,
+	type = "item_passive",
+	material = "vgui/ttt/icon_speed",
+	name = "Speed Cola Perk.",
+	desc = "Speed Cola Perk.\nAutomatically drinks perk to get \ndouble the reload speed.",
+	hud = true
+}
+
+table.insert(EquipmentItems[ROLE_DETECTIVE], Speed)
+table.insert(EquipmentItems[ROLE_TRAITOR], Speed)
+
 if SERVER then
 
   hook.Add("TTTCanOrderEquipment", "TTTSpeed", function(ply, id, is_item)

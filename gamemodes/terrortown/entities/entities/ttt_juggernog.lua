@@ -50,11 +50,23 @@ if CLIENT then
         surface.DrawTexturedRect(20, yCoordinate, 64, 64)
       end
     end)
-    LANG.AddToLanguage("english", "item_juggernog_name", "Juggernog")
-    LANG.AddToLanguage("english", "item_juggernog_desc", "Juggernog Perk.\nAutomatically drinks perk to get \nthe maximum health avaible!")
 end
 
 EQUIP_JUGGERNOG = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 64
+
+local Juggernog = {
+	avoidTTT2 = true,
+	id = EQUIP_JUGGERNOG,
+	loadout = false,
+	type = "item_passive",
+	material = "vgui/ttt/icon_juggernog",
+	name = "Juggernog",
+	desc = "Juggernog Perk.\nAutomatically drinks perk to get \nthe maximum health avaible!",
+	hud = true
+}
+
+table.insert(EquipmentItems[ROLE_DETECTIVE], Juggernog)
+table.insert(EquipmentItems[ROLE_TRAITOR], Juggernog)
 
 if SERVER then
 

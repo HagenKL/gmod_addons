@@ -50,11 +50,24 @@ if CLIENT then
         surface.DrawTexturedRect(20, yCoordinate, 64, 64)
       end
     end)
-    LANG.AddToLanguage("english", "item_doubletap_name", "DoubleTap Root Beer")
-    LANG.AddToLanguage("english", "item_doubletap_desc", "DoubleTap Root Beer Perk.\nAutomatically drinks perk to get \na 50% higher fire rate.")
 end
 
 EQUIP_DOUBLETAP = (GenerateNewEquipmentID and GenerateNewEquipmentID() ) or 2048
+
+local DoubleTap = {
+	avoidTTT2 = true,
+	id = EQUIP_DOUBLETAP,
+	loadout = false,
+	type = "item_passive",
+	material = "vgui/ttt/icon_doubletap",
+	name = "DoubleTap Root Beer",
+	desc = "DoubleTap Root Beer Perk.\nAutomatically drinks perk to get \na 50% higher fire rate.",
+	hud = true
+}
+
+table.insert(EquipmentItems[ROLE_DETECTIVE], DoubleTap)
+table.insert(EquipmentItems[ROLE_TRAITOR], DoubleTap)
+
 
 if SERVER then
 

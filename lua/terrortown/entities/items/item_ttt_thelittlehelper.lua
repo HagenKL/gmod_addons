@@ -1,5 +1,3 @@
-if true then return end
-
 if SERVER then
 	AddCSLuaFile()
 	resource.AddFile("vgui/ttt/icon_tlh.vmt")
@@ -73,7 +71,7 @@ if CLIENT then
 	concommand.Add("thelittlehelper", askTLH)
 end
 
-ITEM.hud  = "vgui/ttt/perks/hud_tlh.png"
+ITEM.hud  = Material("vgui/ttt/perks/hud_tlh.png")
 ITEM.EquipMenuData = {
   type = "item_active",
   name = "The Little Helper",
