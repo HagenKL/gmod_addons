@@ -427,7 +427,7 @@ elseif CLIENT then
 		end)
 end
 
-local function HighNoonSpeed(ply)
+local function HighNoonSpeed(ply, _, _, noLag )
 	local w = ply:GetActiveWeapon()
 	if w and IsValid(w) and w:GetClass() == "weapon_ttt_peacekeeper" and w:HighNoonActive() then
 		if TTT2 then

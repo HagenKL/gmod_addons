@@ -190,9 +190,13 @@ if CLIENT then
     end)
 end
 
-hook.Add("TTTPlayerSpeedModifier", "HomebatSpeed" , function(ply)
+hook.Add("TTTPlayerSpeedModifier", "HomebatSpeed" , function(ply, _, _, noLag )
     local wep=ply:GetActiveWeapon()
     if wep and IsValid(wep) and wep:GetClass()=="weapon_ttt_homebat" then
-      return 1.25
+      if TTT2 then
+        noLag[1] = noLag[1] * 1.2
+      else
+        return 1.25
+      end
     end
 end )

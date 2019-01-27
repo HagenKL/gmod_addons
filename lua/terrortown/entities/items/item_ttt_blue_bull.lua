@@ -41,7 +41,7 @@ local function GetMoveVector(mv)
 	return vec
 end
 
-hook.Add("SetupMove", "Multi Jump", function(ply, mv)
+hook.Add("SetupMove", "Multi Jump2", function(ply, mv)
 	if ply:HasEquipmentItem("item_ttt_blue_bull") then
 		-- Let the engine handle movement from the ground
 		if ply:OnGround() then
@@ -73,7 +73,7 @@ end )
 
 if SERVER then
 
-  hook.Add("TTTPlayerSpeedModifier", "BlueBullSpeed" , function(ply, _, _, noLag)
+  hook.Add("TTTPlayerSpeedModifier", "BlueBullSpeed2" , function(ply, _, _, noLag)
   	 if IsValid(ply) and ply:HasEquipmentItem("item_ttt_blue_bull") then
        noLag[1] = noLag[1] * 1.2
      end
@@ -84,34 +84,17 @@ if SERVER then
 
 		ply:SetNWInt("MaxJumpLevel", 2)
 		ply:SetNWInt("JumpLevel", 0)
-
-		ply.BoughtBlueBull = true
 	end
 
-	hook.Add("EntityTakeDamage", "BlueBullFallDamage", function(ent, dmg)
+	hook.Add("EntityTakeDamage", "BlueBullFallDamage2", function(ent, dmg)
 		if IsValid(ent) and ent:IsPlayer() and ent:HasEquipmentItem("item_ttt_blue_bull") and dmg:IsFallDamage() then
 			dmg:ScaleDamage(0.75)  -- reduce the fall damage a bit
 		end
 	end)
 
-	hook.Add( "TTTPrepareRound", "TTTBlueBull", function()
-		for k, v in pairs(player.GetAll()) do
-			v:SetJumpPower(160)
-			v:SetNWInt("JumpLevel", 0)
-			v:SetNWInt("MaxJumpLevel", 1)
-			v.BoughtBlueBull = false
-		end
-	end)
-	hook.Add("PlayerDeath", "TTTBlueBull2", function(ply)
-		if ply.BoughtBlueBull then
-			ply.BoughtBlueBull = false
-			ply:SetJumpPower(160)
-		end
-	end)
-	hook.Add("PlayerSpawn", "TTTBlueBull2", function(ply)
-		if ply.BoughtBlueBull then
-			ply.BoughtBlueBull = false
-			ply:SetJumpPower(160)
-		end
-	end)
+	function ITEM:Reset(ply)
+		ply:SetJumpPower(160)
+		ply:SetNWInt("JumpLevel", 0)
+		ply:SetNWInt("MaxJumpLevel", 1)
+	end
 end

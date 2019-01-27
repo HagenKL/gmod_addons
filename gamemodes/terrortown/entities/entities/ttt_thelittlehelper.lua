@@ -111,8 +111,13 @@ if CLIENT then
 	hook.Add("HUDPaint", "TLHHUD", TLHHUD)
 
 	local function askTLH()
-		net.Start("TLH_Ask")
-		net.SendToServer()
+		if not TTT2 then
+			net.Start("TLH_Ask")
+			net.SendToServer()
+		else
+			net.Start("TLH_Ask2")
+			net.SendToServer()
+		end
 	end
 
 	concommand.Add("thelittlehelper", askTLH)
@@ -155,7 +160,7 @@ hook.Add("TTTOrderedEquipment", "TTTTLH", function(ply, id, is_item)
 	end)
 
 if SERVER then
-	function tlhthink()
+	local function tlhthink()
 		for key,ply in pairs(player.GetAll()) do
 			if ply.HasTLH then
 				if !ply.TLHInvincible and !ply.TLH then
@@ -210,7 +215,7 @@ if SERVER then
 				self:SetNWInt("TLHShield", 0)
 			end
 	end
-	function TLHOwnerGetsDamage(ent,dmginfo)
+	local function TLHOwnerGetsDamage(ent,dmginfo)
 		if ent:IsValid() and ent:IsPlayer() and ent.HasTLH and ent.TLHInvincible then
 			ent:SetNWInt("TLHShield", ent:GetNWInt("TLHShield",0) - math.Round(dmginfo:GetDamage()))
 			if ent:GetNWInt("TLHShield",0) <= 0 then
