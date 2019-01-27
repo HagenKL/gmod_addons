@@ -1,3 +1,5 @@
+if true then return end
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddWorkshop("653258161")

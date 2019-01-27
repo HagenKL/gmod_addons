@@ -188,7 +188,7 @@ if SERVER then
 						continue
 					end
 					if !wasinfov and IsInFOV(owner, ply) then
-						if (owner:GetRole() == ROLE_INNOCENT or owner:GetRole() == ROLE_DETECTIVE or (owner.GetGood and owner:GetGood())) or (owner:IsTraitor() and !ply:IsTraitor() and ((ply.IsEvil and !ply:IsEvil()) or !ply.IsEvil)) or (owner.IsEvil and owner:IsEvil() and !ply:IsEvil()) or (owner.IsNeutral and owner:IsNeutral() and !ply:IsNeutral())  then
+						if (owner:GetRole() == ROLE_INNOCENT or owner:GetRole() == ROLE_DETECTIVE or (owner:IsTraitor() and !ply:IsTraitor()) then
 							table.insert(owner.highnoontargets, ply)
 							ply:SetNWBool("HighNoonFOV" .. self:EntIndex(), true)
 						end

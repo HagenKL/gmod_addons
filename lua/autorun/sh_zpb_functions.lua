@@ -31,9 +31,9 @@ function plymeta:IsDrinking()
   return false
 end
 
-if not TTT2 then
+--if not TTT2 then
   hook.Add("InitPostEntity", "InitPerks", function()
-    if TTT2 then return end
+    --if TTT2 then return end
     for _,perk in pairs(Perks) do
       local tbl = {
         id = _G["EQUIP_" .. string.upper(perk)],
@@ -52,9 +52,9 @@ if not TTT2 then
       if (traitorCanUse:GetBool()) then
         table.insert(EquipmentItems[ROLE_TRAITOR], tbl)
       end
-    end
+    --end
   end)
-end
+--end
 
 hook.Add("TTTPrepareRound", "ZPBResetMaterial", function()
   if SERVER then

@@ -78,7 +78,7 @@ end
 local function GetRandomTesterPlayer()
 	local result = {}
 	for k,v in pairs(player.GetAll()) do
-		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsEvil and (v:IsEvil() or v:IsNeutral()))) and !v:GetNWBool("RTTested") then
+		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT) and !v:GetNWBool("RTTested") then
 			table.insert(result,v)
 		end
 	end
@@ -101,7 +101,7 @@ function SWEP:HandleMessages(ply)
 		net.WriteUInt(self.Delay,8)
 	net.Broadcast()
 
-	if (role == ROLE_TRAITOR or (_G.IsRolePartOfTeam and !IsRolePartOfTeam(role, WIN_INNOCENT))) then
+	if (role == ROLE_TRAITOR) then
 		net.Start("rt notify traitor")
 			net.WriteUInt(txtDelay,8)
 		net.Send(ply)
@@ -142,7 +142,7 @@ local function PrintCenteredText(txt,delay,color)
 end
 
 local function GetRoleColor(role,ply)
-	return !(IsValid(ply) and ply:IsTerror()) and COLOR_ORANGE or (role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and COLOR_RED or COLOR_GREEN
+	return !(IsValid(ply) and ply:IsTerror()) and COLOR_ORANGE or (role == ROLE_TRAITOR) and COLOR_RED or COLOR_GREEN
 end
 
 if CLIENT then

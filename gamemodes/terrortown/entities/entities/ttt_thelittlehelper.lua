@@ -1,3 +1,5 @@
+--if TTT2 then return end
+
 if SERVER then
 	AddCSLuaFile()
 	resource.AddFile("vgui/ttt/icon_tlh.vmt")

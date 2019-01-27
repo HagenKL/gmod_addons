@@ -1,4 +1,4 @@
-if TTT2 then return end
+if true then return end
 
 if SERVER then
 	AddCSLuaFile()

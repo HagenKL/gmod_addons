@@ -1,3 +1,5 @@
+if true then return end
+
 if SERVER then
   AddCSLuaFile()
   resource.AddFile("materials/vgui/ttt/ic_speed.vmt")

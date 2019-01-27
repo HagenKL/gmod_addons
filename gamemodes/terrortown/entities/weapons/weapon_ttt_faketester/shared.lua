@@ -73,7 +73,7 @@ end
 local function GetFakeTesterPlayer()
 	local result = {}
 	for k,v in pairs(player.GetAll()) do
-		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT or (v.IsEvil and v:IsEvil()) or (v.IsNeutral and v:IsNeutral())) and !v:GetNWBool("RTTested") then
+		if v:IsTerror() and (v:GetTraitor() or v:GetRole() == ROLE_INNOCENT) and !v:GetNWBool("RTTested") then
 			table.insert(result,v)
 		end
 	end
@@ -110,22 +110,13 @@ function SWEP:HandleMessages(ply)
 		local valid = IsValid(ply)
 		role,nick = valid and ply:GetRole() or role,valid and ply:Nick() or nick
 
-		if TTTVote then
-			if (owner:IsEvil() and IsRoleEvil(GetRoleTableByString(rolestring).ID)) or (owner:IsNeutral() and IsRoleNeutral(GetRoleTableByString(rolestring).ID)) then
-				role = ROLE_INNOCENT
-				rolestring = "innocent"
-			else
-				role = ROLE_TRAITOR
-				rolestring = "traitor"
-			end
+
+		if owner:IsTraitor() and ply:IsTraitor() then
+			role = ROLE_INNOCENT
+			rolestring = "innocent"
 		else
-			if owner:IsTraitor() and ply:IsTraitor() then
-				role = ROLE_INNOCENT
-				rolestring = "innocent"
-			else
-				role = ROLE_TRAITOR
-				rolestring = "traitor"
-			end
+			role = ROLE_TRAITOR
+			rolestring = "traitor"
 		end
 
 		DamageLog("FTester:\t" .. ownerNick .. "[" .. owner:GetRoleString() .. "] fake tested " .. nick .. "[" .. rolestring .. "]")
@@ -155,7 +146,7 @@ local function PrintFakeCenteredText(txt,delay,color)
 end
 
 local function GetFakeRoleColor(role,ply)
-	return !(IsValid(ply) and ply:IsTerror()) and COLOR_ORANGE or (role == ROLE_TRAITOR or (_G.IsRoleEvil and IsRoleEvil(role))) and COLOR_RED or COLOR_GREEN
+	return !(IsValid(ply) and ply:IsTerror()) and COLOR_ORANGE or (role == ROLE_TRAITOR) and COLOR_RED or COLOR_GREEN
 end
 
 if CLIENT then
