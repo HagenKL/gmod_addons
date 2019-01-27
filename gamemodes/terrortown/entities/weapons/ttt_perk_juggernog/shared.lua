@@ -1,7 +1,7 @@
 if SERVER then
   AddCSLuaFile( "shared.lua" )
-  util.AddNetworkString("DrinkingtheJuggernog")
   util.AddNetworkString("JuggerBlurHUD")
+  util.AddNetworkString("DrinkingtheJuggernog")
   resource.AddFile("sound/perks/buy_jug.wav")
   resource.AddFile("materials/models/perk_bottle/c_perk_bottle_jugg.vmt")
 end
@@ -78,6 +78,7 @@ function SWEP:DrinkTheBottle()
                         if IsValid(self) and IsValid(self.Owner) and self.Owner:IsTerror() then
                           self:EmitSound("perks/burp.wav")
                           self.Owner:SetHealth(self.Owner:GetMaxHealth())
+                          self.Owner:SetNWBool("JuggernogActive",true)
                           self:Remove()
                         end
                       end)
@@ -92,9 +93,16 @@ end
 
 hook.Add("TTTPrepareRound", "TTTJuggernogResettin", function()
   for k,v in pairs(player.GetAll()) do
+    v:SetNWBool("JuggernogActive",false)
     timer.Remove("TTTJuggernog" .. v:EntIndex())
   end
 end)
+
+hook.Add("DoPlayerDeath","TTTJuggernogReset", function(pl)
+    if pl:HasEquipmentItem(EQUIP_JUGGERNOG) then
+      pl:SetNWBool("JuggernogActive",false)
+    end
+  end)
 
 function SWEP:OnRemove()
   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then

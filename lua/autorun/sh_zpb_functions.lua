@@ -52,7 +52,7 @@ end
       if (traitorCanUse:GetBool()) then
         table.insert(EquipmentItems[ROLE_TRAITOR], tbl)
       end
-    --end
+    end
   end)
 --end
 
