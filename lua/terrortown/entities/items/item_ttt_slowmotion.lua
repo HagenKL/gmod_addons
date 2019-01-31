@@ -10,7 +10,7 @@ if SERVER then
 	resource.AddFile("materials/vgui/ttt/perks/hud_slowmo.png")
 
 	util.AddNetworkString("SlowMotionSound")
-	util.AddNetworkString("SM_Ask")
+	util.AddNetworkString("SM_Ask2")
 	util.AddNetworkString("SMReload")
 end
 
@@ -28,7 +28,7 @@ ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
 
 if CLIENT then
 	local function askSM()
-		net.Start("SM_Ask")
+		net.Start("SM_Ask2")
 		net.SendToServer()
 	end
 	concommand.Add("slowmotion", askSM)
@@ -104,7 +104,7 @@ else
 		end)
 	end
 
-	net.Receive("SM_Ask", function(len, ply)
+	net.Receive("SM_Ask2", function(len, ply)
 		ply:EnableSlowMotion2()
 	end)
 
