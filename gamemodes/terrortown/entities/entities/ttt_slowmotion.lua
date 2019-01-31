@@ -66,7 +66,7 @@ if CLIENT then
 		net.SendToServer()
 	end
 
-	concommand.Add("SlowMotion", askSM)
+	concommand.Add("slowmotion", askSM)
 
 
 	LANG.AddToLanguage("english", "item_SlowMotion", "SlowMotion")
