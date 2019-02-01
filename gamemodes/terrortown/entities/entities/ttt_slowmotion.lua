@@ -158,18 +158,18 @@ if SERVER then
 	hook.Add("TTTPrepareRound", "BeginRoundSM", function()
 		for k,v in pairs(player.GetAll()) do
 			v.SlowMotionused = false
-			if timer.Exists("SMReset" .. ply:EntIndex()) then
+			if timer.Exists("SMReset" .. v:EntIndex()) then
 				game.SetTimeScale(1)
 
 				SlowMotion_active = false
 
 				SlowMotionSound(false)
 
-				if ply:IsTerror() then
-					ply:ReloadS()
+				if v:IsTerror() then
+					v:ReloadS()
 				end
 
-				timer.Remove("SMReset" .. ply:EntIndex())
+				timer.Remove("SMReset" .. v:EntIndex())
 			end
 			timer.Remove("SMReload" .. v:EntIndex())
 		end
