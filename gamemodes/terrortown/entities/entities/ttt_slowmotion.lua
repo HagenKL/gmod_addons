@@ -7,7 +7,7 @@ if SERVER then
 	resource.AddFile("materials/VGUI/ttt/slowmotion_icon.vtf")
 	resource.AddFile("materials/vgui/ttt/perks/hud_slowmo.png")
 	util.AddNetworkString("SlowMotionSound")
-	util.AddNetworkString("SM_Ask")
+	util.AddNetworkString("SM_Ask2")
 	util.AddNetworkString("SMReload")
 end
 
@@ -62,11 +62,16 @@ if CLIENT then
 		end)
 
 	local function askSM()
-		net.Start("SM_Ask")
-		net.SendToServer()
+		if not TTT2 then
+			net.Start("SM_Ask2")
+			net.SendToServer()
+		else
+			net.Start("SM_Ask")
+			net.SendToServer()
+		end
 	end
 
-	concommand.Add("slowmotion", askSM)
+	concommand.Add("SlowMotion", askSM)
 
 
 	LANG.AddToLanguage("english", "item_SlowMotion", "SlowMotion")
@@ -96,17 +101,6 @@ local SlowMotion = {
 	hud = true
 }
 
-local detectiveCanUse = CreateConVar("ttt_slowmotion_det", 0, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Detective be able to use the SlowMotion .")
-local traitorCanUse = CreateConVar("ttt_slowmotion_tr", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should the Traitor be able to use the SlowMotion.")
-local smduration = CreateConVar("ttt_slowmotion_duration", 1.5, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long should the slowmotion last?")
-
-if (detectiveCanUse:GetBool()) then
-	table.insert(EquipmentItems[ROLE_DETECTIVE], SlowMotion)
-end
-if (traitorCanUse:GetBool()) then
-	table.insert(EquipmentItems[ROLE_TRAITOR], SlowMotion)
-end
-
 if SERVER then
 
 
@@ -131,7 +125,7 @@ if SERVER then
 	end
 
 	function plymeta:SMReset()
-		local duration = GetConVar("ttt_slowmotion_duration"):GetFloat()
+		local duration = 5
 		timer.Create("SMReset" .. self:EntIndex(), duration ,1, function()
 				if self:IsValid() and self:GetNWBool("SlowMotionUsed") then
 					game.SetTimeScale(1)
@@ -144,7 +138,7 @@ if SERVER then
 			end)
 	end
 	function plymeta:ReloadSM()
-		timer.Create("SMReload" .. self:EntIndex(), 20 ,1, function()
+		timer.Create("SMReload" .. self:EntIndex(), 45 ,1, function()
 				if self:IsValid() and self:IsTerror() then
 					net.Start("SMReload")
 					net.Send(self)
@@ -153,7 +147,7 @@ if SERVER then
 			end)
 	end
 
-	net.Receive("SM_Ask", function(len,ply)
+	net.Receive("SM_Ask2", function(len,ply)
 		ply:EnableSlowMotion()
 	end)
 

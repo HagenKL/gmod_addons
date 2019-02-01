@@ -10,12 +10,9 @@ if SERVER then
 	resource.AddFile("materials/vgui/ttt/perks/hud_slowmo.png")
 
 	util.AddNetworkString("SlowMotionSound")
-	util.AddNetworkString("SM_Ask2")
+	util.AddNetworkString("SM_Ask")
 	util.AddNetworkString("SMReload")
 end
-
-local smduration = CreateConVar("ttt_slowmotion_duration", 5, {FCVAR_ARCHIVE}, "How long should the slowmotion last?")
-local smcooldown = CreateConVar("ttt_slowmotion_cooldown", 45, {FCVAR_ARCHIVE}, "How long should the slowmotion cooldown last?")
 
 ITEM.hud = Material("vgui/ttt/perks/hud_slowmo.png")
 ITEM.EquipMenuData = {
@@ -28,10 +25,15 @@ ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
 
 if CLIENT then
 	local function askSM()
-		net.Start("SM_Ask2")
-		net.SendToServer()
+		if not TTT2 then
+			net.Start("SM_Ask2")
+			net.SendToServer()
+		else
+			net.Start("SM_Ask")
+			net.SendToServer()
+		end
 	end
-	concommand.Add("slowmotion", askSM)
+	concommand.Add("SlowMotion", askSM)
 
 	LANG.AddToLanguage("English", "item_SlowMotion", "SlowMotion")
 	LANG.AddToLanguage("English", "item_SlowMotion_desc", "A Killing Floor like SlowMotion,\nit slows down the game for a short time.\nCooldown is 45 Seconds.\nbind a key for 'SlowMotion' to use it.")
@@ -76,7 +78,7 @@ else
 	function plymeta:SMReset2()
 		local slf = self
 
-		timer.Create("SMReset" .. self:EntIndex(), smduration:GetFloat(), 1, function()
+		timer.Create("SMReset" .. self:EntIndex(), 5, 1, function()
 			if IsValid(slf) and slf.SlowMotion_used then
 				game.SetTimeScale(1)
 
@@ -94,7 +96,7 @@ else
 	function plymeta:ReloadSM2()
 		local slf = self
 
-		timer.Create("SMReload" .. self:EntIndex(), smcooldown:GetFloat(), 1, function()
+		timer.Create("SMReload" .. self:EntIndex(), 45, 1, function()
 			if IsValid(slf) and slf:IsTerror() then
 				net.Start("SMReload")
 				net.Send(slf)
@@ -104,7 +106,7 @@ else
 		end)
 	end
 
-	net.Receive("SM_Ask2", function(len, ply)
+	net.Receive("SM_Ask", function(len, ply)
 		ply:EnableSlowMotion2()
 	end)
 
