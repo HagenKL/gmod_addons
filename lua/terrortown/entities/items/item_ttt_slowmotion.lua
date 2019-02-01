@@ -50,6 +50,10 @@ if CLIENT then
 		chat.PlaySound()
 	end)
 else
+	local timescale = 0.3
+	local cooldown = 45
+	local duration = 5
+
 	local plymeta = FindMetaTable("Player")
 	local SlowMotion_active = false
 
@@ -65,7 +69,7 @@ else
 		if self:HasEquipmentItem("item_ttt_slowmotion") and not self.SlowMotion_used then
 			self.SlowMotion_used = true
 
-			game.SetTimeScale(0.3)
+			game.SetTimeScale(timescale)
 
 			SlowMotion_active = true
 
@@ -78,7 +82,7 @@ else
 	function plymeta:SMReset2()
 		local slf = self
 
-		timer.Create("SMReset" .. self:EntIndex(), 5, 1, function()
+		timer.Create("SMReset" .. self:EntIndex(), duration * timescale, 1, function()
 			if IsValid(slf) and slf.SlowMotion_used then
 				game.SetTimeScale(1)
 
@@ -96,7 +100,7 @@ else
 	function plymeta:ReloadSM2()
 		local slf = self
 
-		timer.Create("SMReload" .. self:EntIndex(), 45, 1, function()
+		timer.Create("SMReload" .. self:EntIndex(), cooldown, 1, function()
 			if IsValid(slf) and slf:IsTerror() then
 				net.Start("SMReload")
 				net.Send(slf)
@@ -110,25 +114,27 @@ else
 		ply:EnableSlowMotion2()
 	end)
 
-	hook.Add("TTTPrepareRound", "BeginRoundSM", function()
-		for _, v in ipairs(player.GetAll()) do
-			v.SlowMotion_used = false
+	local function ResetSlowMotion(ply)
+		ply.SlowMotion_used = false
 
-			if timer.Exists("SMReset" .. v:EntIndex()) then
-				game.SetTimeScale(1)
+		if timer.Exists("SMReset" .. ply:EntIndex()) then
+			game.SetTimeScale(1)
 
-				SlowMotion_active = false
+			SlowMotion_active = false
 
-				SlowMotionSound(false)
+			SlowMotionSound(false)
 
-				if v:IsTerror() then
-					v:ReloadSM2()
-				end
-
-				timer.Remove("SMReset" .. v:EntIndex())
+			if ply:IsTerror() then
+				ply:ReloadSM2()
 			end
 
-			timer.Remove("SMReload" .. v:EntIndex())
+			timer.Remove("SMReset" .. ply:EntIndex())
 		end
-	end)
+
+		timer.Remove("SMReload" .. ply:EntIndex())
+	end
+
+	function ITEM:Reset(ply)
+		ResetSlowMotion(ply)
+	end
 end

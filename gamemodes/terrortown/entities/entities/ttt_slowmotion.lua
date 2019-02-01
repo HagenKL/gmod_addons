@@ -103,7 +103,9 @@ local SlowMotion = {
 
 if SERVER then
 
-
+	local timescale = 0.3
+	local cooldown = 45
+	local duration = 5
 	local plymeta = FindMetaTable("Player")
 	local SlowMotion_active = false
 
@@ -125,8 +127,8 @@ if SERVER then
 	end
 
 	function plymeta:SMReset()
-		local duration = 5
-		timer.Create("SMReset" .. self:EntIndex(), duration ,1, function()
+		local duration = 3
+		timer.Create("SMReset" .. self:EntIndex(), duration * timescale ,1, function()
 				if self:IsValid() and self:GetNWBool("SlowMotionUsed") then
 					game.SetTimeScale(1)
 					SlowMotion_active = false
