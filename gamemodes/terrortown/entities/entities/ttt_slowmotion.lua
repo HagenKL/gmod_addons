@@ -101,6 +101,8 @@ local SlowMotion = {
 	hud = true
 }
 
+table.insert(EquipmentItems[ROLE_TRAITOR], SlowMotion)
+
 if SERVER then
 
 	local timescale = 0.3
