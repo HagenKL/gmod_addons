@@ -66,8 +66,8 @@ else
 	function plymeta:EnableSlowMotion2()
 		if SlowMotion_active then return end
 
-		if self:HasEquipmentItem("item_ttt_slowmotion") and not self.SlowMotion_used then
-			self.SlowMotion_used = true
+		if self:HasEquipmentItem("item_ttt_slowmotion") and not self.SlowMotionused then
+			self.SlowMotionused = true
 
 			game.SetTimeScale(timescale)
 
@@ -83,7 +83,7 @@ else
 		local slf = self
 
 		timer.Create("SMReset" .. self:EntIndex(), duration * timescale, 1, function()
-			if IsValid(slf) and slf.SlowMotion_used then
+			if IsValid(slf) and slf.SlowMotionused then
 				game.SetTimeScale(1)
 
 				SlowMotion_active = false
@@ -105,7 +105,7 @@ else
 				net.Start("SMReload")
 				net.Send(slf)
 
-				slf.SlowMotion_used = false
+				slf.SlowMotionused = false
 			end
 		end)
 	end
@@ -115,7 +115,7 @@ else
 	end)
 
 	local function ResetSlowMotion(ply)
-		ply.SlowMotion_used = false
+		ply.SlowMotionused = false
 
 		if timer.Exists("SMReset" .. ply:EntIndex()) then
 			game.SetTimeScale(1)

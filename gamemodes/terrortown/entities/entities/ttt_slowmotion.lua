@@ -115,48 +115,60 @@ if SERVER then
 		net.Broadcast()
 	end
 
-	function plymeta:EnableSlowMotion()
+	function plymeta:SlowMotion()
 		if SlowMotion_active then return end
-		if self:HasEquipmentItem(EQUIP_SM) and !self:GetNWBool("SlowMotionUsed", false) then
-			self:SetNWBool("SlowMotionUsed", true)
+		if self:HasEquipmentItem(EQUIP_SM) and !self.SlowMotionused then
+			self.SlowMotionused = true
 		    game.SetTimeScale(0.3)
 			SlowMotion_active = true
 			SlowMotionSound(true)
-			self:SMReset()
+			self:SReset()
 		end
 	end
 
-	function plymeta:SMReset()
+	function plymeta:SReset()
 		local duration = 3
 		timer.Create("SMReset" .. self:EntIndex(), duration * timescale ,1, function()
-				if self:IsValid() and self:GetNWBool("SlowMotionUsed") then
+				if self:IsValid() and self.SlowMotionused then
 					game.SetTimeScale(1)
 					SlowMotion_active = false
 					SlowMotionSound(false)
 					if self:IsTerror() then
-						self:ReloadSM()
+						self:ReloadS()
 					end
 				end
 			end)
 	end
-	function plymeta:ReloadSM()
+	function plymeta:ReloadS()
 		timer.Create("SMReload" .. self:EntIndex(), 45 ,1, function()
 				if self:IsValid() and self:IsTerror() then
 					net.Start("SMReload")
 					net.Send(self)
-					self:SetNWBool("SlowMotionUsed", false)
+					self.SlowMotionused = false
 				end
 			end)
 	end
 
 	net.Receive("SM_Ask2", function(len,ply)
-		ply:EnableSlowMotion()
+		ply:SlowMotion()
 	end)
 
 	hook.Add("TTTPrepareRound", "BeginRoundSM", function()
 		for k,v in pairs(player.GetAll()) do
-			v:SetNWBool("SlowMotionUsed", false)
-			timer.Remove("SMReset" .. v:EntIndex())
+			v.SlowMotionused = false
+			if timer.Exists("SMReset" .. ply:EntIndex()) then
+				game.SetTimeScale(1)
+
+				SlowMotion_active = false
+
+				SlowMotionSound(false)
+
+				if ply:IsTerror() then
+					ply:ReloadS)
+				end
+
+				timer.Remove("SMReset" .. ply:EntIndex())
+			end
 			timer.Remove("SMReload" .. v:EntIndex())
 		end
 	end)
