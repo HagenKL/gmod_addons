@@ -166,7 +166,7 @@ if SERVER then
 				SlowMotionSound(false)
 
 				if ply:IsTerror() then
-					ply:ReloadS)
+					ply:ReloadS()
 				end
 
 				timer.Remove("SMReset" .. ply:EntIndex())
