@@ -73,9 +73,15 @@ if CLIENT then
 	end
 
 	concommand.Add("thelittlehelper", askTLH2)
+	
+	bind.Register("thelittlehelper", function()
+		LocalPlayer():ConCommand("thelittlehelper")
+	end, function() end)
+
+	bind.AddSettingsBinding("thelittlehelper", "The Little Helper")
 end
 
-ITEM.hud  = Material("vgui/ttt/perks/hud_tlh.png")
+ITEM.hud  = Material("vgui/ttt/perks/hud_tlh_ttt2.png")
 ITEM.EquipMenuData = {
   type = "item_active",
   name = "The Little Helper",
@@ -179,4 +185,5 @@ if SERVER then
 	end
 	hook.Add("EntityTakeDamage", "TLHSaveLife2", TLHOwnerGetsDamage2)
 	hook.Add( "Think", "TTTTLH2", tlhthink2)
+	
 end

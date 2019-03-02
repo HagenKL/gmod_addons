@@ -10,7 +10,7 @@ if SERVER then
 end
 
 
-ITEM.hud = Material("vgui/ttt/perks/hud_asc.png")
+ITEM.hud = Material("vgui/ttt/perks/hud_asc_ttt2.png")
 ITEM.EquipMenuData = {
   type = "item_passive",
   name = "A Second Chance",

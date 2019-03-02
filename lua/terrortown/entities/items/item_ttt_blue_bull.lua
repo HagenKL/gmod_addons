@@ -3,7 +3,7 @@ if SERVER then
 	resource.AddWorkshop("653258161")
 end
 
-ITEM.hud  = Material("vgui/ttt/perks/hud_blue_bull.png")
+ITEM.hud  = Material("vgui/ttt/perks/hud_blue_bull_ttt2.png")
 ITEM.EquipMenuData = {
   type = "item_passive",
   name = "Blue Bull",
