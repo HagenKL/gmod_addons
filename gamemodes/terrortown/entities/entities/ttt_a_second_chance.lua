@@ -135,6 +135,7 @@ if SERVER then
   local plymeta = FindMetaTable( "Player" );
 
   function SecondChance( victim, inflictor, attacker)
+	if !victim:HasEquipmentItem(EQUIP_ASC) then return end
     local SecondChanceRandom = math.random(1,100)
     local PlayerChance = math.Clamp(math.Round(victim.SecondChanceChance, 0), 0, 99)
     if victim.shouldasc == true and SecondChanceRandom <= PlayerChance then
