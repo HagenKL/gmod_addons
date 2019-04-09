@@ -192,6 +192,7 @@ if SERVER then
 							or (owner:IsTraitor() and !ply:IsTraitor() and ((ply.IsEvil and !ply:IsEvil()) or !ply.IsEvil))
 							or (owner:IsSidekick() and !ply:IsSidekick() and ply:GetSubRole() != ROLE_JESTER)
 							or (owner:IsSidekick() and !ply:IsSidekick() and ply:GetRole() != ROLE_JACKAL)
+							or ((owner:GetSubRole() == ROLE_JESTER or owner:GetRole() == ROLE_JACKAL) and !ply:IsSidekick())
 							or (owner.IsEvil and owner:IsEvil() and !ply:IsEvil())
 							or (owner.IsNeutral and owner:IsNeutral() and !ply:IsNeutral()) then
 								table.insert(owner.highnoontargets, ply)
