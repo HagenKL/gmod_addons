@@ -98,6 +98,18 @@ local function ResetTimeScale()
 	net.Broadcast()
 end
 
+local function checkPos(ply, pos, minBound, maxBound)
+	local filter = {ply}
+	local tr = util.TraceEntity({
+		start = pos,
+		endpos = pos,
+		filter = filter,
+		mask = MASK_PLAYERSOLID
+	},ply)
+
+	return !tr.StartSolid || !tr.AllSolid
+end
+
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
 	if not IsFirstTimePredicted() then return end
@@ -127,7 +139,8 @@ function SWEP:PrimaryAttack()
 				timer.Create("ResetSATM", satmduration:GetInt() * self.timescale, 1, ResetTimeScale)
 			end
 		elseif self.satmmode == 4 then
-			if !owner:OnGround() or owner:Crouching() then
+			local omin, omax = owner:GetHull()
+			if !owner:OnGround() or !checkPos(owner, owner:GetPos(), omin, omax) then
 				net.Start("SATMMessage")
 				net.WriteInt(20, 6)
 				net.Send(owner)
@@ -137,7 +150,8 @@ function SWEP:PrimaryAttack()
 			local aliveplayers = {}
 
 			for k, v in pairs(player.GetAll()) do
-				if v:IsTerror() and v != owner and !v:Crouching() then
+				local min, max = v:GetHull()
+				if v:IsTerror() and v != owner and checkPos(v, v:GetPos(), min, max) then
 					table.insert(aliveplayers, v)
 				end
 			end
